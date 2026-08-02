@@ -1,0 +1,57 @@
+[
+    {
+        // 英文名
+        "name":                 "air",
+        // 中文名（可选，默认为英文名）
+        "name_zh":              "空气",
+        // 结构兼容 ID
+        "structure_id":         "minecraft:air",
+        // 指令兼容 ID
+        "command_id":           "minecraft:air",
+        // 加入游戏的正式版本（可选，默认为 0.0.0）
+        "version":              "0.0.0",
+        // 是各向同性方块（可选，默认为真）
+        "isotropic":            "true",
+        // 具有透明度（可选，默认为假）
+        "has_transparent":      "true",
+        // 具有重力（可选，默认为假）
+        "has_gravity":          "false",
+        // 是完整方块（可选，默认为真）
+        "is_compeleted":        "false",
+        // 可燃烧（可选，默认为假）
+        "can_burned":           "false",
+        // 可被末影人拿起（可选，默认为假）
+        "can_enderman_taked":   "false",
+        // 材质路径与主题色
+        "texture": {
+            "default": {
+                "texture": "",
+                "color":   ""
+            },
+            "up": {
+                "texture": "",
+                "color":   ""
+            },
+            "down": {
+                "texture": "",
+                "color":   ""
+            },
+            "east": {
+                "texture": "",
+                "color":   ""
+            },
+            "west": {
+                "texture": "",
+                "color":   ""
+            },
+            "north": {
+                "texture": "",
+                "color":   ""
+            },
+            "south": {
+                "texture": "",
+                "color":   ""
+            }
+        }
+    }
+]
