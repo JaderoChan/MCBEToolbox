@@ -1,0 +1,64 @@
+{
+    "block_id_1": {                     // 与游戏内 ID 无关的方块 ID
+        "0.0.0": {                      // 游戏版本号（格式：Major.Minor.Patch）
+            "texture": "path/to/file",  // 各向同性方块的材质文件路径
+            "color":   "#000000"        // 方块材质主题色（十六进制颜色值）
+        },
+        "0.1.0": {
+            "texture": "",
+            "color":   ""
+        }
+        // ...
+    },
+    "block_id_2": {
+        "0.0.0": {
+            "faces": {                  // 非各向同性方块各面材质信息
+                "up": {
+                    "texture": "",
+                    "color":   ""
+                },
+                "down": {
+                    "texture": "",
+                    "color":   ""
+                },
+                "side": {               // 侧面一致性方块侧面材质信息
+                    "texture": "",
+                    "color":   ""
+                }
+            }
+        }
+        // ...
+    },
+    "block_id_3": {
+        "0.0.0": {
+            "faces": {                  // 非各向同性方块各面材质信息
+                "up": {
+                    "texture": "",
+                    "color":   ""
+                },
+                "down": {
+                    "texture": "",
+                    "color":   ""
+                },
+                "north": {
+                    "texture": "",
+                    "color":   ""
+                },
+                "south": {
+                    "texture": "",
+                    "color":   ""
+                },
+                "east": {
+                    "texture": "",
+                    "color":   ""
+                },
+                "west": {
+                    "texture": "",
+                    "color":   ""
+                }
+            }
+        }
+        // ...
+    }
+    // ...
+}

@@ -1,57 +1,52 @@
-[
-    {
+{
+    // 与游戏内 ID 无关的方块 ID
+    "block_id": {
         // 英文名
-        "name":                 "air",
+        "name":                         "air",
         // 中文名（可选，默认为英文名）
-        "name_zh":              "空气",
-        // 结构兼容 ID
-        "structure_id":         "minecraft:air",
-        // 指令兼容 ID
-        "command_id":           "minecraft:air",
-        // 加入游戏的正式版本（可选，默认为 0.0.0）
-        "version":              "0.0.0",
-        // 是各向同性方块（可选，默认为真）
-        "isotropic":            "true",
-        // 具有透明度（可选，默认为假）
-        "has_transparent":      "true",
-        // 具有重力（可选，默认为假）
-        "has_gravity":          "false",
-        // 是完整方块（可选，默认为真）
-        "is_compeleted":        "false",
-        // 可燃烧（可选，默认为假）
-        "can_burned":           "false",
-        // 可被末影人拿起（可选，默认为假）
-        "can_enderman_taked":   "false",
-        // 材质路径与主题色
-        "texture": {
-            "default": {
-                "texture": "",
-                "color":   ""
-            },
-            "up": {
-                "texture": "",
-                "color":   ""
-            },
-            "down": {
-                "texture": "",
-                "color":   ""
-            },
-            "east": {
-                "texture": "",
-                "color":   ""
-            },
-            "west": {
-                "texture": "",
-                "color":   ""
-            },
-            "north": {
-                "texture": "",
-                "color":   ""
-            },
-            "south": {
-                "texture": "",
-                "color":   ""
+        "name_zh":                      "空气",
+        // 加入游戏的版本（可选，默认为 0.0.0）
+        "join_version":                 "0.0.0",
+        // 游戏版本号（格式：Major.Minor.Patch）
+        "0.0.0": {
+            // 结构兼容 ID
+            "structure_id":             "minecraft:air",
+            // 指令兼容 ID
+            "command_id":               "minecraft:air",
+            // 方块主题色
+            "colors":                   "#000000",
+            // 方块属性（可选）
+            "attributes": {
+                // 是非完整方块（可选，默认为假）
+                "is_uncompeleted":      "false",
+                // 是透明/半透明方块（可选，默认为假）
+                "is_transparent":       "false",
+                // 具有重力（可选，默认为假）
+                "has_gravity":          "false",
+                // 可燃烧（可选，默认为假）
+                "can_burned":           "false",
+                // 可被末影人拿起（可选，默认为假）
+                "can_enderman_taked":   "false"
+            }
+        },
+        "0.1.0": {
+            "colors": {
+                "up":   "",
+                "down": "",
+                "side": ""
+            }
+        },
+        "0.2.0": {
+            "colors": {
+                "up":    "",
+                "down":  "",
+                "north": "",
+                "south": "",
+                "east":  "",
+                "west":  ""
             }
         }
+        // ...
     }
-]
+    // ...
+}
