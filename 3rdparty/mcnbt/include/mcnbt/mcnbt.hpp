@@ -29,7 +29,7 @@
  * @file mcnbt.hpp
  * @brief A header-only C++ library for reading and writing Minecraft NBT format.
  * @author 頔珞 JaderoChan
- * @version 2.1.0
+ * @version 2.1.2
  */
 
 #ifndef MCNBT_MCNBT_HPP
@@ -231,14 +231,72 @@ private:
     Container data_;
 };
 
-// TagGetter forward declaration
-namespace detail
+/** @brief NBT tag type identifier. */
+enum TagType : uint8_t
 {
+    TT_END        = 0,
+    TT_BYTE       = 1,
+    TT_SHORT      = 2,
+    TT_INT        = 3,
+    TT_LONG       = 4,
+    TT_FLOAT      = 5,
+    TT_DOUBLE     = 6,
+    TT_BYTE_ARRAY = 7,
+    TT_STRING     = 8,
+    TT_LIST       = 9,
+    TT_COMPOUND   = 10,
+    TT_INT_ARRAY  = 11,
+    TT_LONG_ARRAY = 12
+};
+
+namespace details
+{
+
+// =======================
+// > Static type checkers
+// =======================
+
+static inline bool isEnd(TagType type)        noexcept { return type == TT_END;        }
+static inline bool isByte(TagType type)       noexcept { return type == TT_BYTE;       }
+static inline bool isShort(TagType type)      noexcept { return type == TT_SHORT;      }
+static inline bool isInt(TagType type)        noexcept { return type == TT_INT;        }
+static inline bool isLong(TagType type)       noexcept { return type == TT_LONG;       }
+static inline bool isFloat(TagType type)      noexcept { return type == TT_FLOAT;      }
+static inline bool isDouble(TagType type)     noexcept { return type == TT_DOUBLE;     }
+static inline bool isString(TagType type)     noexcept { return type == TT_STRING;     }
+static inline bool isByteArray(TagType type)  noexcept { return type == TT_BYTE_ARRAY; }
+static inline bool isIntArray(TagType type)   noexcept { return type == TT_INT_ARRAY;  }
+static inline bool isLongArray(TagType type)  noexcept { return type == TT_LONG_ARRAY; }
+static inline bool isList(TagType type)       noexcept { return type == TT_LIST;       }
+static inline bool isCompound(TagType type)   noexcept { return type == TT_COMPOUND;   }
+
+/** @brief Return true when the tag is any integer type (byte, short, int, or long). */
+static inline bool isInteger(TagType type)    noexcept
+{ return isByte(type) || isShort(type) || isInt(type) || isLong(type); }
+/** @brief Return true when the tag is TT_FLOAT or TT_DOUBLE. */
+static inline bool isFloatPoint(TagType type) noexcept
+{ return isFloat(type) || isDouble(type); }
+/** @brief Return true when the tag is any numeric type. */
+static inline bool isNumber(TagType type)     noexcept
+{ return isInteger(type) || isFloatPoint(type); }
+/** @brief Return true when the tag is a typed array (byte, int, or long array). */
+static inline bool isArray(TagType type)      noexcept
+{ return isByteArray(type) || isIntArray(type) || isLongArray(type); }
+/** @brief Return true when the tag is TT_LIST or TT_COMPOUND. */
+static inline bool isContainer(TagType type)  noexcept
+{ return isList(type) || isCompound(type); }
+/** @brief Return true when the tag is a number or a string. */
+static inline bool isPrimitive(TagType type)  noexcept
+{ return isNumber(type) || isString(type); }
+
+// =======================
+// > Forward declarations
+// =======================
 
 template<typename T, typename BasicTagType>
 struct TagGetter;
 
-} // namespace detail
+} // namespace details
 
 /**
  * @brief A type-safe NBT (Named Binary Tag) value.
@@ -274,24 +332,6 @@ public:
         std::less<StringT>,
         AllocatorType<std::pair<const StringT, BasicTagType>>>;
 
-    /** @brief NBT tag type identifier. */
-    enum TagType : uint8_t
-    {
-        TT_END        = 0,
-        TT_BYTE       = 1,
-        TT_SHORT      = 2,
-        TT_INT        = 3,
-        TT_LONG       = 4,
-        TT_FLOAT      = 5,
-        TT_DOUBLE     = 6,
-        TT_BYTE_ARRAY = 7,
-        TT_STRING     = 8,
-        TT_LIST       = 9,
-        TT_COMPOUND   = 10,
-        TT_INT_ARRAY  = 11,
-        TT_LONG_ARRAY = 12
-    };
-
     // ===========
     // > Iterator
     // ===========
@@ -299,7 +339,7 @@ public:
     /**
      * @brief Unified forward iterator over TT_LIST and TT_COMPOUND tags.
      * @details Dereference yields the element value (BasicTagType&).
-     *          key() returns the compound entry key and throws std::domain_error
+     *          key() returns the compound entry key and throw std::domain_error
      *          when the iterator belongs to a list tag.
      */
     template<bool IsConst>
@@ -342,8 +382,8 @@ public:
         bool operator!=(const iter_impl& o) const { return !(*this == o); }
 
         /**
-         * @brief Returns the current compound entry key.
-         * @throws std::domain_error when iterating a list.
+         * @brief Return the current compound entry key.
+         * @throw std::domain_error when iterating a list.
          */
         const StringT& key() const
         {
@@ -356,15 +396,17 @@ public:
     using iterator       = iter_impl<false>;
     using const_iterator = iter_impl<true>;
 
+public:
+
     // ============================
     // > Construct and deconstruct
     // ============================
 
-    /** @brief Constructs a TT_END (null) tag. */
+    /** @brief Construct a TT_END (null) tag. */
     BasicTag() noexcept : type_(TT_END), listItemType_(TT_END)
     { value_.i64 = 0; }
 
-    /** @brief Constructs an empty tag of the specified type, allocating heap storage when required. */
+    /** @brief Construct an empty tag of the specified type, allocating heap storage when required. */
     explicit BasicTag(TagType t) : type_(t), listItemType_(TT_END)
     {
         value_.i64 = 0;
@@ -380,71 +422,71 @@ public:
         }
     }
 
-    /** @brief Constructs a TT_BYTE tag. */
+    /** @brief Construct a TT_BYTE tag. */
     BasicTag(int8_t v) noexcept : type_(TT_BYTE), listItemType_(TT_END)
     { value_.i64 = 0; value_.i8 = v; }
 
-    /** @brief Constructs a TT_BYTE tag with boolean value. */
+    /** @brief Construct a TT_BYTE tag with boolean value. */
     BasicTag(bool v) noexcept : type_(TT_BYTE), listItemType_(TT_END)
     { value_.i64 = 0; value_.i8 = static_cast<int8_t>(v); }
 
-    /** @brief Constructs a TT_SHORT tag. */
+    /** @brief Construct a TT_SHORT tag. */
     BasicTag(int16_t v) noexcept : type_(TT_SHORT), listItemType_(TT_END)
     { value_.i64 = 0; value_.i16 = v; }
 
-    /** @brief Constructs a TT_INT tag. */
+    /** @brief Construct a TT_INT tag. */
     BasicTag(int32_t v) noexcept : type_(TT_INT), listItemType_(TT_END)
     { value_.i64 = 0; value_.i32 = v; }
 
-    /** @brief Constructs a TT_LONG tag. */
+    /** @brief Construct a TT_LONG tag. */
     BasicTag(int64_t v) noexcept : type_(TT_LONG), listItemType_(TT_END)
     { value_.i64 = v; }
 
-    /** @brief Constructs a TT_FLOAT tag. */
+    /** @brief Construct a TT_FLOAT tag. */
     BasicTag(float v) noexcept : type_(TT_FLOAT), listItemType_(TT_END)
     { value_.i64 = 0; value_.f32 = v; }
 
-    /** @brief Constructs a TT_DOUBLE tag. */
+    /** @brief Construct a TT_DOUBLE tag. */
     BasicTag(double v) noexcept : type_(TT_DOUBLE), listItemType_(TT_END)
     { value_.f64 = v; }
 
-    /** @brief Constructs a TT_STRING tag from an lvalue string. */
+    /** @brief Construct a TT_STRING tag from an lvalue string. */
     BasicTag(const StringT& v) : type_(TT_STRING), listItemType_(TT_END)
     { value_.ptr = new StringT(v); }
 
-    /** @brief Constructs a TT_STRING tag from an rvalue string. */
+    /** @brief Construct a TT_STRING tag from an rvalue string. */
     BasicTag(StringT&& v) : type_(TT_STRING), listItemType_(TT_END)
     { value_.ptr = new StringT(std::move(v)); }
 
-    /** @brief Constructs a TT_STRING tag from a null-terminated character array. */
+    /** @brief Construct a TT_STRING tag from a null-terminated character array. */
     BasicTag(const typename StringT::value_type* v) : type_(TT_STRING), listItemType_(TT_END)
     { value_.ptr = new StringT(v); }
 
-    /** @brief Constructs a TT_BYTE_ARRAY tag from an lvalue byte array. */
+    /** @brief Construct a TT_BYTE_ARRAY tag from an lvalue byte array. */
     BasicTag(const ByteArrayT& v) : type_(TT_BYTE_ARRAY), listItemType_(TT_END)
     { value_.ptr = new ByteArrayT(v); }
 
-    /** @brief Constructs a TT_BYTE_ARRAY tag from an rvalue byte array. */
+    /** @brief Construct a TT_BYTE_ARRAY tag from an rvalue byte array. */
     BasicTag(ByteArrayT&& v) : type_(TT_BYTE_ARRAY), listItemType_(TT_END)
     { value_.ptr = new ByteArrayT(std::move(v)); }
 
-    /** @brief Constructs a TT_INT_ARRAY tag from an lvalue int array. */
+    /** @brief Construct a TT_INT_ARRAY tag from an lvalue int array. */
     BasicTag(const IntArrayT& v) : type_(TT_INT_ARRAY), listItemType_(TT_END)
     { value_.ptr = new IntArrayT(v); }
 
-    /** @brief Constructs a TT_INT_ARRAY tag from an rvalue int array. */
+    /** @brief Construct a TT_INT_ARRAY tag from an rvalue int array. */
     BasicTag(IntArrayT&& v) : type_(TT_INT_ARRAY), listItemType_(TT_END)
     { value_.ptr = new IntArrayT(std::move(v)); }
 
-    /** @brief Constructs a TT_LONG_ARRAY tag from an lvalue long array. */
+    /** @brief Construct a TT_LONG_ARRAY tag from an lvalue long array. */
     BasicTag(const LongArrayT& v) : type_(TT_LONG_ARRAY), listItemType_(TT_END)
     { value_.ptr = new LongArrayT(v); }
 
-    /** @brief Constructs a TT_LONG_ARRAY tag from an rvalue long array. */
+    /** @brief Construct a TT_LONG_ARRAY tag from an rvalue long array. */
     BasicTag(LongArrayT&& v) : type_(TT_LONG_ARRAY), listItemType_(TT_END)
     { value_.ptr = new LongArrayT(std::move(v)); }
 
-    /** @brief Constructs a TT_LIST tag from an lvalue list; deduces the element type from the first element. */
+    /** @brief Construct a TT_LIST tag from an lvalue list; deduce the element type from the first element. */
     BasicTag(const ListT& v) : type_(TT_LIST), listItemType_(TT_END)
     {
         if (!v.empty())
@@ -452,7 +494,7 @@ public:
         value_.ptr = new ListT(v);
     }
 
-    /** @brief Constructs a TT_LIST tag from an rvalue list; deduces the element type from the first element. */
+    /** @brief Construct a TT_LIST tag from an rvalue list; deduce the element type from the first element. */
     BasicTag(ListT&& v) : type_(TT_LIST), listItemType_(TT_END)
     {
         if (!v.empty())
@@ -460,19 +502,19 @@ public:
         value_.ptr = new ListT(std::move(v));
     }
 
-    /** @brief Constructs a TT_COMPOUND tag from an lvalue compound map. */
+    /** @brief Construct a TT_COMPOUND tag from an lvalue compound map. */
     BasicTag(const CompoundT& v) : type_(TT_COMPOUND), listItemType_(TT_END)
     { value_.ptr = new CompoundT(v); }
 
-    /** @brief Constructs a TT_COMPOUND tag from an rvalue compound map. */
+    /** @brief Construct a TT_COMPOUND tag from an rvalue compound map. */
     BasicTag(CompoundT&& v) : type_(TT_COMPOUND), listItemType_(TT_END)
     { value_.ptr = new CompoundT(std::move(v)); }
 
-    /** @brief Copy constructor; performs a deep copy of the heap-allocated payload. */
+    /** @brief Copy constructor; perform a deep copy of the heap-allocated payload. */
     BasicTag(const BasicTag& other) : type_(other.type_), listItemType_(other.listItemType_)
     { copyValueFrom(other); }
 
-    /** @brief Move constructor; transfers ownership of the heap-allocated payload. */
+    /** @brief Move constructor; transfer ownership of the heap-allocated payload. */
     BasicTag(BasicTag&& other) noexcept : type_(other.type_), listItemType_(other.listItemType_), value_(other.value_)
     {
         other.type_      = TT_END;
@@ -489,220 +531,256 @@ public:
         return *this;
     }
 
-    /** @brief Destructor; releases the heap-allocated payload if present. */
+    /** @brief Destructor; release the heap-allocated payload if present. */
     ~BasicTag() { destroyValue(); }
 
     // ================================
     // > Convenience static constructs
     // ================================
 
-    /** @brief Convenience functions for constructing List. */
-    static BasicTag list()     { return BasicTag(TT_LIST); }
+    /** @brief Convenience function for constructing List. */
+    static BasicTag list(TagType listItemType = TT_END)
+    {
+        BasicTag ret(TT_LIST);
+        ret.listItemType_ = listItemType;
+        return ret;
+    }
 
-    /** @brief Convenience functions for constructing Compound. */
+    /** @brief Convenience function for constructing Compound. */
     static BasicTag compound() { return BasicTag(TT_COMPOUND); }
 
-    // ===============
-    // > Type queries
-    // ===============
+    // ================
+    // > Type checkers
+    // ================
 
-    /** @brief Returns the runtime tag type. */
+    /** @brief Return the runtime tag type. */
     TagType type()      const noexcept { return type_; }
 
-    bool isEnd()        const noexcept { return type_ == TT_END;        }
-    bool isByte()       const noexcept { return type_ == TT_BYTE;       }
-    bool isShort()      const noexcept { return type_ == TT_SHORT;      }
-    bool isInt()        const noexcept { return type_ == TT_INT;        }
-    bool isLong()       const noexcept { return type_ == TT_LONG;       }
-    bool isFloat()      const noexcept { return type_ == TT_FLOAT;      }
-    bool isDouble()     const noexcept { return type_ == TT_DOUBLE;     }
-    bool isString()     const noexcept { return type_ == TT_STRING;     }
-    bool isByteArray()  const noexcept { return type_ == TT_BYTE_ARRAY; }
-    bool isIntArray()   const noexcept { return type_ == TT_INT_ARRAY;  }
-    bool isLongArray()  const noexcept { return type_ == TT_LONG_ARRAY; }
-    bool isList()       const noexcept { return type_ == TT_LIST;       }
-    bool isCompound()   const noexcept { return type_ == TT_COMPOUND;   }
+    bool isEnd()        const noexcept { return details::isEnd(type_);        }
+    bool isByte()       const noexcept { return details::isByte(type_);       }
+    bool isShort()      const noexcept { return details::isShort(type_);      }
+    bool isInt()        const noexcept { return details::isInt(type_);        }
+    bool isLong()       const noexcept { return details::isLong(type_);       }
+    bool isFloat()      const noexcept { return details::isFloat(type_);      }
+    bool isDouble()     const noexcept { return details::isDouble(type_);     }
+    bool isString()     const noexcept { return details::isString(type_);     }
+    bool isByteArray()  const noexcept { return details::isByteArray(type_);  }
+    bool isIntArray()   const noexcept { return details::isIntArray(type_);   }
+    bool isLongArray()  const noexcept { return details::isLongArray(type_);  }
+    bool isList()       const noexcept { return details::isList(type_);       }
+    bool isCompound()   const noexcept { return details::isCompound(type_);   }
 
-    /** @brief Returns true when the tag is any integer type (byte, short, int, or long). */
-    bool isInteger()    const noexcept { return isByte() || isShort() || isInt() || isLong(); }
-    /** @brief Returns true when the tag is TT_FLOAT or TT_DOUBLE. */
-    bool isFloatPoint() const noexcept { return isFloat() || isDouble(); }
-    /** @brief Returns true when the tag is any numeric type. */
-    bool isNumber()     const noexcept { return isInteger() || isFloatPoint(); }
-    /** @brief Returns true when the tag is a typed array (byte, int, or long array). */
-    bool isArray()      const noexcept { return isByteArray() || isIntArray() || isLongArray(); }
-    /** @brief Returns true when the tag is TT_LIST or TT_COMPOUND. */
-    bool isContainer()  const noexcept { return isList() || isCompound(); }
-    /** @brief Returns true when the tag is a number or a string. */
-    bool isPrimitive()  const noexcept { return isNumber() || isString(); }
+    /** @brief Return true when the tag is any integer type (byte, short, int, or long). */
+    bool isInteger()    const noexcept { return details::isInteger(type_);    }
+    /** @brief Return true when the tag is TT_FLOAT or TT_DOUBLE. */
+    bool isFloatPoint() const noexcept { return details::isFloatPoint(type_); }
+    /** @brief Return true when the tag is any numeric type. */
+    bool isNumber()     const noexcept { return details::isNumber(type_);     }
+    /** @brief Return true when the tag is a typed array (byte, int, or long array). */
+    bool isArray()      const noexcept { return details::isArray(type_);      }
+    /** @brief Return true when the tag is TT_LIST or TT_COMPOUND. */
+    bool isContainer()  const noexcept { return details::isContainer(type_);  }
+    /** @brief Return true when the tag is a number or a string. */
+    bool isPrimitive()  const noexcept { return details::isPrimitive(type_);  }
 
-    // ===============
-    // > Value access
-    // ===============
+    // ==========
+    // > Getters
+    // ==========
 
     /**
-     * @brief Returns the byte value.
-     * @throws std::domain_error if the tag is not TT_BYTE.
+     * @brief Return the byte value.
+     * @throw std::domain_error if the tag is not TT_BYTE.
      */
     int8_t   getByte()   const { checkType(TT_BYTE);   return value_.i8;  }
     /**
-     * @brief Returns a mutable reference to the byte value.
-     * @throws std::domain_error if the tag is not TT_BYTE.
+     * @brief Return a mutable reference to the byte value.
+     * @throw std::domain_error if the tag is not TT_BYTE.
      */
     int8_t&  getByte()         { checkType(TT_BYTE);   return value_.i8;  }
     /**
-     * @brief Returns the short value.
-     * @throws std::domain_error if the tag is not TT_SHORT.
+     * @brief Return the short value.
+     * @throw std::domain_error if the tag is not TT_SHORT.
      */
 
     int16_t  getShort()  const { checkType(TT_SHORT);  return value_.i16; }
     /**
-     * @brief Returns a mutable reference to the short value.
-     * @throws std::domain_error if the tag is not TT_SHORT.
+     * @brief Return a mutable reference to the short value.
+     * @throw std::domain_error if the tag is not TT_SHORT.
      */
     int16_t& getShort()        { checkType(TT_SHORT);  return value_.i16; }
     /**
-     * @brief Returns the int value.
-     * @throws std::domain_error if the tag is not TT_INT.
+     * @brief Return the int value.
+     * @throw std::domain_error if the tag is not TT_INT.
      */
 
     int32_t  getInt()    const { checkType(TT_INT);    return value_.i32; }
     /**
-     * @brief Returns a mutable reference to the int value.
-     * @throws std::domain_error if the tag is not TT_INT.
+     * @brief Return a mutable reference to the int value.
+     * @throw std::domain_error if the tag is not TT_INT.
      */
     int32_t& getInt()          { checkType(TT_INT);    return value_.i32; }
     /**
-     * @brief Returns the long value.
-     * @throws std::domain_error if the tag is not TT_LONG.
+     * @brief Return the long value.
+     * @throw std::domain_error if the tag is not TT_LONG.
      */
 
     int64_t  getLong()   const { checkType(TT_LONG);   return value_.i64; }
     /**
-     * @brief Returns a mutable reference to the long value.
-     * @throws std::domain_error if the tag is not TT_LONG.
+     * @brief Return a mutable reference to the long value.
+     * @throw std::domain_error if the tag is not TT_LONG.
      */
     int64_t& getLong()         { checkType(TT_LONG);   return value_.i64; }
-    /**
-     * @brief Returns the float value.
-     * @throws std::domain_error if the tag is not TT_FLOAT.
-     */
 
+    /**
+     * @brief Return the integer value.
+     * @throw std::domain_error if the tag type is not integer.
+     */
+    int64_t getInteger() const
+    {
+        switch (type_)
+        {
+            case TT_BYTE:  return static_cast<int64_t>(value_.i8);
+            case TT_SHORT: return static_cast<int64_t>(value_.i16);
+            case TT_INT:   return static_cast<int64_t>(value_.i32);
+            case TT_LONG:  return static_cast<int64_t>(value_.i64);
+            default: throw std::domain_error("nbt::BasicTag: tag type mismatch");
+        }
+    }
+
+    /**
+     * @brief Return the float value.
+     * @throw std::domain_error if the tag is not TT_FLOAT.
+     */
     float    getFloat()  const { checkType(TT_FLOAT);  return value_.f32; }
     /**
-     * @brief Returns a mutable reference to the float value.
-     * @throws std::domain_error if the tag is not TT_FLOAT.
+     * @brief Return a mutable reference to the float value.
+     * @throw std::domain_error if the tag is not TT_FLOAT.
      */
     float&   getFloat()        { checkType(TT_FLOAT);  return value_.f32; }
     /**
-     * @brief Returns the double value.
-     * @throws std::domain_error if the tag is not TT_DOUBLE.
+     * @brief Return the double value.
+     * @throw std::domain_error if the tag is not TT_DOUBLE.
      */
 
     double   getDouble() const { checkType(TT_DOUBLE); return value_.f64; }
     /**
-     * @brief Returns a mutable reference to the double value.
-     * @throws std::domain_error if the tag is not TT_DOUBLE.
+     * @brief Return a mutable reference to the double value.
+     * @throw std::domain_error if the tag is not TT_DOUBLE.
      */
     double&  getDouble()       { checkType(TT_DOUBLE); return value_.f64; }
 
+
     /**
-     * @brief Returns a const reference to the string value.
-     * @throws std::domain_error if not TT_STRING.
+     * @brief Return the float-point value.
+     * @throw std::domain_error if the tag type is not float point.
+     */
+    double   getFloatPoint() const
+    {
+        switch (type_)
+        {
+            case TT_FLOAT:  return static_cast<double>(value_.f32);
+            case TT_DOUBLE: return static_cast<double>(value_.f64);
+            default: throw std::domain_error("nbt::BasicTag: tag type mismatch");
+        }
+    }
+
+    /**
+     * @brief Return a const reference to the string value.
+     * @throw std::domain_error if not TT_STRING.
      */
     const StringT& getString() const
     { checkType(TT_STRING); return *static_cast<StringT*>(value_.ptr); }
     /**
-     * @brief Returns a mutable reference to the string value.
-     * @throws std::domain_error if not TT_STRING.
+     * @brief Return a mutable reference to the string value.
+     * @throw std::domain_error if not TT_STRING.
      */
     StringT& getString()
     { checkType(TT_STRING); return *static_cast<StringT*>(value_.ptr); }
 
     /**
-     * @brief Returns a const reference to the byte array.
-     * @throws std::domain_error if not TT_BYTE_ARRAY.
+     * @brief Return a const reference to the byte array.
+     * @throw std::domain_error if not TT_BYTE_ARRAY.
      */
     const ByteArrayT& getByteArray() const
     { checkType(TT_BYTE_ARRAY); return *static_cast<ByteArrayT*>(value_.ptr); }
     /**
-     * @brief Returns a mutable reference to the byte array.
-     * @throws std::domain_error if not TT_BYTE_ARRAY.
+     * @brief Return a mutable reference to the byte array.
+     * @throw std::domain_error if not TT_BYTE_ARRAY.
      */
     ByteArrayT& getByteArray()
     { checkType(TT_BYTE_ARRAY); return *static_cast<ByteArrayT*>(value_.ptr); }
 
     /**
-     * @brief Returns a const reference to the int array.
-     * @throws std::domain_error if not TT_INT_ARRAY.
+     * @brief Return a const reference to the int array.
+     * @throw std::domain_error if not TT_INT_ARRAY.
      */
     const IntArrayT& getIntArray() const
     { checkType(TT_INT_ARRAY); return *static_cast<IntArrayT*>(value_.ptr); }
     /**
-     * @brief Returns a mutable reference to the int array.
-     * @throws std::domain_error if not TT_INT_ARRAY.
+     * @brief Return a mutable reference to the int array.
+     * @throw std::domain_error if not TT_INT_ARRAY.
      */
     IntArrayT& getIntArray()
     { checkType(TT_INT_ARRAY); return *static_cast<IntArrayT*>(value_.ptr); }
 
     /**
-     * @brief Returns a const reference to the long array.
-     * @throws std::domain_error if not TT_LONG_ARRAY.
+     * @brief Return a const reference to the long array.
+     * @throw std::domain_error if not TT_LONG_ARRAY.
      */
     const LongArrayT& getLongArray() const
     { checkType(TT_LONG_ARRAY); return *static_cast<LongArrayT*>(value_.ptr); }
     /**
-     * @brief Returns a mutable reference to the long array.
-     * @throws std::domain_error if not TT_LONG_ARRAY.
+     * @brief Return a mutable reference to the long array.
+     * @throw std::domain_error if not TT_LONG_ARRAY.
      */
     LongArrayT& getLongArray()
     { checkType(TT_LONG_ARRAY); return *static_cast<LongArrayT*>(value_.ptr); }
 
     /**
-     * @brief Returns a const reference to the list.
-     * @throws std::domain_error if not TT_LIST.
+     * @brief Return a const reference to the list.
+     * @throw std::domain_error if not TT_LIST.
      */
     const ListT& getList() const
     { checkType(TT_LIST); return *static_cast<ListT*>(value_.ptr); }
     /**
-     * @brief Returns a mutable reference to the list.
-     * @throws std::domain_error if not TT_LIST.
+     * @brief Return a mutable reference to the list.
+     * @throw std::domain_error if not TT_LIST.
      */
     ListT& getList()
     { checkType(TT_LIST); return *static_cast<ListT*>(value_.ptr); }
 
     /**
-     * @brief Returns a const reference to the compound map.
-     * @throws std::domain_error if not TT_COMPOUND.
+     * @brief Return a const reference to the compound map.
+     * @throw std::domain_error if not TT_COMPOUND.
      */
     const CompoundT& getCompound() const
     { checkType(TT_COMPOUND); return *static_cast<CompoundT*>(value_.ptr); }
     /**
-     * @brief Returns a mutable reference to the compound map.
-     * @throws std::domain_error if not TT_COMPOUND.
+     * @brief Return a mutable reference to the compound map.
+     * @throw std::domain_error if not TT_COMPOUND.
      */
     CompoundT& getCompound()
     { checkType(TT_COMPOUND); return *static_cast<CompoundT*>(value_.ptr); }
 
     /**
-     * @brief Returns the payload cast to type T.
+     * @brief Return the payload cast to type T.
      * @tparam T One of the supported native or container types.
-     * @throws std::domain_error if the tag type does not match T.
+     * @throw std::domain_error if the tag type does not match T.
      */
     template<typename T>
     T get() const
     {
-        return detail::TagGetter<T, BasicTagType>::get(*this);
+        return details::TagGetter<T, BasicTagType>::get(*this);
     }
     /**
-     * @brief Returns a mutable reference to the payload cast to type T.
+     * @brief Return a mutable reference to the payload cast to type T.
      * @tparam T One of the supported native or container types.
-     * @throws std::domain_error if the tag type does not match T.
+     * @throw std::domain_error if the tag type does not match T.
      */
     template<typename T>
     T& get()
     {
-        return detail::TagGetter<T, BasicTagType>::getRef(*this);
+        return details::TagGetter<T, BasicTagType>::getRef(*this);
     }
 
     // ===========================
@@ -728,8 +806,8 @@ public:
     // =================
 
     /**
-     * @brief Returns the element type of a TT_LIST tag.
-     * @throws std::domain_error if the tag is not TT_LIST.
+     * @brief Return the element type of a TT_LIST tag.
+     * @throw std::domain_error if the tag is not TT_LIST.
      */
     TagType listItemType() const
     {
@@ -742,8 +820,8 @@ public:
     // ===========
 
     /**
-     * @brief Returns the number of elements in the tag's container.
-     * @details Returns 0 for non-container types (scalars, TT_END).
+     * @brief Return the number of elements in the tag's container.
+     * @details Return 0 for non-container types (scalars, TT_END).
      */
     size_type size() const noexcept
     {
@@ -759,7 +837,7 @@ public:
         }
     }
 
-    /** @brief Returns true when the container is empty or the tag is a scalar. */
+    /** @brief Return true when the container is empty or the tag is a scalar. */
     bool empty() const noexcept { return size() == 0; }
 
     // =================
@@ -780,7 +858,7 @@ public:
         return (*static_cast<const ListT*>(value_.ptr))[idx];
     }
 
-    /** @brief Subscript access for TT_COMPOUND tags; inserts a default-constructed tag if the key is absent. */
+    /** @brief Subscript access for TT_COMPOUND tags; insert a default-constructed tag if the key is absent. */
     reference operator[](const StringT& key)
     {
         checkType(TT_COMPOUND);
@@ -789,7 +867,7 @@ public:
 
     /**
      * @brief Subscript access for TT_COMPOUND tags (const overload).
-     * @throws std::out_of_range if the key is not found.
+     * @throw std::out_of_range if the key is not found.
      */
     const_reference operator[](const StringT& key) const
     {
@@ -803,7 +881,7 @@ public:
 
     /**
      * @brief Bounds-checked index access for TT_LIST tags.
-     * @throws std::out_of_range if idx is out of range.
+     * @throw std::out_of_range if idx is out of range.
      */
     reference at(size_type idx)
     {
@@ -816,7 +894,7 @@ public:
 
     /**
      * @brief Bounds-checked index access for TT_LIST tags (const overload).
-     * @throws std::out_of_range if idx is out of range.
+     * @throw std::out_of_range if idx is out of range.
      */
     const_reference at(size_type idx) const
     {
@@ -829,7 +907,7 @@ public:
 
     /**
      * @brief Bounds-checked key access for TT_COMPOUND tags.
-     * @throws std::out_of_range if the key is not found.
+     * @throw std::out_of_range if the key is not found.
      */
     reference at(const StringT& key)
     {
@@ -843,7 +921,7 @@ public:
 
     /**
      * @brief Bounds-checked key access for TT_COMPOUND tags (const overload).
-     * @throws std::out_of_range if the key is not found.
+     * @throw std::out_of_range if the key is not found.
      */
     const_reference at(const StringT& key) const
     {
@@ -856,8 +934,8 @@ public:
     }
 
     /**
-     * @brief Returns a reference to the first element of a TT_LIST tag.
-     * @throws std::out_of_range if the list is empty.
+     * @brief Return a reference to the first element of a TT_LIST tag.
+     * @throw std::out_of_range if the list is empty.
      */
     reference front()
     {
@@ -869,8 +947,8 @@ public:
     }
 
     /**
-     * @brief Returns a const reference to the first element of a TT_LIST tag.
-     * @throws std::out_of_range if the list is empty.
+     * @brief Return a const reference to the first element of a TT_LIST tag.
+     * @throw std::out_of_range if the list is empty.
      */
     const_reference front() const
     {
@@ -882,8 +960,8 @@ public:
     }
 
     /**
-     * @brief Returns a reference to the last element of a TT_LIST tag.
-     * @throws std::out_of_range if the list is empty.
+     * @brief Return a reference to the last element of a TT_LIST tag.
+     * @throw std::out_of_range if the list is empty.
      */
     reference back()
     {
@@ -895,8 +973,8 @@ public:
     }
 
     /**
-     * @brief Returns a const reference to the last element of a TT_LIST tag.
-     * @throws std::out_of_range if the list is empty.
+     * @brief Return a const reference to the last element of a TT_LIST tag.
+     * @throw std::out_of_range if the list is empty.
      */
     const_reference back() const
     {
@@ -911,7 +989,7 @@ public:
     // > Lookup for compound
     // ======================
 
-    /** @brief Returns true when the tag is TT_COMPOUND and contains the given key. */
+    /** @brief Return true when the tag is TT_COMPOUND and contains the given key. */
     bool contains(const StringT& key) const noexcept
     {
         if (!isCompound() || !value_.ptr) return false;
@@ -923,8 +1001,8 @@ public:
     // ============
 
     /**
-     * @brief Returns an iterator to the first element.
-     * @throws std::domain_error if the tag is not TT_LIST or TT_COMPOUND.
+     * @brief Return an iterator to the first element.
+     * @throw std::domain_error if the tag is not TT_LIST or TT_COMPOUND.
      */
     iterator begin()
     {
@@ -933,8 +1011,8 @@ public:
         throw std::domain_error("nbt::BasicTag::begin(): tag is not a list or compound");
     }
     /**
-     * @brief Returns an iterator past the last element.
-     * @throws std::domain_error if the tag is not TT_LIST or TT_COMPOUND.
+     * @brief Return an iterator past the last element.
+     * @throw std::domain_error if the tag is not TT_LIST or TT_COMPOUND.
      */
     iterator end()
     {
@@ -942,13 +1020,13 @@ public:
         if (isCompound()) return iterator(static_cast<CompoundT*>(value_.ptr)->end());
         throw std::domain_error("nbt::BasicTag::end(): tag is not a list or compound");
     }
-    /** @brief Returns a const iterator to the first element (calls cbegin()). */
+    /** @brief Return a const iterator to the first element (calls cbegin()). */
     const_iterator begin() const { return cbegin(); }
-    /** @brief Returns a const iterator past the last element (calls cend()). */
+    /** @brief Return a const iterator past the last element (calls cend()). */
     const_iterator end()   const { return cend(); }
     /**
-     * @brief Returns a const iterator to the first element.
-     * @throws std::domain_error if the tag is not TT_LIST or TT_COMPOUND.
+     * @brief Return a const iterator to the first element.
+     * @throw std::domain_error if the tag is not TT_LIST or TT_COMPOUND.
      */
     const_iterator cbegin() const
     {
@@ -957,8 +1035,8 @@ public:
         throw std::domain_error("nbt::BasicTag::cbegin(): tag is not a list or compound");
     }
     /**
-     * @brief Returns a const iterator past the last element.
-     * @throws std::domain_error if the tag is not TT_LIST or TT_COMPOUND.
+     * @brief Return a const iterator past the last element.
+     * @throw std::domain_error if the tag is not TT_LIST or TT_COMPOUND.
      */
     const_iterator cend() const
     {
@@ -968,15 +1046,15 @@ public:
     }
 
     /**
-     * @brief Returns a reference to the underlying CompoundT for key-value iteration.
-     * @throws std::domain_error if the tag is not TT_COMPOUND.
+     * @brief Return a reference to the underlying CompoundT for key-value iteration.
+     * @throw std::domain_error if the tag is not TT_COMPOUND.
      * @example `for (const auto& kv : tag.items()) { ... }`
      */
     CompoundT& items()
     { checkType(TT_COMPOUND); return *static_cast<CompoundT*>(value_.ptr); }
     /**
-     * @brief Returns a const reference to the underlying CompoundT for key-value iteration.
-     * @throws std::domain_error if not TT_COMPOUND.
+     * @brief Return a const reference to the underlying CompoundT for key-value iteration.
+     * @throw std::domain_error if not TT_COMPOUND.
      */
     const CompoundT& items() const
     { checkType(TT_COMPOUND); return *static_cast<const CompoundT*>(value_.ptr); }
@@ -986,8 +1064,10 @@ public:
     // ============
 
     /**
-     * @brief Appends a tag to a TT_LIST tag; infers the element type on the first call.
-     * @throws std::domain_error on type mismatch.
+     * @brief Append a tag to a TT_LIST tag; infer the element type on the first call.
+     * @note For basic types, the inserted tag can be implicitly converted to
+     *       a tag that conforms to the list element type.
+     * @throw std::domain_error on type mismatch.
      */
     void pushBack(BasicTag val)
     {
@@ -996,50 +1076,43 @@ public:
 
         if (listItemType_ == TT_END)
             listItemType_ = val.type_;
+        else if (val.isInteger() && details::isInteger(listItemType_))
+            val = std::move(convertInteger(std::move(val), listItemType_));
+        else if (val.isFloatPoint() && details::isFloatPoint(listItemType_))
+            val = std::move(convertFloatPoint(std::move(val), listItemType_));
         else if (val.type_ != listItemType_)
             throw std::domain_error("nbt::BasicTag::pushBack(): element type does not match list item type");
 
         l.push_back(std::move(val));
     }
 
-    /** @brief Constructs a tag in-place at the back of a TT_LIST tag; infers the element type on the first call. */
-    template<typename... Args>
-    reference emplaceBack(Args&&... args)
-    {
-        checkType(TT_LIST);
-        auto& l = *static_cast<ListT*>(value_.ptr);
-        l.emplace_back(std::forward<Args>(args)...);
-        TagType newType = l.back().type_;
-        if (listItemType_ == TT_END)
-            listItemType_ = newType;
-        else if (newType != listItemType_)
-        {
-            l.pop_back();
-            throw std::domain_error("nbt::BasicTag::emplaceBack(): element type does not match list item type");
-        }
-        return l.back();
-    }
-
     /**
-     * @brief Inserts a tag at the specified index in a TT_LIST tag.
-     * @throws std::out_of_range if idx is out of range.
-     * @throws std::domain_error if the tag type does not match the list element type.
+     * @brief Insert a tag at the specified index in a TT_LIST tag.
+     * @throw std::out_of_range if idx is out of range.
+     * @throw std::domain_error if the tag type does not match the list element type.
      */
     void insert(size_type idx, BasicTag val)
     {
         checkType(TT_LIST);
         auto& l = *static_cast<ListT*>(value_.ptr);
+
         if (idx > l.size())
             throw std::out_of_range("nbt::BasicTag::insert(): index out of range");
+
         if (listItemType_ == TT_END)
             listItemType_ = val.type_;
+        else if (val.isInteger() && details::isInteger(listItemType_))
+            val = std::move(convertInteger(std::move(val), listItemType_));
+        else if (val.isFloatPoint() && details::isFloatPoint(listItemType_))
+            val = std::move(convertFloatPoint(std::move(val), listItemType_));
         else if (val.type_ != listItemType_)
-            throw std::domain_error("nbt::BasicTag::insert(): element type mismatch");
+            throw std::domain_error("nbt::BasicTag::pushBack(): element type does not match list item type");
+
         l.insert(l.begin() + static_cast<typename ListT::difference_type>(idx), std::move(val));
     }
 
     /**
-     * @brief Inserts a key-value entry into a TT_COMPOUND tag.
+     * @brief Insert a key-value entry into a TT_COMPOUND tag.
      * @return true if the entry was inserted; false if the key already existed.
      */
     bool insert(const StringT& key, BasicTag val)
@@ -1049,7 +1122,7 @@ public:
     }
 
     /**
-     * @brief Inserts a key-value pair into a TT_COMPOUND tag.
+     * @brief Insert a key-value pair into a TT_COMPOUND tag.
      * @return true if the entry was inserted; false if the key already existed.
      */
     bool insert(const std::pair<const StringT, BasicTag>& kv)
@@ -1073,9 +1146,9 @@ public:
     }
 
     /**
-     * @brief Erases the element at the specified index from a TT_LIST or typed array tag.
-     * @throws std::out_of_range if idx is out of range.
-     * @throws std::domain_error if the tag is not a list or array.
+     * @brief Erase the element at the specified index from a TT_LIST or typed array tag.
+     * @throw std::out_of_range if idx is out of range.
+     * @throw std::domain_error if the tag is not a list or array.
      */
     void erase(size_type idx)
     {
@@ -1115,7 +1188,7 @@ public:
     }
 
     /**
-     * @brief Erases the entry with the specified key from a TT_COMPOUND tag.
+     * @brief Erase the entry with the specified key from a TT_COMPOUND tag.
      * @return Number of entries removed (0 or 1).
      */
     size_type erase(const StringT& key)
@@ -1124,7 +1197,7 @@ public:
         return static_cast<CompoundT*>(value_.ptr)->erase(key);
     }
 
-    /** @brief Clears all elements in the tag's container; resets listItemType_ to TT_END for lists. */
+    /** @brief Clear all elements in the tag's container; reset listItemType_ to TT_END for lists. */
     void clear() noexcept
     {
         switch (type_)
@@ -1147,7 +1220,7 @@ public:
     // =======================
 
     /**
-     * @brief Parses a named root tag from a binary stream.
+     * @brief Parse a named root tag from a binary stream.
      * @param is        Input stream positioned at the start of a named tag.
      * @param bigEndian True for big-endian (Java Edition); false for little-endian (Bedrock Edition).
      * @return Pair of {root_name, root_tag}.
@@ -1173,7 +1246,7 @@ public:
     }
 
     /**
-     * @brief Parses a named root tag from a file.
+     * @brief Parse a named root tag from a file.
      * @param filepath   Path to the binary NBT file.
      * @param bigEndian  True for big-endian; false for little-endian.
      * @param headerSkip Number of bytes to skip at the start of the file (e.g., 8 for some Bedrock map files).
@@ -1189,7 +1262,7 @@ public:
     }
 
     /**
-     * @brief Serializes this tag as a named root tag to a binary stream.
+     * @brief Serialize this tag as a named root tag to a binary stream.
      * @param os        Output stream.
      * @param bigEndian True for big-endian; false for little-endian.
      * @param name      Root tag name (empty string is valid).
@@ -1200,7 +1273,7 @@ public:
     }
 
     /**
-     * @brief Serializes this tag as a named root tag to a file.
+     * @brief Serialize this tag as a named root tag to a file.
      * @param filepath  Destination file path.
      * @param bigEndian True for big-endian; false for little-endian.
      * @param name      Root tag name (empty string is valid).
@@ -1215,7 +1288,7 @@ public:
 
 #ifdef MCNBT_HAS_ZLIB
     /**
-     * @brief Serializes and gzip-compresses this tag to a binary stream.
+     * @brief Serialize and gzip-compresses this tag to a binary stream.
      * @param os        Output stream.
      * @param bigEndian True for big-endian; false for little-endian.
      * @param name      Root tag name.
@@ -1228,7 +1301,7 @@ public:
     }
 
     /**
-     * @brief Serializes and gzip-compresses this tag to a file.
+     * @brief Serialize and gzip-compresses this tag to a file.
      * @param filepath  Destination file path.
      * @param bigEndian True for big-endian; false for little-endian.
      * @param name      Root tag name.
@@ -1242,12 +1315,12 @@ public:
     }
 #endif
 
-    // =============================
-    // > SNBT (text representation)
-    // =============================
+    // =======
+    // > SNBT
+    // =======
 
     /**
-     * @brief Serializes this tag to an SNBT string.
+     * @brief Serialize this tag to an SNBT string.
      * @param indent Spaces per indentation level.
      *               Negative: fully compact (no newlines, no spaces).
      *               Zero: newlines but no indentation or extra spaces.
@@ -1259,9 +1332,9 @@ public:
     }
 
     /**
-     * @brief Parses an SNBT string and returns the corresponding tag.
+     * @brief Parse an SNBT string and returns the corresponding tag.
      * @param s SNBT-formatted string.
-     * @throws std::runtime_error on malformed input.
+     * @throw std::runtime_error on malformed input.
      */
     static BasicTagType fromSnbt(const StringT& s)
     {
@@ -1277,7 +1350,7 @@ public:
     // > Swap
     // =======
 
-    /** @brief Swaps the contents of this tag and @p other without allocating. */
+    /** @brief Swap the contents of this tag and @p other without allocating. */
     void swap(BasicTagType& other) noexcept
     {
         using std::swap;
@@ -1370,6 +1443,36 @@ private:
                 value_.i64 = 0;
                 break;
         }
+    }
+
+    static BasicTag convertInteger(BasicTag val, TagType type)
+    {
+        if (val.type_ == type)
+            return val;
+        switch (type)
+        {
+            case TT_BYTE:  val.value_.i8  = static_cast<int8_t>(val.getInteger());  break;
+            case TT_SHORT: val.value_.i16 = static_cast<int16_t>(val.getInteger()); break;
+            case TT_INT:   val.value_.i32 = static_cast<int64_t>(val.getInteger()); break;
+            case TT_LONG:  val.value_.i64 = static_cast<int64_t>(val.getInteger()); break;
+            default: throw std::domain_error("nbt::BasicTag: tag type mismatch");
+        }
+        val.type_  = type;
+        return val;
+    }
+
+    static BasicTag convertFloatPoint(BasicTag val, TagType type)
+    {
+        if (val.type_ == type)
+            return val;
+        switch (type)
+        {
+            case TT_FLOAT:  val.value_.f32 = static_cast<float>(val.getFloatPoint());  break;
+            case TT_DOUBLE: val.value_.f64 = static_cast<double>(val.getFloatPoint()); break;
+            default: throw std::domain_error("nbt::BasicTag: tag type mismatch");
+        }
+        val.type_ = type;
+        return val;
     }
 
     // ===============
@@ -1981,12 +2084,12 @@ private:
     }
 };
 
-// ============
-// > TagGetter
-// ============
-
-namespace detail
+namespace details
 {
+
+// =============
+// > Tag getter
+// =============
 
 template<typename T, typename BasicTagType>
 struct TagGetter
@@ -2053,7 +2156,7 @@ struct TagGetter<typename BasicTagType::CompoundT, BasicTagType>
     static typename BasicTagType::CompoundT& getRef(BasicTagType& t)    { return t.getCompound(); }
 };
 
-} // namespace detail
+} // namespace details
 
 // ===========================
 // > Convenience type aliases
