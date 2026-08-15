@@ -12,7 +12,7 @@ trim_trailing_whitespace = true
 [Makefile]
 indent_style = tab
 
-[*.js,*.ts,*.html,*.htm,*.css,*.vue,*.json,*.jsonc,*.toml,*.xml,*.yaml,*.yml]
+[{*.js,*.ts,*.html,*.htm,*.css,*.vue,*.json,*.jsonc,*.toml,*.xml,*.yaml,*.yml}]
 indent_size = 2
 tab_width = 2
 
