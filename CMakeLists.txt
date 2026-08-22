@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 默认使用 Release 构建
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build with Release when not build type be specified." FORCE)
 endif()
 
 ###############
@@ -15,6 +15,9 @@ endif()
 
 include(FetchContent)
 set(3RDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty)
+
+# 配置 OpenCV 库
+find_package(OpenCV REQUIRED COMPONENTS core imgcodecs videoio)
 
 # 配置 MC NBT 库
 FetchContent_Declare(
