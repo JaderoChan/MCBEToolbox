@@ -60,4 +60,4 @@ inline bool operator>=(const Version& lhs, const Version& rhs)
 Version parseVersionString(std::string_view str);
 
 /** 获取字符串形式的版本号。 */
-std::string dumpVersionString(const Version& version);
+std::string dumpVersionString(const Version& vers);

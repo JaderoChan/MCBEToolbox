@@ -4,6 +4,8 @@
 
 Version parseVersionString(std::string_view str)
 {
+    if (str.empty()) return Version{0, 0, 0};
+
     const int major = std::atoi(str.data());
 
     std::size_t pos = str.find('.') + 1;
@@ -22,10 +24,10 @@ Version parseVersionString(std::string_view str)
         static_cast<unsigned char>(patch)};
 }
 
-std::string dumpVersionString(const Version& version)
+std::string dumpVersionString(const Version& vers)
 {
     return
-        std::to_string(static_cast<int>(version.major)) + "." +
-        std::to_string(static_cast<int>(version.minor)) + "." +
-        std::to_string(static_cast<int>(version.patch));
+        std::to_string(static_cast<int>(vers.major)) + "." +
+        std::to_string(static_cast<int>(vers.minor)) + "." +
+        std::to_string(static_cast<int>(vers.patch));
 }
