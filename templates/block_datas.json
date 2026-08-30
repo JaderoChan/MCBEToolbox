@@ -3,7 +3,7 @@
   "block_id": {
     // 英文名
     "name":                         "air",
-    "nameTranslations": {
+    "name_translations": {
       // 中文名（可选，默认为英文名）
       "zh":                         "空气"
     },
@@ -35,6 +35,9 @@
         }
       },
       "0.1.0": {
+        "structure_id":             "minecraft:air",
+        // 指令兼容 ID
+        "command_id":               "minecraft:air",
         "colors": {
           "up":    "",
           "down":  "",
@@ -47,6 +50,9 @@
         }
       },
       "0.2.0": {
+        "structure_id":             "minecraft:air",
+        // 指令兼容 ID
+        "command_id":               "minecraft:air",
         "colors": {
           "up":    "",
           "down":  "",
