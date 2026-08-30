@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 
 #include "version.hpp"
 #include "block_attribute.hpp"
@@ -24,7 +25,5 @@ struct BlockData
 };
 
 // std::map<std::string, BlockData> {Block ID : Block Data}
-std::map<std::string, BlockData> parseBlockDatasJson(const std::string& jsonStr);
-
-// std::map<std::string, BlockData> {Block ID : Block Data}
-std::string dumpBlockDatasJson(const std::map<std::string, BlockData>& blockDatas);
+/** @throw std::runtime_error if parsing fails */
+std::map<std::string, BlockData> parseBlockDatasJson(std::string_view json);
