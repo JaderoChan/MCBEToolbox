@@ -25,5 +25,7 @@ struct BlockData
 };
 
 // std::map<std::string, BlockData> {Block ID : Block Data}
+using BlockDatas = std::map<std::string, BlockData>;
+
 /** @throw std::runtime_error if parsing fails */
-std::map<std::string, BlockData> parseBlockDatasJson(std::string_view json);
+BlockDatas parseBlockDatasJson(std::string_view json);

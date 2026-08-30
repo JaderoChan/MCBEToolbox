@@ -170,13 +170,13 @@ static BlockDataDetail parseBlockDataDetailJson(const nlohmann::json& j)
     return bdd;
 }
 
-static std::map<std::string, BlockData> parseBlockDatasJsonHelper(std::string_view json)
+static BlockDatas parseBlockDatasJsonHelper(std::string_view json)
 {
     const nlohmann::json j = nlohmann::json::parse(json, nullptr, true, true);
     if (j.is_discarded() || !j.is_object())
         throw std::runtime_error("illegal json data or root item is not 'object' type");
 
-    std::map<std::string, BlockData> bds;
+    BlockDatas bds;
     for (const auto& [key, value] : j.items())
     {
         // Skip item which is not 'object' type.
@@ -215,7 +215,7 @@ static std::map<std::string, BlockData> parseBlockDatasJsonHelper(std::string_vi
     return bds;
 }
 
-std::map<std::string, BlockData> parseBlockDatasJson(std::string_view json)
+BlockDatas parseBlockDatasJson(std::string_view json)
 {
     try { return parseBlockDatasJsonHelper(json); }
     catch (std::runtime_error& e)
