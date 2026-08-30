@@ -172,7 +172,7 @@ static BlockDataDetail parseBlockDataDetailJson(const nlohmann::json& j)
 
 static std::map<std::string, BlockData> parseBlockDatasJsonHelper(std::string_view json)
 {
-    const nlohmann::json j = nlohmann::json::parse(json);
+    const nlohmann::json j = nlohmann::json::parse(json, nullptr, true, true);
     if (j.is_discarded() || !j.is_object())
         throw std::runtime_error("illegal json data or root item is not 'object' type");
 
