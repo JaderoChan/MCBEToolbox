@@ -5,7 +5,7 @@
 /** 描述方块各个面的材质文件路径与颜色 */
 struct BlockSurface
 {
-    struct RGB
+    struct Rgb
     {
         unsigned char r, g, b;
     };
@@ -17,6 +17,6 @@ struct BlockSurface
 
     struct
     {
-        RGB up, down, north, south, east, west;
+        Rgb up, down, north, south, east, west;
     } colors;
 };
