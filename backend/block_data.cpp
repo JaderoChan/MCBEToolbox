@@ -225,4 +225,52 @@ BlockDatas parseBlockDatasJson(std::string_view json)
     { throw std::runtime_error("Invalid 'block data' json, " + std::string(e.what())); }
 }
 
+BlockDataDetails filterBlockDatas(
+    const BlockDatas& blockDatas,
+    Version           targetVersion)
+{
+    BlockDataDetails bdds;
+    for (const auto& [id, bd] : blockDatas)
+    {
+        if (bd.joinedVersion >= targetVersion)
+        {
+            for (const auto& [vers, bdd] : bd.datas)
+            {
+                if (vers >= targetVersion)
+                {
+                    bdds[id] = bdd;
+                    break;
+                }
+            }
+        }
+    }
+    return bdds;
+}
+
+BlockDataDetails filterBlockDataDetails(
+    const BlockDataDetails& blockDataDetails,
+    BlockAttributes         targetAttributes)
+{
+    BlockDataDetails bdds;
+    for (const auto& [id, bdd] : blockDataDetails)
+    {
+        if (bdd.attributes == (bdd.attributes & targetAttributes))
+            bdds[id] = bdd;
+    }
+    return bdds;
+}
+
+BlockDataDetails filterBlockDataDetails(
+    const BlockDataDetails&          blockDataDetails,
+    std::unordered_set<std::string>& excludes)
+{
+    BlockDataDetails bdds;
+    for (const auto& [id, bdd] : blockDataDetails)
+    {
+        if (excludes.count(id) == 0)
+            bdds[id] = bdd;
+    }
+    return bdds;
+}
+
 #undef THROW_KEY_NOT_FOUND_ERROR
