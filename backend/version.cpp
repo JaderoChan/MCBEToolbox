@@ -16,7 +16,7 @@ Version parseVersionString(std::string_view str)
 
     std::string_view majorStr = str.substr(0, pos1);
     std::string_view minorStr = str.substr(pos1 + 1, pos2 - pos1 - 1);
-    std::string_view patchStr = str.substr(pos2);
+    std::string_view patchStr = str.substr(pos2 + 1);
     const int major = std::stoi(std::string(majorStr));
     const int minor = std::stoi(std::string(minorStr));
     const int patch = std::stoi(std::string(patchStr));
