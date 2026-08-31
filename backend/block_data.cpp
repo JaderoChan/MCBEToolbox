@@ -6,7 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #define THROW_KEY_NOT_FOUND_ERROR(_key, _type) \
-throw std::runtime_error("key '" _key "':'" _type "' not found")
+throw std::runtime_error("key '" _key ":" _type "' not found")
 
 #define CHECK_KEY_WITH_CORRECT_TYPE(_obj, _key, _type) \
 do { if (!_obj.contains(_key) || _obj[_key].type() != nlohmann::json::value_t::_type) \
