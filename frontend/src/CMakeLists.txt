@@ -42,7 +42,7 @@ target_include_directories(
 target_link_libraries(
     ${PROJECT_NAME} PRIVATE
     mcnbt::mcnbt
-    easy_translate::easy_translate
+    easy_translate
     MCBEToolBoxBackend
 )
 
@@ -50,14 +50,9 @@ target_link_libraries(
 # 配置生成目标 #
 ###############
 
-# 如果为 MSVC 编译器，显式指定编码，防止乱码情况。
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
-endif()
-
 # 指定为 GUI 应用程序。
 if(WIN32)
-    option(KEEP_TERMINAL "Keep terminal window" OFF)
+    option(KEEP_TERMINAL "Keep terminal window" ON)
     set_target_properties(
         ${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE $<NOT:$<BOOL:${KEEP_TERMINAL}>>
