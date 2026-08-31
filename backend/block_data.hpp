@@ -32,7 +32,10 @@ using BlockDataDetails = std::map<std::string, BlockDataDetail>;
 // {Block ID : Block Data}
 using BlockDatas       = std::map<std::string, BlockData>;
 
-/** @throw std::runtime_error if parsing fails */
+/**
+ * @throw std::runtime_error
+ * @throw std::invalid_argument
+ */
 BlockDatas parseBlockDatasJson(std::string_view json);
 
 BlockDataDetails filterBlockDatas(
@@ -43,6 +46,16 @@ BlockDataDetails filterBlockDataDetails(
     const BlockDataDetails& blockDataDetails,
     BlockAttributes         targetAttributes);
 
-BlockDataDetails filterBlockDataDetails(
-    const BlockDataDetails&          blockDataDetails,
-    std::unordered_set<std::string>& excludes);
+template<typename V>
+std::map<std::string, V> excludeKeys(
+    const std::map<std::string, V>&        map,
+    const std::unordered_set<std::string>& keys)
+{
+    std::map<std::string, V> ret;
+    for (const auto& [k, v] : map)
+    {
+        if (keys.count(k) == 0)
+            ret[k] = v;
+    }
+    return ret;
+}

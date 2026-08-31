@@ -226,17 +226,4 @@ BlockDataDetails filterBlockDataDetails(
     return bdds;
 }
 
-BlockDataDetails filterBlockDataDetails(
-    const BlockDataDetails&          blockDataDetails,
-    std::unordered_set<std::string>& excludes)
-{
-    BlockDataDetails bdds;
-    for (const auto& [id, bdd] : blockDataDetails)
-    {
-        if (excludes.count(id) == 0)
-            bdds[id] = bdd;
-    }
-    return bdds;
-}
-
 #undef THROW_KEY_NOT_FOUND_ERROR
