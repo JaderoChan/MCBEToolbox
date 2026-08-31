@@ -1,7 +1,8 @@
 // 仅供预处理 block_datas 程序使用
 {
   "block_id_1": {                   // 与游戏内 ID 无关的方块 ID
-    "default_texture": "",          // 应用界面中展示的图标
+    "default_texture": "",          // 用于生成方块图和 GUI 中展示的方块图标
+    "default_color":   "",          // 用于生成方块图
     "0.0.0": {                      // 游戏版本号（格式：Major.Minor.Patch）
       "texture": "path/to/file",    // 各向同性方块的材质文件路径
       "color":   "#000000"          // 方块材质主题色（十六进制颜色值）
