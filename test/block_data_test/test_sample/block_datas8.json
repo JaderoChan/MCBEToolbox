@@ -1,8 +1,9 @@
 {
   "block_id": {
     "name":                         "air",
-    "joined_version":               "123",
+    "joined_version":               "1.2.3",
     "default_texture":              "",
+    "default_color":                "#000",
     "datas": {}
   }
 }

@@ -3,6 +3,7 @@
     "name":                         "air",
     "joined_version":               "123",
     "default_texture":              "",
+    "default_color":                "#000",
     "datas": {
       "0.0.0": {
         "structure_id":             "minecraft:air",
