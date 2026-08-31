@@ -22,6 +22,7 @@ struct BlockData
     Version                            joinedVersion;
     std::string                        name;             // English name
     std::string                        defaultTexture;   // Used to 'block image' and 'block icon' UI
+    Rgb                                defaultColor;     // Used to 'block image'
     std::map<std::string, std::string> nameTranslations; // {Language code : Name} Canbe empty
     std::map<Version, BlockDataDetail> datas;
 };

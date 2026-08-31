@@ -25,42 +25,6 @@ static BlockAttributes parseBlockAttributesJson(const nlohmann::json& j) noexcep
     return ba;
 }
 
-static inline int hexCharToInt(char c)
-{
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    throw std::invalid_argument("invalid hex character '" + std::string(1, c) + "'");
-}
-
-static BlockSurface::Rgb hexToRgb(std::string_view hex)
-{
-    if (hex.empty())
-        throw std::invalid_argument("invalid hex color string '" + std::string(hex) + "'");
-    if (hex[0] == '#')
-        hex = hex.substr(1);
-
-    BlockSurface::Rgb rgb;
-    if (hex.size() == 3)
-    {
-        rgb.r = hexCharToInt(hex[0]) * 16 + hexCharToInt(hex[0]);
-        rgb.g = hexCharToInt(hex[1]) * 16 + hexCharToInt(hex[1]);
-        rgb.b = hexCharToInt(hex[2]) * 16 + hexCharToInt(hex[2]);
-    }
-    else if (hex.size() == 6)
-    {
-        rgb.r = hexCharToInt(hex[0]) * 16 + hexCharToInt(hex[1]);
-        rgb.g = hexCharToInt(hex[2]) * 16 + hexCharToInt(hex[3]);
-        rgb.b = hexCharToInt(hex[4]) * 16 + hexCharToInt(hex[5]);
-    }
-    else
-    {
-        throw std::invalid_argument("invalid hex color string '" + std::string(hex) + "'");
-    }
-
-    return rgb;
-}
-
 static BlockSurface parseBlockSurfaceJson(const nlohmann::json& j)
 {
     assert(j.is_object());
@@ -71,7 +35,7 @@ static BlockSurface parseBlockSurfaceJson(const nlohmann::json& j)
     BlockSurface bs;
     if (j["colors"].is_string())
     {
-        const BlockSurface::Rgb color = hexToRgb(j["colors"]);
+        const Rgb color = hexToRgb(j["colors"]);
         bs.colors.up    = color;
         bs.colors.down  = color;
         bs.colors.north = color;
@@ -111,7 +75,7 @@ static BlockSurface parseBlockSurfaceJson(const nlohmann::json& j)
             CHECK_KEY_WITH_CORRECT_TYPE(colors,   "side", string);
             CHECK_KEY_WITH_CORRECT_TYPE(textures, "side", string);
 
-            const BlockSurface::Rgb color = hexToRgb(j["colors"]["side"]);
+            const Rgb color = hexToRgb(j["colors"]["side"]);
             bs.colors.north   = color;
             bs.colors.south   = color;
             bs.colors.east    = color;
@@ -187,9 +151,11 @@ static BlockDatas parseBlockDatasJsonHelper(std::string_view json)
         CHECK_KEY_WITH_CORRECT_TYPE(value, "name",            string);
         CHECK_KEY_WITH_CORRECT_TYPE(value, "joined_version",  string);
         CHECK_KEY_WITH_CORRECT_TYPE(value, "default_texture", string);
+        CHECK_KEY_WITH_CORRECT_TYPE(value, "default_color",   string);
         bd.name           = value["name"];
         bd.joinedVersion  = parseVersionString(value["joined_version"]);
         bd.defaultTexture = value["default_texture"];
+        bd.defaultColor   = hexToRgb(value["default_color"]);
 
         // Parse 'name_translations' filed, it is optional.
         if (value.contains("name_translations"))
@@ -222,7 +188,7 @@ BlockDatas parseBlockDatasJson(std::string_view json)
 {
     try { return parseBlockDatasJsonHelper(json); }
     catch (std::runtime_error& e)
-    { throw std::runtime_error("Invalid 'block data' json, " + std::string(e.what())); }
+    { throw std::runtime_error("invalid 'block data' json, " + std::string(e.what())); }
 }
 
 BlockDataDetails filterBlockDatas(
