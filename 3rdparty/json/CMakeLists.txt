@@ -1,6 +1,6 @@
-project(easy_translate VERSION 1.1.0 LANGUAGES CXX)
+project(json)
 
-add_library(${PROJECT_NAME} INTERFACE ./include/easy_translate.hpp)
+add_library(${PROJECT_NAME} INTERFACE ./include/nlohmann/json.hpp)
 
 target_include_directories(
     ${PROJECT_NAME} INTERFACE
