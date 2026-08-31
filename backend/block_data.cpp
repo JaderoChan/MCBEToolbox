@@ -210,7 +210,8 @@ static BlockDatas parseBlockDatasJsonHelper(std::string_view json)
             bd.datas[vers] = std::move(bdd);
         }
 
-        bds[key] = std::move(bd);
+        if (!bd.datas.empty())
+            bds[key] = std::move(bd);
     }
     return bds;
 }
