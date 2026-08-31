@@ -184,10 +184,12 @@ static BlockDatas parseBlockDatasJsonHelper(std::string_view json)
 
         BlockData bd{};
         // Parse 'name' and 'joined_version' fileds.
-        CHECK_KEY_WITH_CORRECT_TYPE(value, "name",           string);
-        CHECK_KEY_WITH_CORRECT_TYPE(value, "joined_version", string);
-        bd.name          = value["name"];
-        bd.joinedVersion = parseVersionString(value["joined_version"]);
+        CHECK_KEY_WITH_CORRECT_TYPE(value, "name",            string);
+        CHECK_KEY_WITH_CORRECT_TYPE(value, "joined_version",  string);
+        CHECK_KEY_WITH_CORRECT_TYPE(value, "default_texture", string);
+        bd.name           = value["name"];
+        bd.joinedVersion  = parseVersionString(value["joined_version"]);
+        bd.defaultTexture = value["default_texture"];
 
         // Parse 'name_translations' filed, it is optional.
         if (value.contains("name_translations"))

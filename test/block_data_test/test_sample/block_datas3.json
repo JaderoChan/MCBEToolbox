@@ -5,6 +5,7 @@
       "zh":                         "空气"
     },
     "joined_version":               "0.0.0",
+    "default_texture":              "",
     "datas": {
       "0.0.0": {
         "structure_id":             "minecraft:air",

@@ -9,6 +9,7 @@
     },
     // 加入游戏的版本（可选，默认为 0.0.0）
     "joined_version":               "0.0.0",
+    "default_texture":              "",
     "datas": {
       // 游戏版本号（格式：Major.Minor.Patch）
       "0.0.0": {
