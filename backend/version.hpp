@@ -54,7 +54,7 @@ inline bool operator>=(const Version& lhs, const Version& rhs)
 /**
  * 从格式为 “major.minor.patch” 的字符串中解析版本号。
  *
- * @return 解析失败或出错时返回 `Version{0, 0, 0}`。
+ * @throw invalid_argument
  */
 Version parseVersionString(std::string str);
 
