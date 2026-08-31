@@ -39,14 +39,14 @@
         // 指令兼容 ID
         "command_id":               "minecraft:air",
         "colors": {
-          "up":    "",
-          "down":  "",
-          "side":  ""
+          "up":                     "",
+          "down":                   "",
+          "side":                   ""
         },
         "textures": {
-          "up":    "",
-          "down":  "",
-          "side":  ""
+          "up":                     "",
+          "down":                   "",
+          "side":                   ""
         }
       },
       "0.2.0": {
@@ -54,20 +54,20 @@
         // 指令兼容 ID
         "command_id":               "minecraft:air",
         "colors": {
-          "up":    "",
-          "down":  "",
-          "north": "",
-          "south": "",
-          "east":  "",
-          "west":  ""
+          "up":                     "",
+          "down":                   "",
+          "north":                  "",
+          "south":                  "",
+          "east":                   "",
+          "west":                   ""
         },
         "textures": {
-          "up":    "",
-          "down":  "",
-          "north": "",
-          "south": "",
-          "east":  "",
-          "west":  ""
+          "up":                     "",
+          "down":                   "",
+          "north":                  "",
+          "south":                  "",
+          "east":                   "",
+          "west":                   ""
         }
       }
       // ...
