@@ -6,17 +6,17 @@ Version parseVersionString(std::string str)
 {
     if (str.empty()) return Version{0, 0, 0};
 
-    const int major = std::atoi(str.data());
+    const int major = atoi(str.data());
 
     std::size_t pos = str.find('.');
     if (pos == std::string::npos) return Version{};
     str = str.substr(pos + 1);
-    const int minor = std::atoi(str.data());
+    const int minor = atoi(str.data());
 
     pos = str.find('.');
     if (pos == std::string::npos) return Version{};
     str = str.substr(pos + 1);
-    const int patch = std::atoi(str.data());
+    const int patch = atoi(str.data());
 
     return Version{
         static_cast<unsigned char>(major),
