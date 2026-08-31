@@ -1,0 +1,28 @@
+{
+  "block_id": {
+    "name":                         "air",
+    "joined_version":               "0.0.0",
+    "datas": {
+      "0.0.0": {
+        "structure_id":             "minecraft:air",
+        "command_id":               "minecraft:air",
+        "colors":                   "#000000",
+        "textures":                 "air.png"
+      },
+      "0.1.0": {
+        "structure_id":             1,
+        "command_id":               2,
+        "colors": {
+          "up":    "#000",
+          "down":  "#000",
+          "side":  "#000"
+        },
+        "textures": {
+          "up":    "#000",
+          "down":  "#000",
+          "side":  "#000"
+        }
+      }
+    }
+  }
+}
