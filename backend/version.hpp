@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 
 struct Version
 {
@@ -57,7 +56,7 @@ inline bool operator>=(const Version& lhs, const Version& rhs)
  *
  * @return 解析失败或出错时返回 `Version{0, 0, 0}`。
  */
-Version parseVersionString(std::string_view str);
+Version parseVersionString(std::string str);
 
 /** 获取字符串形式的版本号。 */
 std::string dumpVersionString(const Version& vers);

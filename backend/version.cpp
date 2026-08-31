@@ -1,21 +1,21 @@
 #include "version.hpp"
 
-#include <cstdlib>
+#include <stdlib.h>
 
-Version parseVersionString(std::string_view str)
+Version parseVersionString(std::string str)
 {
     if (str.empty()) return Version{0, 0, 0};
 
     const int major = std::atoi(str.data());
 
-    std::size_t pos = str.find('.') + 1;
-    if (pos >= str.size()) return Version{};
-    str = str.substr(pos);
+    std::size_t pos = str.find('.');
+    if (pos == std::string::npos) return Version{};
+    str = str.substr(pos + 1);
     const int minor = std::atoi(str.data());
 
-    pos = str.find('.') + 1;
-    if (pos >= str.size()) return Version{};
-    str = str.substr(pos);
+    pos = str.find('.');
+    if (pos == std::string::npos) return Version{};
+    str = str.substr(pos + 1);
     const int patch = std::atoi(str.data());
 
     return Version{
