@@ -13,12 +13,12 @@ enum BlockAttribute : int
 {
     BLOCK_ATTRI_IS_INCOMPLETE     = 0x00000001, // 非完整方块
     BLOCK_ATTRI_IS_TRANSPARENT    = 0x00000002, // 透明/半透明方块
-    BLOCK_ATTRI_IS_ILLUMINANT     = 0x00000004, // 发光体
+    BLOCK_ATTRI_IS_LUMINOUS       = 0x00000004, // 发光体
     BLOCK_ATTRI_IS_UNSTABLE       = 0x00000008, // 不稳定（会随时间或环境的影响，自发发生变化）
     BLOCK_ATTRI_IS_CREATIVE       = 0x00000010, // 仅创造模式可获得
     BLOCK_ATTRI_HAS_GRAVITY       = 0x00000020, // 具有重力
     BLOCK_ATTRI_HAS_PATTERN       = 0x00000040, // 具有明显花纹/纹理
-    BLOCK_ATTRI_CAN_BURN          = 0x00000080, // 可燃烧
+    BLOCK_ATTRI_FLAMMABLE         = 0x00000080, // 可燃烧
     BLOCK_ATTRI_ENDERMAN_PICKABLE = 0x00000100  // 可被末影人拿起
 };
 using BlockAttributes = int;
