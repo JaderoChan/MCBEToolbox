@@ -1,66 +1,56 @@
-// 仅供预处理 block_datas 程序使用
+// 仅供预处理生成 block_entries 数据使用
 {
-  "block_id_1": {                   // 与游戏内 ID 无关的方块 ID
-    "default_texture": "",          // 用于生成方块图和 GUI 中展示的方块图标
-    "default_color":   "",          // 用于生成方块图
-    "0.0.0": {                      // 游戏版本号（格式：Major.Minor.Patch）
-      "texture": "path/to/file",    // 各向同性方块的材质文件路径
-      "color":   "#000000"          // 方块材质主题色（十六进制颜色值）
+  "block_id_1": {
+    "default": {
+      "textures": "./textures/block_1.png",
+      "colors":   "#000000"
     },
     "0.1.0": {
-      "texture": "",
-      "color":   ""
+      "textures": "./textures/block_1.0.0.0.png",
+      "colors":   "#FFFFFF"
     }
     // ...
   },
   "block_id_2": {
-    "default_texture": "",
-    "0.0.0": {
-      "surfaces": {                 // 非各向同性方块各面材质信息
-        "up": {
-          "texture": "",
-          "color":   ""
-        },
-        "down": {
-          "texture": "",
-          "color":   ""
-        },
-        "side": {                   // 侧面一致性方块侧面材质信息
-          "texture": "",
-          "color":   ""
-        }
+    "default": {
+      "textures": "./textures/block_2.png",
+      "colors":   "#000000"
+    },
+    "0.1.0": {
+      "textures": {
+        "up":     "./textures/block_2_up.png",
+        "down":   "./textures/block_2_down.png",
+        "side":   "./textures/block_2_side.png"
+      },
+      "colors": {
+        "up":     "#FF0000",
+        "down":   "#00FF00",
+        "side":   "#0000FF"
       }
     }
     // ...
   },
   "block_id_3": {
-    "default_texture": "",
-    "0.0.0": {
-      "surfaces": {                 // 非各向同性方块各面材质信息
-        "up": {
-          "texture": "",
-          "color":   ""
-        },
-        "down": {
-          "texture": "",
-          "color":   ""
-        },
-        "north": {
-          "texture": "",
-          "color":   ""
-        },
-        "south": {
-          "texture": "",
-          "color":   ""
-        },
-        "east": {
-          "texture": "",
-          "color":   ""
-        },
-        "west": {
-          "texture": "",
-          "color":   ""
-        }
+    "default": {
+      "textures": "./textures/block_3.png",
+      "colors":   "#000000"
+    },
+    "0.1.0": {
+      "textures": {
+        "up":     "./textures/block_3_up.png",
+        "down":   "./textures/block_3_down.png",
+        "north":  "./textures/block_3_north.png",
+        "south":  "./textures/block_3_south.png",
+        "east":   "./textures/block_3_east.png",
+        "west":   "./textures/block_3_west.png"
+      },
+      "colors": {
+        "up":     "#F00000",
+        "down":   "#0F0000",
+        "north":  "#00F000",
+        "south":  "#000F00",
+        "east":   "#0000F0",
+        "west":   "#00000F"
       }
     }
     // ...

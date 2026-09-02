@@ -1,18 +1,22 @@
 #include "version.hpp"
 
+#include <stdint.h>
 #include <stdexcept>
 
-Version parseVersionString(std::string_view str)
+Version Version::fromString(std::string_view str)
 {
     if (str.empty())
         throw std::invalid_argument("empty version string");
 
+#define THROW_INVALID_VERSION_STRING(string_view) \
+throw std::invalid_argument("invalid version string '" + std::string(string_view) + "'")
+
     const std::size_t pos1 = str.find('.');
-    if (pos1 == std::string_view::npos)
-        throw std::invalid_argument("invalid version string '" + std::string(str) + "'");
+    if (pos1 == std::string_view::npos) THROW_INVALID_VERSION_STRING(str);
     const std::size_t pos2 = str.find('.', pos1 + 1);
-    if (pos2 == std::string_view::npos)
-        throw std::invalid_argument("invalid version string '" + std::string(str) + "'");
+    if (pos2 == std::string_view::npos) THROW_INVALID_VERSION_STRING(str);
+
+#undef THROW_INVALID_VERSION_STRING
 
     std::string_view majorStr = str.substr(0, pos1);
     std::string_view minorStr = str.substr(pos1 + 1, pos2 - pos1 - 1);
@@ -25,21 +29,24 @@ Version parseVersionString(std::string_view str)
         (minor >= 0 && minor <= UINT8_MAX) &&
         (patch >= 0 && patch <= UINT8_MAX))
     {
-        return Version{
+        return Version(
             static_cast<unsigned char>(major),
             static_cast<unsigned char>(minor),
-            static_cast<unsigned char>(patch)};
+            static_cast<unsigned char>(patch));
     }
     else
     {
-        throw std::invalid_argument("invalid version string '" + std::string(str) + "'");
+        throw std::invalid_argument(
+            "unsupported version string '" + std::string(str) +
+            "' the version value is too large, it should be between 0 and 255"
+        );
     }
 }
 
-std::string dumpVersionString(const Version& vers)
+std::string Version::toString() const
 {
     return
-        std::to_string(static_cast<int>(vers.major)) + "." +
-        std::to_string(static_cast<int>(vers.minor)) + "." +
-        std::to_string(static_cast<int>(vers.patch));
+        std::to_string(static_cast<int>(major)) + "." +
+        std::to_string(static_cast<int>(minor)) + "." +
+        std::to_string(static_cast<int>(patch));
 }

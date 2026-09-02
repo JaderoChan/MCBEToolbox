@@ -1,10 +1,10 @@
 {
   "block_datas1.json": true,
-  "block_datas2.json": false,
-  "block_datas3.json": false,
+  "block_datas2.json": true,
+  "block_datas3.json": true,
   "block_datas4.json": true,
   "block_datas5.json": false,
   "block_datas6.json": false,
   "block_datas7.json": false,
-  "block_datas8.json": true
+  "block_datas8.json": false
 }

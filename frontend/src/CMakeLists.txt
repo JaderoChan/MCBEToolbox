@@ -43,7 +43,7 @@ target_link_libraries(
     ${PROJECT_NAME} PRIVATE
     mcnbt::mcnbt
     easy_translate
-    MCBEToolBoxBackend
+    MCBEToolboxBackend
 )
 
 ###############

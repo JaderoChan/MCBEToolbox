@@ -6,7 +6,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include <block_data.hpp>
+#include <block.hpp>
 
 int main(int argc, char *argv[])
 {
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         for (const auto& [path, result] : j.items())
         {
             if (result.is_boolean())
-                meta.push_back({path, result});
+                meta.emplace_back(path, result);
         }
     }
 
@@ -63,17 +63,19 @@ int main(int argc, char *argv[])
             printf("- '%s': ", pair.first.c_str());
             try
             {
-                BlockDatas bds = parseBlockDatasJson(json);
+                BlockEntryMap blockEntryMap = parseBlockEntryMapFromJson(json);
                 printf(
-                    "parse Success, expect result: %s\n",
-                    (pair.second ? "Success" : "Fail"));
+                    "[parse Success, expect result: %s]\n",
+                    (pair.second ? "Success" : "Fail")
+                );
             }
             catch (std::exception& e)
             {
                 printf(
-                    "parse Fail (%s), expect result: %s\n",
-                    e.what(),
-                    (pair.second ? "Success" : "Fail"));
+                    "[parse Fail, expect result: %s] (%s)\n",
+                    (pair.second ? "Success" : "Fail"),
+                    e.what()
+                );
             }
         }
     }

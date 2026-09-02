@@ -1,8 +1,8 @@
-set(TARGET_NAME MCBEToolBoxTestBlockData)
+set(TARGET_NAME MCBEToolboxTestBlockData)
 set(SRCS ./main.cpp)
 add_executable(${TARGET_NAME} ${SRCS})
 target_link_libraries(
     ${TARGET_NAME} PRIVATE
-    MCBEToolBoxBackend
+    MCBEToolboxBackend
     json
 )

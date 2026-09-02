@@ -10,17 +10,17 @@ static inline int hexCharToInt(char c)
     throw std::invalid_argument("invalid hex character '" + std::string(1, c) + "'");
 }
 
-static inline char intToHexChar(int i, bool isUpperCase = true)
+static inline char intToHexChar(int i, bool isUppercase)
 {
     if (i >= 0  && i <= 9)  return i + '0';
-    if (i >= 10 && i <= 15) return (isUpperCase ? (i - 10 + 'A') : (i - 10 + 'a'));
-    throw std::invalid_argument("invalid integer '" + std::to_string(i) + "' for hex char");
+    if (i >= 10 && i <= 15) return (isUppercase ? (i - 10 + 'A') : (i - 10 + 'a'));
+    throw std::invalid_argument("invalid integer '" + std::to_string(i) + "' for hex character");
 }
 
-Rgb hexToRgb(std::string_view hex)
+Rgb Rgb::fromHex(std::string_view hex)
 {
     if (hex.empty())
-        throw std::invalid_argument("invalid hex RGB color string '" + std::string(hex) + "'");
+        throw std::invalid_argument("empty hex color string");
     if (hex[0] == '#')
         hex = hex.substr(1);
 
@@ -45,14 +45,14 @@ Rgb hexToRgb(std::string_view hex)
     return rgb;
 }
 
-std::string rgbToHex(const Rgb& rgb, bool isUpperCase, bool hasNumberSign)
+std::string Rgb::toHex(const Rgb& rgb, bool isUppercase, bool withPrefixed) const
 {
     std::string hex(6, '0');
-    hex[0] = intToHexChar(rgb.r / 16, isUpperCase);
-    hex[1] = intToHexChar(rgb.r % 16, isUpperCase);
-    hex[2] = intToHexChar(rgb.g / 16, isUpperCase);
-    hex[3] = intToHexChar(rgb.g % 16, isUpperCase);
-    hex[4] = intToHexChar(rgb.b / 16, isUpperCase);
-    hex[5] = intToHexChar(rgb.b % 16, isUpperCase);
-    return hasNumberSign ? ("#" + hex) : hex;
+    hex[0] = intToHexChar(rgb.r / 16, isUppercase);
+    hex[1] = intToHexChar(rgb.r % 16, isUppercase);
+    hex[2] = intToHexChar(rgb.g / 16, isUppercase);
+    hex[3] = intToHexChar(rgb.g % 16, isUppercase);
+    hex[4] = intToHexChar(rgb.b / 16, isUppercase);
+    hex[5] = intToHexChar(rgb.b % 16, isUppercase);
+    return withPrefixed ? ("#" + hex) : hex;
 }

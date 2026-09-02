@@ -1,60 +1,11 @@
 {
   "block_id": {
-    "name":                         "air",
-    "name_translations": {
-      "zh":                         "空气"
-    },
-    "joined_version":               "0.0.0",
-    "default_texture":              "",
-    "default_color":                "#000",
-    "datas": {
-      "0.0.0": {
-        "structure_id":             "minecraft:air",
-        "command_id":               "minecraft:air",
-        "colors":                   "#000000",
-        "textures":                 "air.png",
-        "attributes": {
-          "is_uncompeleted":        false,
-          "is_transparent":         false,
-          "has_gravity":            false,
-          "can_burned":             false,
-          "can_enderman_taked":     false
-        }
-      },
-      "0.1.0": {
-        "structure_id":             "minecraft:air",
-        "command_id":               "minecraft:air",
-        "colors": {
-          "up":    "#000",
-          "down":  "#000",
-          "side":  "#000"
-        },
-        "textures": {
-          "up":    "#000",
-          "down":  "#000",
-          "side":  "#000"
-        }
-      },
-      "0.2.0": {
-        "structure_id":             "minecraft:air",
-        "command_id":               "minecraft:air",
-        "colors": {
-          "up":    "#000",
-          "down":  "#000",
-          "north": "#000",
-          "south": "#000",
-          "east":  "#000",
-          "west":  "#000"
-        },
-        "textures": {
-          "up":    "",
-          "down":  "",
-          "north": "",
-          "south": "",
-          "east":  "",
-          "west":  ""
-        }
-      }
+    "name":                   "block",
+    "default": {
+      "structure_nbt_id":     "block_structure_nbt_id",
+      "command_id":           "block_command_id",
+      "textures":             "./textures/block.png",
+      "colors":               "#000000"
     }
   }
 }

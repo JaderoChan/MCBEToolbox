@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-project(MCBEToolBox VERSION 0.1.0 LANGUAGES CXX)
+project(MCBEToolbox VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -40,6 +40,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(easy_translate)
 
+# 配置 nanoflann 库
+FetchContent_Declare(
+    nanoflann
+    SOURCE_DIR ${3RDPARTY_DIR}/nanoflann
+)
+FetchContent_MakeAvailable(nanoflann)
+
 # 重定向目标文件输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
@@ -54,7 +61,7 @@ endif()
 add_subdirectory(backend)
 add_subdirectory(frontend)
 
-option(MCBETOOLBOX_BUILD_TEST "Build MCBE Tool Box test programs" ON)
+option(MCBETOOLBOX_BUILD_TEST "Build MCBE Toolbox test programs" ON)
 if(MCBETOOLBOX_BUILD_TEST)
     add_subdirectory(test)
 endif()
