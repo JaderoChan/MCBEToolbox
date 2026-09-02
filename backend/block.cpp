@@ -72,7 +72,11 @@ do {                                                                            
 
     TRY_OVERRIDE_ATTRIBUTE("is_incomplete",     BLOCK_ATTRI_IS_INCOMPLETE);
     TRY_OVERRIDE_ATTRIBUTE("is_transparent",    BLOCK_ATTRI_IS_TRANSPARENT);
+    TRY_OVERRIDE_ATTRIBUTE("is_illuminant",     BLOCK_ATTRI_IS_ILLUMINANT);
+    TRY_OVERRIDE_ATTRIBUTE("is_unstable",       BLOCK_ATTRI_IS_UNSTABLE);
+    TRY_OVERRIDE_ATTRIBUTE("is_creative",       BLOCK_ATTRI_IS_CREATIVE);
     TRY_OVERRIDE_ATTRIBUTE("has_gravity",       BLOCK_ATTRI_HAS_GRAVITY);
+    TRY_OVERRIDE_ATTRIBUTE("has_pattern",       BLOCK_ATTRI_HAS_PATTERN);
     TRY_OVERRIDE_ATTRIBUTE("can_burn",          BLOCK_ATTRI_CAN_BURN);
     TRY_OVERRIDE_ATTRIBUTE("enderman_pickable", BLOCK_ATTRI_ENDERMAN_PICKABLE);
 

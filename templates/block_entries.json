@@ -12,11 +12,15 @@
       "textures":             "./textures/block.png",   // 默认方块材质文件路径
       "colors":               "#000000",                // 默认方块颜色
       "attributes": {                // 方块属性（可选，默认均为假）
-        "is_incomplete":      false, // 是非完整方块       （可选，默认为假）
-        "is_transparent":     false, // 是透明/半透明方块  （可选，默认为假）
-        "has_gravity":        false, // 具有重力的方块     （可选，默认为假）
-        "can_burn":           false, // 可燃烧的方块       （可选，默认为假）
-        "enderman_pickable":  false  // 可被末影人拿起的方块（可选，默认为假）
+        "is_incomplete":      false, // 是非完整方块
+        "is_transparent":     false, // 是透明/半透明方块
+        "is_illuminant":      false, // 是发光源
+        "is_unstable":        false, // 是不稳定的（会随时间或环境影响，自发发生变化）
+        "is_creative":        false, // 仅创造模式可获得
+        "has_gravity":        false, // 具有重力的方块
+        "has_pattern":        false, // 具有明显花纹/纹理
+        "can_burn":           false, // 可燃烧的方块
+        "enderman_pickable":  false  // 可被末影人拿起的方块
       }
     },
     "variants": { // 不同版本对应的方块数据（可选）
