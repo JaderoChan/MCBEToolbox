@@ -96,6 +96,13 @@ void convertColorToBgra(cv::Mat src, cv::Mat& dst)
     }
 }
 
+inline std::string concatTexturePath(
+    const std::string& texturePath,
+    const std::string& basePath = "./textures")
+{
+    return basePath + "/" + texturePath;
+}
+
 } // namespace
 
 cv::Mat convertImageToBlockImage(
@@ -149,7 +156,9 @@ cv::Mat convertImageToBlockImage(
             // 如果当前方块还未被加载则将其加载至缓存中
             if (cache.find(*id) == cache.end())
             {
-                cv::Mat texture = cv::imread(getSurface(data->surface, targetSurface).first);
+                const std::string texturePath = concatTexturePath(
+                    getSurface(data->surface, targetSurface).first);
+                cv::Mat texture = cv::imread(texturePath);
                 if (!texture.empty() && texture.type() != CV_8UC4)
                     convertColorToBgra(texture, texture);
                 if (texture.empty())
