@@ -18,13 +18,23 @@ using ProgressCallback = void (*)(
     void*       userdata
 );
 
+/** 用于决定使用 BlockData 哪一个面的数据 */
+enum class TargetSurface
+{
+    UP,
+    DOWN,
+    NORTH,
+    SOUTH,
+    EAST,
+    WEST
+};
+
 /**
  * 使用给定的 BlockDataMap 将指定图像转换为方块图（使用方块材质作为像素组成的图片）。
  *
- * 使用 up 面（未来可能进行更改）
- *
  * @param image           8UC4（BGRA8888）颜色格式的非空图像
  * @param blockDataMap    可用的“耗材”方块
+ * @param targetSurface   指定使用的方块面
  * @param fallbackBlock   透明像素的替代方块，置空则保留透明区域
  * @param blockUsageCount 方块用量，格式为 {方块ID : 方块数量}
  * @param callback        回调函数
@@ -33,6 +43,7 @@ using ProgressCallback = void (*)(
 cv::Mat convertImageToBlockImage(
     const cv::Mat&                                image,
     const BlockDataMap&                           blockDataMap,
+    TargetSurface                                 targetSurface,
     const std::pair<std::string, BlockData>*      fallbackBlock   = nullptr,
     std::unordered_map<std::string, std::size_t>* blockUsageCount = nullptr,
     ProgressCallback                              callback        = nullptr,

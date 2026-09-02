@@ -1,12 +1,28 @@
 #include "mcbe_toolbox_api.hpp"
 
 #include <assert.h>
+#include <stdexcept>
 #include <vector>
 
 #include <nanoflann.hpp>
 
 namespace
 {
+
+inline const std::pair<std::string, Rgb>&
+getSurface(const BlockSurface& blockSurface, TargetSurface targetSurface)
+{
+    switch (targetSurface)
+    {
+        case TargetSurface::UP:    return blockSurface.up;
+        case TargetSurface::DOWN:  return blockSurface.down;
+        case TargetSurface::NORTH: return blockSurface.north;
+        case TargetSurface::SOUTH: return blockSurface.south;
+        case TargetSurface::EAST:  return blockSurface.east;
+        case TargetSurface::WEST:  return blockSurface.west;
+        default: throw std::invalid_argument("Invalid target surface");
+    }
+}
 
 struct RgbCloud
 {
@@ -38,7 +54,7 @@ struct ColorKdTree
     Tree     tree;
     std::vector<std::pair<const std::string*, const BlockData*>> blockDataVec;
 
-    explicit ColorKdTree(const BlockDataMap& blockDataMap)
+    explicit ColorKdTree(const BlockDataMap& blockDataMap, TargetSurface targetSurface)
         : tree(3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(
             10, nanoflann::KDTreeSingleIndexAdaptorFlags::SkipInitialBuildIndex))
     {
@@ -46,7 +62,7 @@ struct ColorKdTree
         blockDataVec.reserve(blockDataMap.size());
         for (const auto& [id, data] : blockDataMap)
         {
-            cloud.pts.push_back(data->surface.up.second);
+            cloud.pts.push_back(getSurface(data->surface, targetSurface).second);
             blockDataVec.emplace_back(id, data);
         }
         tree.buildIndex();
@@ -85,6 +101,7 @@ void convertColorToBgra(cv::Mat src, cv::Mat& dst)
 cv::Mat convertImageToBlockImage(
     const cv::Mat&                                image,
     const BlockDataMap&                           blockDataMap,
+    TargetSurface                                 targetSurface,
     const std::pair<std::string, BlockData>*      fallbackBlock,
     std::unordered_map<std::string, std::size_t>* blockUsageCount,
     ProgressCallback                              callback,
@@ -93,7 +110,7 @@ cv::Mat convertImageToBlockImage(
     assert(!image.empty() && !blockDataMap.empty() && (image.type() == CV_8UC4));
 
     // 构建 KD 树用于加速最近邻颜色查找
-    ColorKdTree colorKdTree(blockDataMap);
+    ColorKdTree colorKdTree(blockDataMap, targetSurface);
     // 缓存方块 ID 与材质
     std::unordered_map<std::string, cv::Mat> cache;
 
@@ -132,7 +149,7 @@ cv::Mat convertImageToBlockImage(
             // 如果当前方块还未被加载则将其加载至缓存中
             if (cache.find(*id) == cache.end())
             {
-                cv::Mat texture = cv::imread(data->surface.up.first);
+                cv::Mat texture = cv::imread(getSurface(data->surface, targetSurface).first);
                 if (!texture.empty() && texture.type() != CV_8UC4)
                     convertColorToBgra(texture, texture);
                 if (texture.empty())
