@@ -97,7 +97,7 @@ def create_entry(block_data: dict, block_id: str) -> dict:
 
     entry = {
         "name": "",
-        "added_version": "",
+        "min_version": "",
         "default": {
             "structure_nbt_id": "",
             "command_id": "",

@@ -78,7 +78,7 @@ struct BlockEntry
     BlockEntry() = default;
 
     std::string name;               // 方块英文名
-    Version     addedVersion;       // 加入游戏的版本
+    Version     minVersion;         // 最低游戏版本
     BlockData   defaultBlockData;   // 默认方块数据
     std::unordered_map<std::string, std::string> nameTranslations; // {语言代码 : 方块译名}（可以为空）
     std::unordered_map<Version, BlockData>       variants;         // 不同版本对应的方块数据

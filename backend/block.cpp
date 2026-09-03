@@ -252,13 +252,13 @@ void parseBlockEntryMapFromJsonHelper(std::string_view json, BlockEntryMap& bloc
 
         BlockEntry entry;
 
-        // 读取 name 和 added_version 字段。
+        // 读取 name 和 min_version 字段。
         CHECK_KEY(v, k, "name", string);
         entry.name = v["name"];
-        if (v.contains("added_version"))
+        if (v.contains("min_version"))
         {
-            CHECK_KEY(v, k, "added_version", string);
-            entry.addedVersion = readVersion(v, "added_version");
+            CHECK_KEY(v, k, "min_version", string);
+            entry.minVersion = readVersion(v, "min_version");
         }
 
         // 解析 name_translations 字段。
@@ -368,7 +368,7 @@ BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version ta
     for (const auto& [id, entry] : blockEntryMap)
     {
         // 如果加入版本比目标版本更新，说明在目标版本中此方块还未被加入，直接跳过。
-        if (entry->addedVersion > targetVersion)
+        if (entry->minVersion > targetVersion)
             continue;
 
         // 目标是获取不超过 targetVersion 的最新版本的方块数据。

@@ -5,7 +5,7 @@
       "zh":                   "方块"    // 方块中文名
       // ...
     },
-    "added_version":          "0.0.0",  // 加入游戏的版本（可选，默认为 0.0.0）
+    "min_version":            "0.0.0",  // 最低游戏版本（可选，默认为 0.0.0）
     "default": {                        // 默认的方块数据
       "structure_nbt_id":     "block_structure_nbt_id", // 默认方块 NBT 结构文件 ID
       "command_id":           "block_command_id",       // 默认方块指令 ID
