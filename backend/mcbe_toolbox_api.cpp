@@ -122,9 +122,10 @@ cv::Mat convertImageToBlockImage(
     std::unordered_map<std::string, cv::Mat> cache;
 
     // 用于回调函数
-    // 每 row 一进度检查点
+    // 每处理 10000 个像素执行一次回调函数
+    constexpr std::size_t GAP = 10000;
     std::size_t current = 0;
-    const std::size_t total = image.rows;
+    const std::size_t total = image.rows * image.cols;
 
     // 假定所有材质图片尺寸为 16*16，所以每个像素对应 16*16 的方块材质区域
     cv::Mat ret(image.rows * 16, image.cols * 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
@@ -175,14 +176,14 @@ cv::Mat convertImageToBlockImage(
 
             // 更新方块用量信息
             if (blockUsageCount) ++(*blockUsageCount)[*id];
-        }
 
-        ++current;
-        if (callback)
-        {
-            bool stop = false;
-            callback(current, total, stop, userdata);
-            if (stop) return ret;
+            ++current;
+            if (callback && (current % GAP == 0))
+            {
+                bool stop = false;
+                callback(current, total, stop, userdata);
+                if (stop) return ret;
+            }
         }
     }
     return ret;
