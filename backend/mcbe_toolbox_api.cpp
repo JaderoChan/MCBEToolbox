@@ -177,6 +177,7 @@ cv::Mat convertImageToBlockImage(
             // 更新方块用量信息
             if (blockUsageCount) ++(*blockUsageCount)[*id];
 
+            // 回调函数
             ++current;
             if (callback && (current % GAP == 0))
             {
