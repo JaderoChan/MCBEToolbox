@@ -269,9 +269,8 @@ void parseBlockEntryMapFromJsonHelper(std::string_view json, BlockEntryMap& bloc
             }
         }
 
-        const std::string* blockId    = new std::string(k);
-        const BlockEntry*  blockEntry = new BlockEntry(std::move(entry));
-        blockEntryMap[blockId] = blockEntry;
+        const BlockEntry* blockEntry = new BlockEntry(std::move(entry));
+        blockEntryMap[k] = blockEntry;
     }
 }
 
@@ -302,10 +301,7 @@ BlockEntryMap parseBlockEntryMapFromJson(std::string_view json)
 void releaseBlockEntryMap(BlockEntryMap& blockEntryMap)
 {
     for (const auto& [id, entry] : blockEntryMap)
-    {
-        delete id;
         delete entry;
-    }
 }
 
 BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap)

@@ -50,7 +50,7 @@ struct ColorKdTree
 
     RgbCloud cloud;
     Tree     tree;
-    std::vector<std::pair<const std::string*, const BlockData*>> blockDataVec;
+    std::vector<std::pair<std::string_view, const BlockData*>> blockDataVec;
 
     explicit ColorKdTree(const BlockDataMap& blockDataMap, TargetSurface targetSurface)
         : tree(3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(
@@ -66,7 +66,7 @@ struct ColorKdTree
         tree.buildIndex();
     }
 
-    std::pair<const std::string*, const BlockData*>
+    std::pair<std::string_view, const BlockData*>
     findNearest(const Rgb& query) const
     {
         const float queryPt[3] = {
@@ -140,13 +140,13 @@ cv::Mat convertImageToBlockImage(
             // 遍历像素点颜色，并获取颜色与之最接近的方块数据
             // 如果是透明像素，根据 fallbackBlock 值决定是否跳过填充
             const auto rgba = img.at<cv::Vec4b>(row, col);
-            const std::string* id    = nullptr;
-            const BlockData*   data  = nullptr;
+            std::string id;
+            const BlockData* data = nullptr;
             // Alpha 通道值低于 128 的像素视为透明像素
             if (rgba[3] < 128)
             {
                 if (!fallbackBlock) continue;
-                id   = &fallbackBlock->first;
+                id   = fallbackBlock->first;
                 data = &fallbackBlock->second;
             }
             else
@@ -156,7 +156,7 @@ cv::Mat convertImageToBlockImage(
                 id   = nearest.first;
                 data = nearest.second;
             }
-            assert(id != nullptr && data != nullptr);
+            assert(data != nullptr);
 
             // 如果当前材质还未被加载则将其加载至缓存中
             const std::string texturePath = concatTexturePath(
@@ -179,7 +179,7 @@ cv::Mat convertImageToBlockImage(
                 cv::Range(col * 16, col * 16 + 16)));
 
             // 更新方块用量信息
-            if (blockUsageCount) ++(*blockUsageCount)[*id];
+            if (blockUsageCount) ++(*blockUsageCount)[id];
 
             // 回调函数
             ++current;

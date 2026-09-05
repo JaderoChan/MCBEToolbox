@@ -61,9 +61,9 @@ struct BlockEntry
 };
 
 // {方块ID : 方块条目}
-using BlockEntryMap = std::map<const std::string*, const BlockEntry*>;
+using BlockEntryMap = std::map<std::string, const BlockEntry*>;
 // {方块ID : 方块数据}
-using BlockDataMap  = std::map<const std::string*, const BlockData*>;
+using BlockDataMap  = std::map<std::string_view, const BlockData*>;
 
 /**
  * 从 Json 字符串中解析 #BlockEntryMap。
