@@ -6,3 +6,4 @@ target_link_libraries(
     MCBEToolboxBackend
     json
 )
+copy_runtime_dependencies(${TARGET_NAME})

@@ -160,6 +160,8 @@ endif()
 # 生成后额外命令 #
 #################
 
+copy_runtime_dependencies(${PROJECT_NAME})
+
 # 复制语言文件至输出目录。
 if(WIN32 OR LINUX)
     add_custom_command(
