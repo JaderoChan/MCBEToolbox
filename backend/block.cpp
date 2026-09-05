@@ -344,13 +344,31 @@ BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version ta
     return ret;
 }
 
-BlockDataMap filterBlockAttributes(const BlockDataMap& blockDataMap, BlockAttributes attributes)
+BlockDataMap filterBlockAttributes(
+    const BlockDataMap&     blockDataMap,
+    BlockAttributeMatchMode matchMode,
+    BlockAttributes         attributes)
 {
     BlockDataMap ret;
     for (const auto& [id, data] : blockDataMap)
     {
-        if (data->attributes == (data->attributes & attributes))
-            ret[id] = data;
+        switch (matchMode)
+        {
+            case BlockAttributeMatchMode::ContainsAll:
+                if ((data->attributes & attributes) == attributes)
+                    ret[id] = data;
+                break;
+            case BlockAttributeMatchMode::Disjoint:
+                if ((data->attributes & attributes) == 0)
+                    ret[id] = data;
+                break;
+            case BlockAttributeMatchMode::SubsetOf:
+                if ((data->attributes & attributes) == data->attributes)
+                    ret[id] = data;
+                break;
+            default:
+                throw std::invalid_argument("invalid block attribute match mode");
+        }
     }
     return ret;
 }

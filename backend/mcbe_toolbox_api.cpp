@@ -15,9 +15,9 @@ getSurface(const BlockSurface& blockSurface, TargetSurface targetSurface)
 {
     switch (targetSurface)
     {
-        case TargetSurface::UP:   return blockSurface.up;
-        case TargetSurface::DOWN: return blockSurface.down;
-        case TargetSurface::SIDE: return blockSurface.side;
+        case TargetSurface::Up:   return blockSurface.up;
+        case TargetSurface::Down: return blockSurface.down;
+        case TargetSurface::Side: return blockSurface.side;
         default: throw std::invalid_argument("Invalid target surface");
     }
 }

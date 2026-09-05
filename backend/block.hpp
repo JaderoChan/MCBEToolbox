@@ -91,7 +91,17 @@ BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap);
  */
 BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version targetVersion);
 
+enum class BlockAttributeMatchMode
+{
+    ContainsAll, // 方块包含给定的全部属性
+    Disjoint,    // 方块不含给定的任一属性
+    SubsetOf     // 方块属性完全属于给定集合（包括无属性方块）
+};
+
 /**
  * 从 #BlockDataMap 中筛选出符合方块属性规则的子集。
  */
-BlockDataMap filterBlockAttributes(const BlockDataMap& blockDataMap, BlockAttributes attributes);
+BlockDataMap filterBlockAttributes(
+    const BlockDataMap&     blockDataMap,
+    BlockAttributeMatchMode matchMode,
+    BlockAttributes         attributes);

@@ -21,9 +21,9 @@ using ProgressCallback = void (*)(
 /** 用于决定使用 #BlockData 哪一个面的数据 */
 enum class TargetSurface
 {
-    UP,
-    DOWN,
-    SIDE
+    Up,
+    Down,
+    Side
 };
 
 /**
