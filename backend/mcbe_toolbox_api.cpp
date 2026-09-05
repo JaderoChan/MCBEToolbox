@@ -145,9 +145,11 @@ cv::Mat convertImageToBlockImage(
             // Alpha 通道值低于 128 的像素视为透明像素
             if (rgba[3] < 128)
             {
-                if (!fallbackBlock) continue;
-                id   = fallbackBlock->first;
-                data = &fallbackBlock->second;
+                if (fallbackBlock)
+                {
+                    id   = fallbackBlock->first;
+                    data = &fallbackBlock->second;
+                }
             }
             else
             {
@@ -156,30 +158,32 @@ cv::Mat convertImageToBlockImage(
                 id   = nearest.first;
                 data = nearest.second;
             }
-            assert(data != nullptr);
 
-            // 如果当前材质还未被加载则将其加载至缓存中
-            const std::string texturePath = concatTexturePath(
-                getSurface(data->surface, targetSurface).first);
-            if (cache.find(texturePath) == cache.end())
+            if (data != nullptr)
             {
-                cv::Mat texture = cv::imread(texturePath);
-                if (!texture.empty())
-                    convertColorToBgra(texture, texture);
-                if (texture.empty())
-                    texture = cv::Mat(16, 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 255.0));
-                cache[texturePath] = texture;
+                // 如果当前材质还未被加载则将其加载至缓存中
+                const std::string texturePath = concatTexturePath(
+                    getSurface(data->surface, targetSurface).first);
+                if (cache.find(texturePath) == cache.end())
+                {
+                    cv::Mat texture = cv::imread(texturePath, cv::IMREAD_UNCHANGED);
+                    if (!texture.empty())
+                        convertColorToBgra(texture, texture);
+                    if (texture.empty())
+                        texture = cv::Mat(16, 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 255.0));
+                    cache[texturePath] = texture;
+                }
+
+                // 直接从缓存中加载方块材质
+                cv::Mat texture = cache[texturePath];
+                // 复制方块材质至像素映射区域
+                texture.copyTo(ret(
+                    cv::Range(row * 16, row * 16 + 16),
+                    cv::Range(col * 16, col * 16 + 16)));
+
+                // 更新方块用量信息
+                if (blockUsageCount) ++(*blockUsageCount)[id];
             }
-
-            // 直接从缓存中加载方块材质
-            cv::Mat texture = cache[texturePath];
-            // 复制方块材质至像素映射区域
-            texture.copyTo(ret(
-                cv::Range(row * 16, row * 16 + 16),
-                cv::Range(col * 16, col * 16 + 16)));
-
-            // 更新方块用量信息
-            if (blockUsageCount) ++(*blockUsageCount)[id];
 
             // 回调函数
             ++current;
@@ -191,5 +195,6 @@ cv::Mat convertImageToBlockImage(
             }
         }
     }
+
     return ret;
 }

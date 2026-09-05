@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
         std::cout << "Please input the image file path:" << std::endl;
         std::cin >> imageFilepath;
 
-        image = cv::imread(imageFilepath);
+        image = cv::imread(imageFilepath, cv::IMREAD_UNCHANGED);
         if (image.empty())
         {
             std::cout << "Failed to load the image: " << imageFilepath << std::endl;
