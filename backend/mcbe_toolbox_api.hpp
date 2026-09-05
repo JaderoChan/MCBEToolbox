@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+
 #include <opencv2/opencv.hpp>
 
 #include "block.hpp"
@@ -40,10 +42,10 @@ enum class TargetSurface
  * @return 如果转换成功返回结果图像，否则返回空 #cv::Mat。
  */
 cv::Mat convertImageToBlockImage(
-    const cv::Mat&                                image,
-    const BlockDataMap&                           blockDataMap,
-    TargetSurface                                 targetSurface,
-    const std::pair<std::string, BlockData>*      fallbackBlock   = nullptr,
-    std::unordered_map<std::string, std::size_t>* blockUsageCount = nullptr,
-    ProgressCallback                              callback        = nullptr,
-    void*                                         userdata        = nullptr);
+    const cv::Mat&                           image,
+    const BlockDataMap&                      blockDataMap,
+    TargetSurface                            targetSurface,
+    const std::pair<std::string, BlockData>* fallbackBlock   = nullptr,
+    std::map<std::string, std::size_t>*      blockUsageCount = nullptr,
+    ProgressCallback                         callback        = nullptr,
+    void*                                    userdata        = nullptr);

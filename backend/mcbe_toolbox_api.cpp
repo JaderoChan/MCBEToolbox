@@ -105,13 +105,13 @@ inline std::string concatTexturePath(
 } // namespace
 
 cv::Mat convertImageToBlockImage(
-    const cv::Mat&                                image,
-    const BlockDataMap&                           blockDataMap,
-    TargetSurface                                 targetSurface,
-    const std::pair<std::string, BlockData>*      fallbackBlock,
-    std::unordered_map<std::string, std::size_t>* blockUsageCount,
-    ProgressCallback                              callback,
-    void*                                         userdata)
+    const cv::Mat&                           image,
+    const BlockDataMap&                      blockDataMap,
+    TargetSurface                            targetSurface,
+    const std::pair<std::string, BlockData>* fallbackBlock,
+    std::map<std::string, std::size_t>*      blockUsageCount,
+    ProgressCallback                         callback,
+    void*                                    userdata)
 {
     if (image.type() != CV_8UC1 || image.type() != CV_8UC3 || image.type() != CV_8UC4)
         return cv::Mat();
