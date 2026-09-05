@@ -20,10 +20,12 @@ add_library(${TARGET_NAME} STATIC ${PROJECT_SOURCES})
 
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
-    ${TARGET_NAME} PRIVATE
+    ${TARGET_NAME}
+    PUBLIC
     opencv_core
     opencv_imgcodecs
     opencv_videoio
+    PRIVATE
     json
     nanoflann
     mcnbt::mcnbt
