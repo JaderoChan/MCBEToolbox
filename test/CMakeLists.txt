@@ -1,1 +1,2 @@
 add_subdirectory(block_entries_parse_test)
+add_subdirectory(image_to_block_image_test)
