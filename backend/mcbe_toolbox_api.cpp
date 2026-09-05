@@ -113,7 +113,7 @@ cv::Mat convertImageToBlockImage(
     ProgressCallback                         callback,
     void*                                    userdata)
 {
-    if (image.type() != CV_8UC1 || image.type() != CV_8UC3 || image.type() != CV_8UC4)
+    if (image.type() != CV_8UC1 && image.type() != CV_8UC3 && image.type() != CV_8UC4)
         return cv::Mat();
     cv::Mat img;
     convertColorToBgra(image, img);
