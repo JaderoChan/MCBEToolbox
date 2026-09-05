@@ -1,0 +1,39 @@
+{
+  "block_id": {
+    "name":                   "block",
+    "default": {
+      "id":                   "block_id",
+      "textures":             "./textures/block.png",
+      "colors":               "#000000",
+      "attributes": {
+        "is_incomplete":      false,
+        "is_transparent":     false,
+        "has_gravity":        false,
+        "can_burn":           false,
+        "enderman_pickable":  false
+      }
+    },
+    "variants": {
+      "0.1.0": {
+        "id":                 "block_id_0.1.0",
+        "textures":           "./textures/block.png",
+        "colors":             "#000000"
+      },
+      "0.2.0": {
+        "textures": {
+          "up":               "./textures/block_up.png",
+          "down":             "./textures/block_down.png",
+          "side":             "./textures/block_side.png"
+        },
+        "colors": {
+          // 模式不匹配：缺少 up 字段
+          "down":             "#00FF00",
+          "side":             "#0000FF"
+        }
+      },
+      "0.3.0": {
+        "id":                 "block_id_0.3.0"
+      }
+    }
+  }
+}

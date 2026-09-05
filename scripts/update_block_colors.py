@@ -4,6 +4,7 @@
 import json
 from collections import Counter
 from pathlib import Path
+from typing import cast
 
 from PIL import Image
 
@@ -15,7 +16,7 @@ MINIMUM_ALPHA = 16
 
 def dominant_color(image_path: Path) -> str:
     with Image.open(image_path) as image:
-        pixels = image.convert("RGBA").getdata()
+        pixels = cast(list[tuple[int, int, int, int]], list(image.convert("RGBA").getdata()))
 
     weighted_colors = Counter(
         (red, green, blue)
@@ -29,6 +30,7 @@ def dominant_color(image_path: Path) -> str:
     cluster_count = min(KMEANS_CLUSTERS, len(points))
     centers = [points[index * len(points) // cluster_count] for index in range(cluster_count)]
 
+    clusters: list[list[tuple[tuple[int, int, int], int]]] = []
     for _ in range(KMEANS_ITERATIONS):
         clusters = [[] for _ in centers]
         for point, weight in weighted_colors.items():

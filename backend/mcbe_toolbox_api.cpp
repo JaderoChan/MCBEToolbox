@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdexcept>
+#include <unordered_map>
 #include <vector>
 
 #include <nanoflann.hpp>
@@ -14,12 +15,9 @@ getSurface(const BlockSurface& blockSurface, TargetSurface targetSurface)
 {
     switch (targetSurface)
     {
-        case TargetSurface::UP:    return blockSurface.up;
-        case TargetSurface::DOWN:  return blockSurface.down;
-        case TargetSurface::NORTH: return blockSurface.north;
-        case TargetSurface::SOUTH: return blockSurface.south;
-        case TargetSurface::EAST:  return blockSurface.east;
-        case TargetSurface::WEST:  return blockSurface.west;
+        case TargetSurface::UP:   return blockSurface.up;
+        case TargetSurface::DOWN: return blockSurface.down;
+        case TargetSurface::SIDE: return blockSurface.side;
         default: throw std::invalid_argument("Invalid target surface");
     }
 }
@@ -85,13 +83,14 @@ struct ColorKdTree
     }
 };
 
-// 转换 8UC1 或 8UC3 类型的图像为 BGRA 格式。如果输入图像不是 8UC1 或 8UC3 类型，输出图像将被置空。
+// 转换 8UC1 或 8UC3 类型的图像为 BGRA 格式。如果输入图像不是 8UC1/8UC3/8UC4 类型，输出图像将被置空。
 void convertColorToBgra(cv::Mat src, cv::Mat& dst)
 {
     switch (src.type())
     {
         case CV_8UC1: cv::cvtColor(src, dst, cv::COLOR_GRAY2BGRA); break;
         case CV_8UC3: cv::cvtColor(src, dst, cv::COLOR_BGR2BGRA);  break;
+        case CV_8UC4: dst = src; break;
         default: dst = cv::Mat(); break;
     }
 }
@@ -114,28 +113,33 @@ cv::Mat convertImageToBlockImage(
     ProgressCallback                              callback,
     void*                                         userdata)
 {
-    assert(!image.empty() && !blockDataMap.empty() && (image.type() == CV_8UC4));
+    if (image.type() != CV_8UC1 || image.type() != CV_8UC3 || image.type() != CV_8UC4)
+        return cv::Mat();
+    cv::Mat img;
+    convertColorToBgra(image, img);
+    if (img.empty() || blockDataMap.empty())
+        return cv::Mat();
 
     // 构建 KD 树用于加速最近邻颜色查找
     ColorKdTree colorKdTree(blockDataMap, targetSurface);
-    // 缓存方块 ID 与材质
+    // 缓存材质文件路径与材质
     std::unordered_map<std::string, cv::Mat> cache;
 
     // 用于回调函数
     // 每处理 10000 个像素执行一次回调函数
     constexpr std::size_t GAP = 10000;
     std::size_t current = 0;
-    const std::size_t total = image.rows * image.cols;
+    const std::size_t total = img.rows * img.cols;
 
     // 假定所有材质图片尺寸为 16*16，所以每个像素对应 16*16 的方块材质区域
-    cv::Mat ret(image.rows * 16, image.cols * 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
-    for (int row = 0; row < image.rows; ++row)
+    cv::Mat ret(img.rows * 16, img.cols * 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
+    for (int row = 0; row < img.rows; ++row)
     {
-        for (int col = 0; col < image.cols; ++col)
+        for (int col = 0; col < img.cols; ++col)
         {
             // 遍历像素点颜色，并获取颜色与之最接近的方块数据
             // 如果是透明像素，根据 fallbackBlock 值决定是否跳过填充
-            const auto rgba = image.at<cv::Vec4b>(row, col);
+            const auto rgba = img.at<cv::Vec4b>(row, col);
             const std::string* id    = nullptr;
             const BlockData*   data  = nullptr;
             // Alpha 通道值低于 128 的像素视为透明像素
@@ -154,21 +158,21 @@ cv::Mat convertImageToBlockImage(
             }
             assert(id != nullptr && data != nullptr);
 
-            // 如果当前方块还未被加载则将其加载至缓存中
-            if (cache.find(*id) == cache.end())
+            // 如果当前材质还未被加载则将其加载至缓存中
+            const std::string texturePath = concatTexturePath(
+                getSurface(data->surface, targetSurface).first);
+            if (cache.find(texturePath) == cache.end())
             {
-                const std::string texturePath = concatTexturePath(
-                    getSurface(data->surface, targetSurface).first);
                 cv::Mat texture = cv::imread(texturePath);
-                if (!texture.empty() && texture.type() != CV_8UC4)
+                if (!texture.empty())
                     convertColorToBgra(texture, texture);
                 if (texture.empty())
                     texture = cv::Mat(16, 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 255.0));
-                cache.insert({*id, texture});
+                cache[texturePath] = texture;
             }
 
             // 直接从缓存中加载方块材质
-            cv::Mat texture = cache[*id];
+            cv::Mat texture = cache[texturePath];
             // 复制方块材质至像素映射区域
             texture.copyTo(ret(
                 cv::Range(row * 16, row * 16 + 16),

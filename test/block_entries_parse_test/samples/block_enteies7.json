@@ -1,0 +1,10 @@
+{
+  "block_id": {
+    "name":                   "block",
+    "default": {
+      // 缺少必要字段：id
+      "textures":             "./textures/block.png",
+      "colors":               "#000000"
+    }
+  }
+}

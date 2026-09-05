@@ -1,1 +1,1 @@
-add_subdirectory(block_data_test)
+add_subdirectory(block_entries_parse_test)

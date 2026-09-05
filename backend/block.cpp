@@ -1,9 +1,7 @@
 #include "block.hpp"
 
 #include <assert.h>
-#include <algorithm>
 #include <stdexcept>
-#include <vector>
 
 #include <nlohmann/json.hpp>
 
@@ -99,8 +97,12 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
                 std::string("key 'colors' type is not match to 'textures' type in object '") +
                 objName + "'"
             );
+
         const Rgb rgb = readRgb(obj, "colors");
-        surface.assignAllSurfaces({obj["textures"], rgb});
+        const std::pair<std::string, Rgb> value = {obj["textures"], rgb};
+        surface.up   = value;
+        surface.down = value;
+        surface.side = value;
     }
     else if (obj["textures"].is_object())
     {
@@ -125,36 +127,14 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
         {
             CHECK_KEY(texturesObj, "textures", "up",   string);
             CHECK_KEY(texturesObj, "textures", "down", string);
+            CHECK_KEY(texturesObj, "textures", "side", string);
             CHECK_KEY(colorsObj,   "colors",   "up",   string);
             CHECK_KEY(colorsObj,   "colors",   "down", string);
+            CHECK_KEY(colorsObj,   "colors",   "side", string);
 
             surface.up   = {texturesObj["up"],   readRgb(colorsObj, "up")};
             surface.down = {texturesObj["down"], readRgb(colorsObj, "down")};
-
-            if (texturesObj.contains("side") && !colorsObj.contains("side"))
-                THROW_PATTERN_NOT_MATCH(objName);
-
-            if (texturesObj.contains("side"))
-            {
-                CHECK_KEY(texturesObj, "textures", "side", string);
-                CHECK_KEY(colorsObj,   "colors",   "side", string);
-                surface.assignSideSurfaces({texturesObj["side"], readRgb(colorsObj, "side")});
-            }
-            else
-            {
-                CHECK_KEY(texturesObj, "textures", "north", string);
-                CHECK_KEY(texturesObj, "textures", "south", string);
-                CHECK_KEY(texturesObj, "textures", "east",  string);
-                CHECK_KEY(texturesObj, "textures", "west",  string);
-                CHECK_KEY(colorsObj,   "colors",   "north", string);
-                CHECK_KEY(colorsObj,   "colors",   "south", string);
-                CHECK_KEY(colorsObj,   "colors",   "east",  string);
-                CHECK_KEY(colorsObj,   "colors",   "west",  string);
-                surface.north = {texturesObj["north"], readRgb(colorsObj, "north")};
-                surface.south = {texturesObj["south"], readRgb(colorsObj, "south")};
-                surface.east  = {texturesObj["east"],  readRgb(colorsObj, "east")};
-                surface.west  = {texturesObj["west"],  readRgb(colorsObj, "west")};
-            }
+            surface.side = {texturesObj["side"], readRgb(colorsObj, "side")};
         }
         else
         {
@@ -168,25 +148,10 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
                 if (!colorsObj.contains("down")) THROW_PATTERN_NOT_MATCH(objName);
                 surface.down = {texturesObj["down"], readRgb(colorsObj, "down")};
             }
-            if (texturesObj.contains("north"))
+            if (texturesObj.contains("side"))
             {
-                if (!colorsObj.contains("north")) THROW_PATTERN_NOT_MATCH(objName);
-                surface.north = {texturesObj["north"], readRgb(colorsObj, "north")};
-            }
-            if (texturesObj.contains("south"))
-            {
-                if (!colorsObj.contains("south")) THROW_PATTERN_NOT_MATCH(objName);
-                surface.south = {texturesObj["south"], readRgb(colorsObj, "south")};
-            }
-            if (texturesObj.contains("east"))
-            {
-                if (!colorsObj.contains("east")) THROW_PATTERN_NOT_MATCH(objName);
-                surface.east = {texturesObj["east"], readRgb(colorsObj, "east")};
-            }
-            if (texturesObj.contains("west"))
-            {
-                if (!colorsObj.contains("west")) THROW_PATTERN_NOT_MATCH(objName);
-                surface.west = {texturesObj["west"], readRgb(colorsObj, "west")};
+                if (!colorsObj.contains("side")) THROW_PATTERN_NOT_MATCH(objName);
+                surface.side = {texturesObj["side"], readRgb(colorsObj, "side")};
             }
         }
     }
@@ -201,32 +166,25 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
 }
 
 // 解析方块数据
-// 如果 force 为真，则要求对象必须包含 structure_nbt_id，command_id 和所有面数据
+// 如果 force 为真，则要求对象必须包含 id 和所有面数据
 void parseBlockData(const nlohmann::json& obj, const char* objName, BlockData& data, bool force)
 {
     assert(!obj.is_discarded() && obj.is_object());
 
     if (force)
     {
-        if (!obj.contains("structure_nbt_id") || !obj.contains("command_id") ||
-            !obj.contains("textures")         || !obj.contains("colors"))
+        if (!obj.contains("id") || !obj.contains("textures") || !obj.contains("colors"))
         {
             throw std::runtime_error(
-                "missing necessary fields (structure_nbt_id|command_id|textures|colors) for forced "
-                "Block Data"
+                "missing necessary fields (id|textures|colors) for forced Block Data"
             );
         }
     }
 
-    if (obj.contains("structure_nbt_id"))
+    if (obj.contains("id"))
     {
-        CHECK_KEY(obj, objName, "structure_nbt_id", string);
-        data.structureNbtId = obj["structure_nbt_id"];
-    }
-    if (obj.contains("command_id"))
-    {
-        CHECK_KEY(obj, objName, "command_id", string);
-        data.commandId = obj["command_id"];
+        CHECK_KEY(obj, objName, "id", string);
+        data.id = obj["id"];
     }
     if (obj.contains("attributes"))
     {
@@ -260,6 +218,12 @@ void parseBlockEntryMapFromJsonHelper(std::string_view json, BlockEntryMap& bloc
             CHECK_KEY(v, k, "min_version", string);
             entry.minVersion = readVersion(v, "min_version");
         }
+        else
+        {
+            // 默认最低版本：1.20.50.7（苍园觉醒版本）
+            constexpr Version defaultVersion(1, 21, 50, 7);
+            entry.minVersion = defaultVersion;
+        }
 
         // 解析 name_translations 字段。
         if (v.contains("name_translations"))
@@ -285,33 +249,23 @@ void parseBlockEntryMapFromJsonHelper(std::string_view json, BlockEntryMap& bloc
             const auto& variantsObj = v["variants"];
 
             // 按照版本号对变体数据进行排序，用于实现 “新版本数据继承上一版本数据” 的功能
-            std::vector<std::pair<Version, const nlohmann::json*>> sortedVariants;
+            std::map<Version, const nlohmann::json*> sortedVariants;
             for (const auto& [versionStr, dataObj] : variantsObj.items())
             {
                 if (dataObj.empty()) continue;
                 CHECK_KEY(variantsObj, "variants", versionStr, object);
                 const Version version = Version::fromString(versionStr);
-                sortedVariants.emplace_back(version, &dataObj);
+                sortedVariants[version] = &dataObj;
             }
-
-            std::sort(
-                sortedVariants.begin(),
-                sortedVariants.end(),
-                [](const auto& lhs, const auto& rhs) { return lhs.first < rhs.first; });
 
             // 实际解析行为
             BlockData lastData = entry.defaultBlockData;
-            for (std::size_t i = 0; i < sortedVariants.size(); ++i)
+            for (const auto& [version, dataObj] : sortedVariants)
             {
-                const auto& [version, dataObj] = sortedVariants[i];
-                // 如果出现相同版本的方块数据，抛出异常
-                if (i > 0 && version == sortedVariants[i - 1].first)
-                    throw std::runtime_error("duplicate variant version '" + version.toString() + "'");
-
                 BlockData data = lastData;
                 parseBlockData(*dataObj, version.toString().c_str(), data, false);
+                lastData = data;
                 entry.variants[version] = std::move(data);
-                lastData = entry.variants.at(version);
             }
         }
 

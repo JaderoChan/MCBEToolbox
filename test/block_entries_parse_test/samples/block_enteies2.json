@@ -1,0 +1,40 @@
+{
+  "block_id": {
+    "name":                   "block",
+    "name_translations": {
+      "zh":                   "方块"
+    },
+    "min_version":            "0.0.0",
+    "default": {
+      "id":                   "block_id",
+      "textures":             "./textures/block.png",
+      "colors":               "#000000",
+      "attributes": {
+        "is_incomplete":      false,
+        "is_transparent":     false,
+        "has_gravity":        false,
+        "can_burn":           false,
+        "enderman_pickable":  false
+      }
+    },
+    "variants": {
+      "0.1.0": {
+        "id":                 "block_id_0.1.0",
+        "textures":           "./textures/block.png",
+        "colors":             "#000000"
+      },
+      "0.2.0": {
+        "textures": {
+          "up":               "./textures/block_up.png",
+          "down":             "./textures/block_down.png",
+          "side":             "./textures/block_side.png"
+        },
+        "colors": {
+          "up":               "#FF0000",
+          "down":             "#00FF00",
+          "side":             "#0000FF"
+        }
+      }
+    }
+  }
+}
