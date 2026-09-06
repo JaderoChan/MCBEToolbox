@@ -4,8 +4,16 @@
 
 #include <mcbe_toolbox_api.hpp>
 
-void progressCallback(std::size_t current, std::size_t total, bool& stop, void* userdata)
+void progressCallback(
+    std::size_t    current,
+    std::size_t    total,
+    const cv::Mat& image,
+    bool&          stop,
+    void*          userdata)
 {
+    (void)image;
+    (void)stop;
+    (void)userdata;
     std::cout << "[" << current << "/" << total << "]" << std::endl;
 }
 
@@ -74,16 +82,12 @@ int main(int argc, char* argv[])
     }
 
     // 转换图像
-    std::map<std::string, std::size_t> blockUsageCount;
+    BlockImageFactory blockImageFactory(filteredBlockDataMap, TargetSurface::Side);
+    blockImageFactory.setFallbackBlock(&FALLBACK_AIR_BLOCK);
+    blockImageFactory.setProgressCallback(&progressCallback);
+
     std::cout << "=> Start Convert" << std::endl;
-    cv::Mat result = convertImageToBlockImage(
-        image,
-        filteredBlockDataMap,
-        TargetSurface::Side,
-        &FALLBACK_AIR_BLOCK,
-        &blockUsageCount,
-        &progressCallback
-    );
+    cv::Mat result = blockImageFactory.generateBlockImage(image);
     if (result.empty())
     {
         std::cout << "Failed to convert image to block image" << std::endl;
@@ -101,7 +105,7 @@ int main(int argc, char* argv[])
     std::ofstream blockUsageFile("./block_usage_count.txt");
     if (blockUsageFile.is_open())
     {
-        for (const auto& [id, count] : blockUsageCount)
+        for (const auto& [id, count] : blockImageFactory.getBlockUsageCount())
         {
             const std::string blockGameId = (
                 id == FALLBACK_AIR_BLOCK.first
