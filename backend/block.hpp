@@ -30,7 +30,7 @@ constexpr BlockAttributes BLOCK_ATTRI_ALL  = 0xFFFFFFFF;
 /** 描述方块各个面的材质文件路径与颜色。 */
 struct BlockSurface
 {
-    BlockSurface() = default;
+    BlockSurface() noexcept = default;
 
     // {材质文件路径 : 方块颜色}
     std::pair<std::string, Rgb> up;
@@ -41,17 +41,17 @@ struct BlockSurface
 /** 方块数据 */
 struct BlockData
 {
-    BlockData() : attributes(0) {}
+    BlockData() noexcept = default;
 
-    std::string     id;         // 方块 ID
-    BlockAttributes attributes; // 方块属性
-    BlockSurface    surface;    // 方块面数据
+    std::string     id;            // 方块 ID
+    BlockAttributes attributes{0}; // 方块属性
+    BlockSurface    surface;       // 方块面数据
 };
 
 /** 方块条目 */
 struct BlockEntry
 {
-    BlockEntry() = default;
+    BlockEntry() noexcept = default;
 
     std::string name;             // 方块英文名
     Version     minVersion;       // 最低可用游戏版本

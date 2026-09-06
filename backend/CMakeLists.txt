@@ -25,8 +25,8 @@ target_link_libraries(
     opencv_core
     opencv_imgcodecs
     opencv_videoio
+    mcnbt::mcnbt
     PRIVATE
     json
     nanoflann
-    mcnbt::mcnbt
 )

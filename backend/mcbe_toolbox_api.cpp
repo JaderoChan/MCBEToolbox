@@ -60,11 +60,22 @@ struct ColorKdTree
         blockDataVec.reserve(blockDataMap.size());
         for (const auto& [id, data] : blockDataMap)
         {
-            cloud.pts.push_back(getSurface(data->surface, targetSurface).second);
-            blockDataVec.emplace_back(id, data);
+            // 过滤掉目标面为空的方块
+            const auto& surface = getSurface(data->surface, targetSurface);
+            if (!surface.first.empty())
+            {
+                cloud.pts.push_back(surface.second);
+                blockDataVec.emplace_back(id, data);
+            }
         }
+
+        if (cloud.kdtree_get_point_count() == 0)
+            return;
+        isValid_ = true;
         tree.buildIndex();
     }
+
+    bool isValid() const { return isValid_; }
 
     std::pair<std::string_view, const BlockData*>
     findNearest(const Rgb& query) const
@@ -81,6 +92,9 @@ struct ColorKdTree
         tree.findNeighbors(resultSet, queryPt);
         return blockDataVec[retIdx];
     }
+
+private:
+    bool isValid_ = false;
 };
 
 // 转换 8UC1 或 8UC3 类型的图像为 BGRA 格式。如果输入图像不是 8UC1/8UC3/8UC4 类型，输出图像将被置空。
@@ -122,6 +136,8 @@ cv::Mat convertImageToBlockImage(
 
     // 构建 KD 树用于加速最近邻颜色查找
     ColorKdTree colorKdTree(blockDataMap, targetSurface);
+    if (!colorKdTree.isValid())
+        return cv::Mat();
     // 缓存材质文件路径与材质
     std::unordered_map<std::string, cv::Mat> cache;
 
@@ -161,25 +177,28 @@ cv::Mat convertImageToBlockImage(
 
             if (data != nullptr)
             {
-                // 如果当前材质还未被加载则将其加载至缓存中
-                const std::string texturePath = concatTexturePath(
-                    getSurface(data->surface, targetSurface).first);
-                if (cache.find(texturePath) == cache.end())
+                const auto& surface = getSurface(data->surface, targetSurface);
+                if (!surface.first.empty())
                 {
-                    cv::Mat texture = cv::imread(texturePath, cv::IMREAD_UNCHANGED);
-                    if (!texture.empty())
-                        convertColorToBgra(texture, texture);
-                    if (texture.empty())
-                        texture = cv::Mat(16, 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 255.0));
-                    cache[texturePath] = texture;
-                }
+                    // 如果当前材质还未被加载则将其加载至缓存中
+                    const std::string texturePath = concatTexturePath(surface.first);
+                    if (cache.find(texturePath) == cache.end())
+                    {
+                        cv::Mat texture = cv::imread(texturePath, cv::IMREAD_UNCHANGED);
+                        if (!texture.empty())
+                            convertColorToBgra(texture, texture);
+                        if (texture.empty())
+                            texture = cv::Mat(16, 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
+                        cache[texturePath] = texture;
+                    }
 
-                // 直接从缓存中加载方块材质
-                cv::Mat texture = cache[texturePath];
-                // 复制方块材质至像素映射区域
-                texture.copyTo(ret(
-                    cv::Range(row * 16, row * 16 + 16),
-                    cv::Range(col * 16, col * 16 + 16)));
+                    // 直接从缓存中加载方块材质
+                    cv::Mat texture = cache[texturePath];
+                    // 复制方块材质至像素映射区域
+                    texture.copyTo(ret(
+                        cv::Range(row * 16, row * 16 + 16),
+                        cv::Range(col * 16, col * 16 + 16)));
+                }
 
                 // 更新方块用量信息
                 if (blockUsageCount) ++(*blockUsageCount)[id];

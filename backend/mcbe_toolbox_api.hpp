@@ -3,6 +3,7 @@
 #include <map>
 
 #include <opencv2/opencv.hpp>
+#include <mcnbt/mcnbt.hpp>
 
 #include "block.hpp"
 
@@ -28,13 +29,20 @@ enum class TargetSurface
     Side
 };
 
+/** 空气方块数据，可用于 fallbackBlock 参数 */
+static inline const BlockData
+FALLBACK_AIR_BLOCK_DATA{"minecraft:air", 0, BlockSurface()};
+/** 空气方块数据对，可用于 fallbackBlock 参数 */
+static inline const std::pair<std::string, BlockData>
+FALLBACK_AIR_BLOCK{"minecraft:air", FALLBACK_AIR_BLOCK_DATA};
+
 /**
  * 使用给定的 #BlockDataMap 将指定图像转换为方块图（使用方块材质作为像素组成的图片）。
  *
  * @param image           输入图像
  * @param blockDataMap    可用的“耗材”方块
  * @param targetSurface   指定使用的方块面
- * @param fallbackBlock   透明像素的替代方块，置空则保留透明区域
+ * @param fallbackBlock   透明像素的替代方块，置空或传入指定面材质路径为空的方块则保留透明区域
  * @param blockUsageCount 方块用量，格式为 {方块ID : 方块数量}
  * @param callback        回调函数
  * @param userdata        回调函数用户自定义数据

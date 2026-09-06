@@ -14,10 +14,7 @@ int main(int argc, char* argv[])
     BlockEntryMap blockEntryMap;
     // 加载并解析 BlockEntryMap
     {
-        std::string blockEntriesFilepath;
-        std::cout << "Please input the 'block_entries.json' file path:" << std::endl;
-        std::cin >> blockEntriesFilepath;
-
+        const std::string blockEntriesFilepath = "./block_entries.json";
         std::ifstream blockEntriesFile(blockEntriesFilepath);
         if (!blockEntriesFile.is_open())
         {
@@ -83,7 +80,7 @@ int main(int argc, char* argv[])
         image,
         filteredBlockDataMap,
         TargetSurface::Side,
-        nullptr,
+        &FALLBACK_AIR_BLOCK,
         &blockUsageCount,
         &progressCallback
     );
@@ -105,7 +102,14 @@ int main(int argc, char* argv[])
     if (blockUsageFile.is_open())
     {
         for (const auto& [id, count] : blockUsageCount)
-            blockUsageFile << blockEntryMap[id]->name << " " << count << std::endl;
+        {
+            const std::string blockGameId = (
+                id == FALLBACK_AIR_BLOCK.first
+                ? FALLBACK_AIR_BLOCK.second.id
+                : blockEntryMap[id]->defaultBlockData.id
+            );
+            blockUsageFile << blockGameId << " " << count << std::endl;
+        }
         std::cout << "Successfully save the block usage count result to './block_usage_count.txt'" << std::endl;
         blockUsageFile.close();
     }
