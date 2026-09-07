@@ -2190,7 +2190,9 @@
       "id": "minecraft:crying_obsidian",
       "textures": "1.21.50.7/crying_obsidian.png",
       "colors": "#07050D",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:obsidian_group:obsidian": {
@@ -2318,7 +2320,9 @@
       "id": "minecraft:copper_ore",
       "textures": "1.21.50.7/copper_ore.png",
       "colors": "#888988",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:deepslate_coal_ore": {
@@ -2338,7 +2342,9 @@
       "id": "minecraft:deepslate_copper_ore",
       "textures": "1.21.50.7/deepslate_copper_ore.png",
       "colors": "#424347",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:deepslate_diamond_ore": {
@@ -2348,7 +2354,9 @@
       "id": "minecraft:deepslate_diamond_ore",
       "textures": "1.21.50.7/deepslate_diamond_ore.png",
       "colors": "#434547",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:deepslate_emerald_ore": {
@@ -2358,7 +2366,9 @@
       "id": "minecraft:deepslate_emerald_ore",
       "textures": "1.21.50.7/deepslate_emerald_ore.png",
       "colors": "#414345",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:deepslate_gold_ore": {
@@ -2368,7 +2378,9 @@
       "id": "minecraft:deepslate_gold_ore",
       "textures": "1.21.50.7/deepslate_gold_ore.png",
       "colors": "#786C5F",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:deepslate_iron_ore": {
@@ -2378,7 +2390,9 @@
       "id": "minecraft:deepslate_iron_ore",
       "textures": "1.21.50.7/deepslate_iron_ore.png",
       "colors": "#736F68",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:deepslate_lapis_ore": {
@@ -2388,7 +2402,9 @@
       "id": "minecraft:deepslate_lapis_ore",
       "textures": "1.21.50.7/deepslate_lapis_ore.png",
       "colors": "#6D6D6D",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:deepslate_redstone_ore": {
@@ -2398,7 +2414,9 @@
       "id": "minecraft:deepslate_redstone_ore",
       "textures": "1.21.50.7/deepslate_redstone_ore.png",
       "colors": "#444144",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:diamond_ore": {
@@ -2408,7 +2426,9 @@
       "id": "minecraft:diamond_ore",
       "textures": "1.21.50.7/diamond_ore.png",
       "colors": "#767676",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:emerald_ore": {
@@ -2418,7 +2438,9 @@
       "id": "minecraft:emerald_ore",
       "textures": "1.21.50.7/emerald_ore.png",
       "colors": "#828383",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:gold_ore": {
@@ -2428,7 +2450,9 @@
       "id": "minecraft:gold_ore",
       "textures": "1.21.50.7/gold_ore.png",
       "colors": "#8A8A8A",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:iron_ore": {
@@ -2438,7 +2462,9 @@
       "id": "minecraft:iron_ore",
       "textures": "1.21.50.7/iron_ore.png",
       "colors": "#858585",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:lapis_ore": {
@@ -2448,7 +2474,9 @@
       "id": "minecraft:lapis_ore",
       "textures": "1.21.50.7/lapis_ore.png",
       "colors": "#797979",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:nether_gold_ore": {
@@ -2468,7 +2496,9 @@
       "id": "minecraft:quartz_ore",
       "textures": "1.21.50.7/quartz_ore.png",
       "colors": "#6E3230",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:redstone_ore": {
@@ -2478,7 +2508,9 @@
       "id": "minecraft:redstone_ore",
       "textures": "1.21.50.7/redstone_ore.png",
       "colors": "#908282",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:planks_group:acacia_planks": {
