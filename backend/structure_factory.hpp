@@ -84,7 +84,7 @@ public:
      * - 支持多线程处理
      * - 不支持回调函数
      */
-    std::vector<nbt::Tag> generateDetachStructure(ImageFramesOStream& stream, int numThreads = 1);
+    std::vector<nbt::Tag> generateDetachStructure(ImageFramesOStream& stream, int numThreads = 2);
 
     /** 获取方块用量信息 */
     const BlockUsageCountType& getBlockUsageCount() const;
