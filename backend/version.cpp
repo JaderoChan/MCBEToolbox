@@ -21,9 +21,7 @@ throw std::invalid_argument("invalid version string '" + std::string(string_view
 
     std::string_view majorStr = str.substr(0, pos1);
     std::string_view minorStr = str.substr(pos1 + 1, pos2 - pos1 - 1);
-    std::string_view patchStr = str.substr(
-        pos2 + 1,
-        (pos3 == std::string_view::npos ? str.size() : pos3) - pos2 - 1);
+    std::string_view patchStr = str.substr(pos2 + 1, (pos3 == std::string_view::npos ? str.size() : pos3) - pos2 - 1);
     std::string_view tweakStr = (pos3 == std::string_view::npos ? "" : str.substr(pos3 + 1));
     const int major = std::stoi(std::string(majorStr));
     const int minor = std::stoi(std::string(minorStr));

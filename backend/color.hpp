@@ -9,8 +9,7 @@ struct Rgb
     static_assert(sizeof(unsigned int)  >= 3, "sizeof(unsigned int) < 3");
 
     constexpr Rgb() noexcept : r(0), g(0), b(0) {}
-    constexpr Rgb(unsigned char r, unsigned char g, unsigned char b) noexcept
-        : r(r), g(g), b(b) {}
+    constexpr Rgb(unsigned char r, unsigned char g, unsigned char b) noexcept : r(r), g(g), b(b) {}
 
     /**
      * 从 "#000"/"#000000"/"000"/"000000" 格式的字符串中解析 RGB 颜色值。

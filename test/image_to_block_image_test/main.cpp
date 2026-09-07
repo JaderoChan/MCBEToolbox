@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 
+#include <opencv2/imgcodecs.hpp>
+
 #include <mcbe_toolbox_api.hpp>
 
 void progressCallback(
@@ -69,21 +71,16 @@ int main(int argc, char* argv[])
         if (image.empty())
         {
             std::cout << "Failed to load the image: " << imageFilepath << std::endl;
-            releaseBlockEntryMap(blockEntryMap);
             return 1;
         }
 
         // 将图像限制在一定尺寸内
-        if (image.rows > 1080 || image.cols > 1080)
-        {
-            const double ratio = 1080.0 / std::max(image.rows, image.cols);
-            cv::resize(image, image, cv::Size(0, 0), ratio, ratio);
-        }
+        image = limitsImageSize(image, 1080, 1080);
     }
 
     // 转换图像
     BlockImageFactory blockImageFactory(filteredBlockDataMap, TargetSurface::Side);
-    blockImageFactory.setFallbackBlock(&FALLBACK_AIR_BLOCK);
+    blockImageFactory.setFallbackBlock(&AIR_BLOCK_DATA_PAIR);
     blockImageFactory.setProgressCallback(&progressCallback);
 
     std::cout << "=> Start Convert" << std::endl;
@@ -91,7 +88,6 @@ int main(int argc, char* argv[])
     if (result.empty())
     {
         std::cout << "Failed to convert image to block image" << std::endl;
-        releaseBlockEntryMap(blockEntryMap);
         return 1;
     }
     std::cout << "=> Convert finished" << std::endl;
@@ -108,9 +104,9 @@ int main(int argc, char* argv[])
         for (const auto& [id, count] : blockImageFactory.getBlockUsageCount())
         {
             const std::string blockGameId = (
-                id == FALLBACK_AIR_BLOCK.first
-                ? FALLBACK_AIR_BLOCK.second.id
-                : blockEntryMap[id]->defaultBlockData.id
+                id == AIR_BLOCK_DATA_PAIR.first
+                ? AIR_BLOCK_DATA_PAIR.second->id
+                : blockEntryMap[id].defaultBlockData.id
             );
             blockUsageFile << blockGameId << " " << count << std::endl;
         }
@@ -122,6 +118,5 @@ int main(int argc, char* argv[])
         std::cout << "Failed to save the block usage count result to './block_usage_count.txt'" << std::endl;
     }
 
-    releaseBlockEntryMap(blockEntryMap);
     return 0;
 }

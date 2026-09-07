@@ -2,16 +2,28 @@ set(TARGET_NAME MCBEToolboxBackend)
 
 set(
     HEADERS
+    ./block_image_factory.hpp
     ./block.hpp
+    ./color_kd_tree.hpp
     ./color.hpp
+    ./image_frames_ostream.hpp
+    ./image_utilities.hpp
     ./mcbe_toolbox_api.hpp
+    ./structure_factory.hpp
+    ./thread_pool.hpp
     ./version.hpp
 )
 set(
     SRCS
+    ./block_image_factory.cpp
     ./block.cpp
+    ./color_kd_tree.cpp
     ./color.cpp
+    ./image_frames_ostream.cpp
+    ./image_utilities.cpp
     ./mcbe_toolbox_api.cpp
+    ./structure_factory.cpp
+    ./thread_pool.cpp
     ./version.cpp
 )
 set(PROJECT_SOURCES ${HEADERS} ${SRCS})

@@ -1,7 +1,6 @@
 #include "block.hpp"
 
 #include <assert.h>
-#include <stdexcept>
 
 #include <nlohmann/json.hpp>
 
@@ -9,24 +8,23 @@ namespace
 {
 
 // 抛出 “键不存在” 异常
-#define THROW_KEY_NOT_FOUND_ERROR(obj_name, key) \
+#define THROW_KEY_NOT_FOUND_ERROR(obj_name, key)                                                    \
 throw std::runtime_error(std::string("key '") + key + "' not found in object '" + obj_name + "'")
 
 // 抛出 “键类型不正确” 异常
-#define THROW_KEY_UNCORRECT_TYPE_ERROR(obj_name, key, got_type, expected_type)  \
-throw std::runtime_error(                                                       \
-    std::string("key '") + key + "' expected type is '" #expected_type          \
-    "' but got '" + got_type + "' type in object '" + obj_name + "'"            \
+#define THROW_KEY_UNCORRECT_TYPE_ERROR(obj_name, key, got_type, expected_type)                      \
+throw std::runtime_error(                                                                           \
+    std::string("key '") + key + "' expected type is '" #expected_type                              \
+    "' but got '" + got_type + "' type in object '" + obj_name + "'"                                \
 )
 
 // 检查指定对象中是否存在符合预期类型的键
-#define CHECK_KEY(obj, obj_name, key, expected_type)                            \
-do {                                                                            \
-    if (!obj.contains(key))                                                     \
-        THROW_KEY_NOT_FOUND_ERROR(obj_name, key);                               \
-    if (obj[key].type() != nlohmann::json::value_t::expected_type)              \
-        THROW_KEY_UNCORRECT_TYPE_ERROR(                                         \
-            obj_name, key, obj[key].type_name(), expected_type);                \
+#define CHECK_KEY(obj, obj_name, key, expected_type)                                                \
+do {                                                                                                \
+    if (!obj.contains(key))                                                                         \
+        THROW_KEY_NOT_FOUND_ERROR(obj_name, key);                                                   \
+    if (obj[key].type() != nlohmann::json::value_t::expected_type)                                  \
+        THROW_KEY_UNCORRECT_TYPE_ERROR(obj_name, key, obj[key].type_name(), expected_type);         \
 } while (0)
 
 // 从给定 json 对象的字段中读取颜色值
@@ -94,8 +92,7 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
     {
         if (!obj["colors"].is_string())
             throw std::runtime_error(
-                std::string("key 'colors' type is not match to 'textures' type in object '") +
-                objName + "'"
+                std::string("key 'colors' type is not match to 'textures' type in object '") + objName + "'"
             );
 
         const Rgb rgb = readRgb(obj, "colors");
@@ -108,8 +105,7 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
     {
         if (!obj["colors"].is_object())
             throw std::runtime_error(
-                std::string("key 'colors' type is not match to 'textures' type in object '") +
-                objName + "'"
+                std::string("key 'colors' type is not match to 'textures' type in object '") + objName + "'"
             );
 
         const auto& texturesObj = obj["textures"];
@@ -117,10 +113,9 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
 
     // 抛出 colors 和 textures 模式不匹配异常
     //（如 colors 指定 side 面，而 textures 指定了所有面；或者 colors 缺失 textures 对应的键）
-    #define THROW_PATTERN_NOT_MATCH(obj_name)                                           \
-    throw std::runtime_error(std::string(                                               \
-            "key 'colors' pattern is not match to 'textures' pattern in object '") +    \
-            objName + "'"                                                               \
+    #define THROW_PATTERN_NOT_MATCH(obj_name)                                                       \
+    throw std::runtime_error(std::string(                                                           \
+            "key 'colors' pattern is not match to 'textures' pattern in object '") + objName + "'"  \
         );
 
         if (force)
@@ -157,9 +152,7 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
     }
     else
     {
-        THROW_KEY_UNCORRECT_TYPE_ERROR(
-            objName, "textures", obj["textures"].type_name(), string|object
-        );
+        THROW_KEY_UNCORRECT_TYPE_ERROR(objName, "textures", obj["textures"].type_name(), string|object);
     }
 
     #undef THROW_PATTERN_NOT_MATCH
@@ -174,11 +167,7 @@ void parseBlockData(const nlohmann::json& obj, const char* objName, BlockData& d
     if (force)
     {
         if (!obj.contains("id") || !obj.contains("textures") || !obj.contains("colors"))
-        {
-            throw std::runtime_error(
-                "missing necessary fields (id|textures|colors) for forced Block Data"
-            );
-        }
+            throw std::runtime_error("missing necessary fields (id|textures|colors) for forced Block Data");
     }
 
     if (obj.contains("id"))
@@ -269,8 +258,7 @@ void parseBlockEntryMapFromJsonHelper(std::string_view json, BlockEntryMap& bloc
             }
         }
 
-        const BlockEntry* blockEntry = new BlockEntry(std::move(entry));
-        blockEntryMap[k] = blockEntry;
+        blockEntryMap[k] = entry;
     }
 }
 
@@ -282,7 +270,7 @@ void parseBlockEntryMapFromJsonHelper(std::string_view json, BlockEntryMap& bloc
 
 BlockEntryMap parseBlockEntryMapFromJson(std::string_view json)
 {
-    // 包装一层异常消息并处理异常抛出时资源的释放
+    // 包装一层异常消息
     BlockEntryMap ret;
     try
     {
@@ -290,25 +278,18 @@ BlockEntryMap parseBlockEntryMapFromJson(std::string_view json)
     }
     catch (std::exception& e)
     {
-        releaseBlockEntryMap(ret);
         throw std::runtime_error(
-            "invalid json for parse 'Block Entry Map': " + std::string(e.what())
+            std::string("parseBlockEntryMapFromJson(): invalid json for parse 'Block Entry Map': ") + e.what()
         );
     }
     return ret;
-}
-
-void releaseBlockEntryMap(BlockEntryMap& blockEntryMap)
-{
-    for (const auto& [id, entry] : blockEntryMap)
-        delete entry;
 }
 
 BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap)
 {
     BlockDataMap ret;
     for (const auto& [id, entry] : blockEntryMap)
-        ret[id] = &entry->defaultBlockData;
+        ret[id] = &entry.defaultBlockData;
     return ret;
 }
 
@@ -318,13 +299,13 @@ BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version ta
     for (const auto& [id, entry] : blockEntryMap)
     {
         // 如果加入版本比目标版本更新，说明在目标版本中此方块还未被加入，直接跳过。
-        if (entry->minVersion > targetVersion)
+        if (entry.minVersion > targetVersion)
             continue;
 
         // 目标是获取不超过 targetVersion 的最新版本的方块数据。
         Version lastestVersion(0, 0, 0);
-        const BlockData* lastestData = &entry->defaultBlockData;
-        for (const auto& [version, data] : entry->variants)
+        const BlockData* lastestData = &entry.defaultBlockData;
+        for (const auto& [version, data] : entry.variants)
         {
             if (version > targetVersion)
                 continue;
@@ -351,17 +332,11 @@ BlockDataMap filterBlockAttributes(
         switch (matchMode)
         {
             case BlockAttributeMatchMode::ContainsAll:
-                if ((data->attributes & attributes) == attributes)
-                    ret[id] = data;
-                break;
+                if ((data->attributes & attributes) == attributes)       ret[id] = data; break;
             case BlockAttributeMatchMode::Disjoint:
-                if ((data->attributes & attributes) == 0)
-                    ret[id] = data;
-                break;
+                if ((data->attributes & attributes) == 0)                ret[id] = data; break;
             case BlockAttributeMatchMode::SubsetOf:
-                if ((data->attributes & attributes) == data->attributes)
-                    ret[id] = data;
-                break;
+                if ((data->attributes & attributes) == data->attributes) ret[id] = data; break;
             default:
                 throw std::invalid_argument("invalid block attribute match mode");
         }
