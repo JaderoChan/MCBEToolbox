@@ -2,7 +2,9 @@
 
 #include <utility>
 
-SingleImageFramesOStream::SingleImageFramesOStream(cv::Mat image) : image_(std::move(image)) {}
+SingleImageFramesOStream::SingleImageFramesOStream(cv::Mat image)
+    : image_(std::move(image))
+{}
 
 long long SingleImageFramesOStream::frameCount() const
 {
@@ -39,10 +41,12 @@ bool SingleImageFramesOStream::isOpened() const
 }
 
 VideoImageFramesOStream::VideoImageFramesOStream(const std::string& videoFilepath)
-    : capture_(videoFilepath) {}
+    : capture_(videoFilepath)
+{}
 
 VideoImageFramesOStream::VideoImageFramesOStream(int cameraIndex)
-    : capture_(cameraIndex) {}
+    : capture_(cameraIndex)
+{}
 
 long long VideoImageFramesOStream::frameCount() const
 {

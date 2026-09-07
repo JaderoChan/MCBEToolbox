@@ -105,10 +105,12 @@ BlockDataPair ColorKdTreePrivate::findNearest(const Rgb& query) const
 }
 
 ColorKdTree::ColorKdTree()
-    : ptr_(new ColorKdTreePrivate()) {}
+    : ptr_(new ColorKdTreePrivate())
+{}
 
 ColorKdTree::ColorKdTree(const BlockDataMap& blockDataMap, TargetSurface targetSurface)
-    : ptr_(new ColorKdTreePrivate(blockDataMap, targetSurface)) {}
+    : ptr_(new ColorKdTreePrivate(blockDataMap, targetSurface))
+{}
 
 ColorKdTree::~ColorKdTree() = default;
 
