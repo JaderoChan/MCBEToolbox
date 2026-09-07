@@ -95,6 +95,7 @@ private:
 
 nbt::Tag StructureFactoryPrivate::generateSingleStructure(cv::Mat image)
 {
+    releaseCaches();
     SingleImageFramesOStream stream(image);
     return generateSingleStructureHelper(
         stream,
@@ -111,6 +112,7 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructure(cv::Mat image)
 
 nbt::Tag StructureFactoryPrivate::generateSingleStructure(ImageFramesOStream& stream)
 {
+    releaseCaches();
     return generateSingleStructureHelper(
         stream,
         blockDataMap_,
@@ -126,6 +128,7 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructure(ImageFramesOStream& st
 
 std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructure(ImageFramesOStream& stream, int numThreads)
 {
+    releaseCaches();
     if (!stream.isOpened())
         return std::vector<nbt::Tag>();
 
@@ -333,3 +336,55 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
 
     return structure.root;
 }
+
+StructureFactory::StructureFactory()
+    : StructureFactory(BlockDataMap())
+{}
+
+StructureFactory::StructureFactory(
+    const BlockDataMap& blockDataMap,
+    TargetSurface       targetSurface,
+    const Version&      blockFormatVersion)
+    : ptr_(new StructureFactoryPrivate(blockDataMap, targetSurface, blockFormatVersion))
+{}
+
+StructureFactory::~StructureFactory() = default;
+
+void StructureFactory::setBlockDataMap(const BlockDataMap& blockDataMap)
+{ ptr_->setBlockDataMap(blockDataMap); }
+
+void StructureFactory::setTargetSurface(TargetSurface targetSurface)
+{ ptr_->setTargetSurface(targetSurface); }
+
+void StructureFactory::setBlockFormatVersion(const Version& blockFormatVersion)
+{ ptr_->setBlockFormatVersion(blockFormatVersion); }
+
+void StructureFactory::setFallbackBlock(const BlockDataPair* fallbackBlock)
+{ ptr_->setFallbackBlock(fallbackBlock); }
+
+void StructureFactory::setProgressCallback(ProgressCallback callback)
+{ ptr_->setProgressCallback(callback); }
+
+void StructureFactory::setUserdata(void* userdata)
+{ ptr_->setUserdata(userdata); }
+
+const BlockDataMap& StructureFactory::getBlockDataMap() const
+{ return ptr_->getBlockDataMap(); }
+
+BlockDataMap& StructureFactory::getBlockDataMapRef()
+{ return ptr_->getBlockDataMapRef(); }
+
+nbt::Tag StructureFactory::generateSingleStructure(cv::Mat image)
+{ return ptr_->generateSingleStructure(image); }
+
+nbt::Tag StructureFactory::generateSingleStructure(ImageFramesOStream& stream)
+{ return ptr_->generateSingleStructure(stream); }
+
+std::vector<nbt::Tag> StructureFactory::generateDetachStructure(ImageFramesOStream& stream, int numThreads)
+{ return ptr_->generateDetachStructure(stream, numThreads); }
+
+const StructureFactory::BlockUsageCountType& StructureFactory::getBlockUsageCount() const
+{ return ptr_->getBlockUsageCount(); }
+
+void StructureFactory::releaseCaches()
+{ ptr_->releaseCaches(); }
