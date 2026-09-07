@@ -53,8 +53,8 @@ public:
     StructureFactory();
     StructureFactory(
         const BlockDataMap& blockDataMap,
-        TargetSurface       targetSurface,
-        const Version&      blockFormatVersion);
+        TargetSurface       targetSurface      = TargetSurface::Side,
+        const Version&      blockFormatVersion = Version(1, 21, 50, 7));
     ~StructureFactory();
 
     /** 设置可用的方块数据 */

@@ -9,6 +9,8 @@
 
 #include "block.hpp"
 
+constexpr const char* DEFAULT_TEXTURE_DIR_PATH = "./textures";
+
 // 实现类前置声明
 class BlockImageFactoryPrivate;
 
@@ -40,8 +42,8 @@ public:
     BlockImageFactory();
     BlockImageFactory(
         const BlockDataMap& blockDataMap,
-        TargetSurface       targetSurface,
-        std::string_view    textureDirPath);
+        TargetSurface       targetSurface  = TargetSurface::Side,
+        std::string_view    textureDirPath = DEFAULT_TEXTURE_DIR_PATH);
     ~BlockImageFactory();
 
     /** 设置可用的方块数据 */

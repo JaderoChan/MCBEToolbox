@@ -16,8 +16,6 @@ public:
 
     static constexpr size_t CALLBACK_GAP = 10000;
 
-    StructureFactoryPrivate() = default;
-
     StructureFactoryPrivate(
         const BlockDataMap& blockDataMap,
         TargetSurface       targetSurface,
@@ -83,8 +81,8 @@ private:
     );
 
     BlockDataMap         blockDataMap_;
-    TargetSurface        targetSurface_      = TargetSurface::Side;
-    Version              blockFormatVersion_ = Version(1, 21, 50, 7);
+    TargetSurface        targetSurface_;
+    Version              blockFormatVersion_;
     const BlockDataPair* fallbackBlock_      = nullptr;
     ProgressCallback     callback_           = nullptr;
     void*                userdata_           = nullptr;

@@ -16,8 +16,6 @@ public:
 
     static constexpr size_t CALLBACK_GAP = 10000;
 
-    BlockImageFactoryPrivate() = default;
-
     BlockImageFactoryPrivate(
         const BlockDataMap& blockDataMap,
         TargetSurface       targetSurface,
@@ -74,8 +72,8 @@ private:
     { return base + "/" + path; }
 
     BlockDataMap         blockDataMap_;
-    TargetSurface        targetSurface_  = TargetSurface::Side;
-    std::string          textureDirPath_ = "./textures";
+    TargetSurface        targetSurface_;
+    std::string          textureDirPath_;
     const BlockDataPair* fallbackBlock_  = nullptr;
     ProgressCallback     callback_       = nullptr;
     void*                userdata_       = nullptr;
@@ -177,7 +175,7 @@ cv::Mat BlockImageFactoryPrivate::generateBlockImage(cv::Mat image)
 }
 
 BlockImageFactory::BlockImageFactory()
-    : ptr_(new BlockImageFactoryPrivate())
+    : BlockImageFactory(BlockDataMap())
 {}
 
 BlockImageFactory::BlockImageFactory(
