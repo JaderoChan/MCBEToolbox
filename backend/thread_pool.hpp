@@ -35,7 +35,7 @@
 class ThreadPool
 {
 public:
-    ThreadPool(std::size_t numThreads);
+    explicit ThreadPool(std::size_t numThreads);
     ~ThreadPool();
 
     /** @brief 提交一个任务至队列中。 */

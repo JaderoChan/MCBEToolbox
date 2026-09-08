@@ -51,7 +51,7 @@ public:
 
     /** 默认构造函数，使用空 #BlockDataMap，#TargetSurface::Side 和 Version(1, 21, 50, 7) 为默认参数 */
     StructureFactory();
-    StructureFactory(
+    explicit StructureFactory(
         const BlockDataMap& blockDataMap,
         TargetSurface       targetSurface      = TargetSurface::Side,
         const Version&      blockFormatVersion = Version(1, 21, 50, 7));

@@ -40,7 +40,7 @@ public:
 
     /** 默认构造函数，使用空 #BlockDataMap，#TargetSurface::Side 和 "./textures" 为默认参数 */
     BlockImageFactory();
-    BlockImageFactory(
+    explicit BlockImageFactory(
         const BlockDataMap& blockDataMap,
         TargetSurface       targetSurface  = TargetSurface::Side,
         std::string_view    textureDirPath = DEFAULT_TEXTURE_DIR_PATH);
