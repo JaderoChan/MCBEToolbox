@@ -1,4 +1,4 @@
-set(TARGET_NAME MCBEToolboxBackend)
+project(MCBEToolboxBackend)
 
 set(
     HEADERS
@@ -28,11 +28,11 @@ set(
 )
 set(PROJECT_SOURCES ${HEADERS} ${SRCS})
 
-add_library(${TARGET_NAME} STATIC ${PROJECT_SOURCES})
+add_library(${PROJECT_NAME} STATIC ${PROJECT_SOURCES})
 
-target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(
-    ${TARGET_NAME}
+    ${PROJECT_NAME}
     PUBLIC
     opencv_core
     opencv_imgcodecs

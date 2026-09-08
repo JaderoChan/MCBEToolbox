@@ -1,9 +1,11 @@
-set(TARGET_NAME block_entries_parse_test)
+project(block_entries_parse_test)
+
 set(SRCS ./main.cpp)
-add_executable(${TARGET_NAME} ${SRCS})
+add_executable(${PROJECT_NAME} ${SRCS})
 target_link_libraries(
-    ${TARGET_NAME} PRIVATE
+    ${PROJECT_NAME} PRIVATE
     MCBEToolboxBackend
     json
 )
-copy_runtime_dependencies(${TARGET_NAME})
+
+copy_runtime_dependencies(${PROJECT_NAME})

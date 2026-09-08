@@ -1,8 +1,10 @@
-set(TARGET_NAME image_to_block_image_test)
+project(image_to_block_image_test)
+
 set(SRCS ./main.cpp)
-add_executable(${TARGET_NAME} ${SRCS})
+add_executable(${PROJECT_NAME} ${SRCS})
 target_link_libraries(
-    ${TARGET_NAME} PRIVATE
+    ${PROJECT_NAME} PRIVATE
     MCBEToolboxBackend
 )
-copy_runtime_dependencies(${TARGET_NAME})
+
+copy_runtime_dependencies(${PROJECT_NAME})
