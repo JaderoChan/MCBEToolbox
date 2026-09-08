@@ -75,16 +75,27 @@ public:
 
     /** 生成图像结构文件，如果参数不合法返回无效 #nbt::Tag（TT_END）。 */
     nbt::Tag generateSingleStructure(cv::Mat image);
+
     /** 生成视频结构文件（单个结构文件），如果参数不合法返回无效 #nbt::Tag（TT_END）。 */
-    nbt::Tag generateSingleStructure(ImageFramesOStream& stream);
+    nbt::Tag generateSingleStructure(VideoImageFramesOStream& stream);
+
     /**
      * 生成视频结构文件（每帧一个结构文件），如果参数不合法返回空数组。
      *
-     * - 支持实时流
      * - 支持多线程处理
-     * - 不支持回调函数
+     * - 支持回调函数，按已完成的帧数（而非像素数）触发
+     * - 中止时会停止提交新任务，并尝试跳过尚未开始执行的已提交任务；
+     *   已在执行中的任务无法被中断，但其结果仍会被丢弃
      */
-    std::vector<nbt::Tag> generateDetachStructure(ImageFramesOStream& stream, int numThreads = 2);
+    std::vector<nbt::Tag> generateDetachStructure(VideoImageFramesOStream& stream, int numThreads = 2);
+
+    /**
+     * 生成视频结构文件（每帧一个结构文件），用于实时视频流。
+     *
+     * - 支持多线程处理
+     * - 不支持回调函数（实时流总帧数未知，进度无法被定义）
+     */
+    std::vector<nbt::Tag> generateDetachStructure(RealTimeVideoImageFramesOStream& stream, int numThreads = 2);
 
     /** 获取方块用量信息 */
     const BlockUsageCountType& getBlockUsageCount() const;

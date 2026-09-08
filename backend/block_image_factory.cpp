@@ -1,5 +1,6 @@
 #include "block_image_factory.hpp"
 
+#include <algorithm>
 #include <unordered_map>
 
 #include <opencv2/imgcodecs.hpp>
@@ -14,7 +15,8 @@ public:
     using BlockUsageCountType = BlockImageFactory::BlockUsageCountType;
     using TextureCacheType    = std::unordered_map<std::string, cv::Mat>;
 
-    static constexpr size_t CALLBACK_GAP = 10000;
+    // 回调函数的固定触发次数
+    static constexpr std::size_t CALLBACK_STEPS = 1000;
 
     BlockImageFactoryPrivate(
         const BlockDataMap& blockDataMap,
@@ -95,9 +97,10 @@ cv::Mat BlockImageFactoryPrivate::generateBlockImage(cv::Mat image)
     if (image.empty() || blockDataMap_.empty() || !colorKdTree_.isBuilt())
         return cv::Mat();
 
-    // 回调函数参数
+    // 回调函数相关变量
     std::size_t current = 0;
     const std::size_t total = image.rows * image.cols;
+    const std::size_t callbackInterval = std::max<std::size_t>(total / CALLBACK_STEPS, 1);
 
     // 假定所有材质图片尺寸为 16*16，所以每个像素对应 16*16 的方块材质区域
     cv::Mat ret(image.rows * 16, image.cols * 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
@@ -162,7 +165,7 @@ cv::Mat BlockImageFactoryPrivate::generateBlockImage(cv::Mat image)
 
             // 回调函数
             ++current;
-            if (callback_ && (current % CALLBACK_GAP == 0))
+            if (callback_ && (current % callbackInterval == 0 || current == total))
             {
                 bool stop = false;
                 callback_(current, total, ret, stop, userdata_);

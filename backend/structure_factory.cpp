@@ -1,5 +1,7 @@
 #include "structure_factory.hpp"
 
+#include <algorithm>
+#include <atomic>
 #include <unordered_map>
 
 #include <mcnbt/be/mcstructure.hpp>
@@ -14,7 +16,8 @@ public:
     using ProgressCallback    = StructureFactory::ProgressCallback;
     using BlockUsageCountType = StructureFactory::BlockUsageCountType;
 
-    static constexpr size_t CALLBACK_GAP = 10000;
+    // 单结构文件任务中回调函数的固定触发次数
+    static constexpr std::size_t CALLBACK_STEPS = 1000;
 
     StructureFactoryPrivate(
         const BlockDataMap& blockDataMap,
@@ -57,9 +60,11 @@ public:
 
     nbt::Tag generateSingleStructure(cv::Mat image);
 
-    nbt::Tag generateSingleStructure(ImageFramesOStream& stream);
+    nbt::Tag generateSingleStructure(VideoImageFramesOStream& stream);
 
-    std::vector<nbt::Tag> generateDetachStructure(ImageFramesOStream& stream, int numThreads);
+    std::vector<nbt::Tag> generateDetachStructure(VideoImageFramesOStream& stream, int numThreads);
+
+    std::vector<nbt::Tag> generateDetachStructure(RealTimeVideoImageFramesOStream& stream, int numThreads);
 
     const BlockUsageCountType& getBlockUsageCount() const
     { return blockUsageCount_; }
@@ -78,6 +83,13 @@ private:
         void*                userdata,
         BlockUsageCountType& blockUsageCount,
         const ColorKdTree&   colorKdTree
+    );
+
+    std::vector<nbt::Tag> generateDetachStructureHelper(
+        ImageFramesOStream&  stream,
+        int                  numThreads,
+        ProgressCallback     callback,
+        void*                userdata
     );
 
     BlockDataMap         blockDataMap_;
@@ -110,7 +122,7 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructure(cv::Mat image)
     );
 }
 
-nbt::Tag StructureFactoryPrivate::generateSingleStructure(ImageFramesOStream& stream)
+nbt::Tag StructureFactoryPrivate::generateSingleStructure(VideoImageFramesOStream& stream)
 {
     releaseCaches();
     return generateSingleStructureHelper(
@@ -126,26 +138,55 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructure(ImageFramesOStream& st
     );
 }
 
-std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructure(ImageFramesOStream& stream, int numThreads)
+std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructure(
+    VideoImageFramesOStream& stream, int numThreads)
+{
+    return generateDetachStructureHelper(stream, numThreads, callback_, userdata_);
+}
+
+std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructure(
+    RealTimeVideoImageFramesOStream& stream, int numThreads)
+{
+    return generateDetachStructureHelper(stream, numThreads, nullptr, nullptr);
+}
+
+std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructureHelper(
+    ImageFramesOStream& stream, int numThreads, ProgressCallback callback, void* userdata)
 {
     releaseCaches();
     if (!stream.isOpened())
         return std::vector<nbt::Tag>();
+
+    // 总帧数用于回调的进度展示，无法获知时（如实时流、损坏的视频元数据）传递 0
+    const long long frameCount = stream.frameCount();
+    const std::size_t totalFrames = frameCount > 0 ? static_cast<std::size_t>(frameCount) : 0;
 
     ThreadPool threadPool(numThreads);
 
     using TaskResult = std::pair<nbt::Tag, BlockUsageCountType>;
     std::vector<std::future<TaskResult>> results;
 
+    std::atomic<std::size_t> completedFrames{0};
+    std::atomic<bool>        stopRequested{false};
+
     while (!stream.isEnd())
     {
+        // 一旦请求中止，立即停止提交新任务
+        if (stopRequested.load(std::memory_order_relaxed))
+            break;
+
         cv::Mat frame = stream.nextFrame();
         if (frame.empty())
             continue;
 
         results.emplace_back(threadPool.submit(
-            [this, frame = std::move(frame)]() mutable -> TaskResult
+            [=, frame = std::move(frame), &completedFrames, &stopRequested]()
+                mutable -> TaskResult
             {
+                // 任务已提交但尚未开始执行时发现中止请求，视为取消该任务
+                if (stopRequested.load(std::memory_order_relaxed))
+                    return TaskResult();
+
                 SingleImageFramesOStream frameStream(std::move(frame));
                 BlockUsageCountType localUsageCount;
                 nbt::Tag tag = generateSingleStructureHelper(
@@ -159,6 +200,17 @@ std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructure(ImageFram
                     localUsageCount,
                     colorKdTree_
                 );
+
+                // 按已完成的帧数触发回调
+                const std::size_t current = completedFrames.fetch_add(1, std::memory_order_relaxed) + 1;
+                if (callback)
+                {
+                    bool stop = false;
+                    callback(current, totalFrames, stop, userdata);
+                    if (stop)
+                        stopRequested.store(true, std::memory_order_relaxed);
+                }
+
                 return TaskResult(std::move(tag), std::move(localUsageCount));
             }
         ));
@@ -226,6 +278,7 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
     // 回调函数参数
     std::size_t current = 0;
     const std::size_t total = n;
+    const std::size_t callbackInterval = std::max<std::size_t>(total / CALLBACK_STEPS, 1);
 
     // 缓存调色板及其索引
     std::vector<const BlockData*> paletteCaches;
@@ -315,7 +368,7 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
 
                 // 回调函数
                 ++current;
-                if (callback && (current % CALLBACK_GAP == 0))
+                if (callback && (current % callbackInterval == 0 || current == total))
                 {
                     bool stop = false;
                     callback(current, total, stop, userdata);
@@ -379,10 +432,13 @@ BlockDataMap& StructureFactory::getBlockDataMapRef()
 nbt::Tag StructureFactory::generateSingleStructure(cv::Mat image)
 { return ptr_->generateSingleStructure(image); }
 
-nbt::Tag StructureFactory::generateSingleStructure(ImageFramesOStream& stream)
+nbt::Tag StructureFactory::generateSingleStructure(VideoImageFramesOStream& stream)
 { return ptr_->generateSingleStructure(stream); }
 
-std::vector<nbt::Tag> StructureFactory::generateDetachStructure(ImageFramesOStream& stream, int numThreads)
+std::vector<nbt::Tag> StructureFactory::generateDetachStructure(VideoImageFramesOStream& stream, int numThreads)
+{ return ptr_->generateDetachStructure(stream, numThreads); }
+
+std::vector<nbt::Tag> StructureFactory::generateDetachStructure(RealTimeVideoImageFramesOStream& stream, int numThreads)
 { return ptr_->generateDetachStructure(stream, numThreads); }
 
 const StructureFactory::BlockUsageCountType& StructureFactory::getBlockUsageCount() const

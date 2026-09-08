@@ -9,8 +9,6 @@
 
 #include "block.hpp"
 
-constexpr const char* DEFAULT_TEXTURE_DIR_PATH = "./textures";
-
 // 实现类前置声明
 class BlockImageFactoryPrivate;
 
@@ -38,7 +36,9 @@ public:
     // 使用透明比较器以支持 string_view 的异构查找
     using BlockUsageCountType = std::map<std::string, std::size_t, std::less<>>;
 
-    /** 默认构造函数，使用空 #BlockDataMap，#TargetSurface::Side 和 "./textures" 为默认参数 */
+    static constexpr const char* DEFAULT_TEXTURE_DIR_PATH = "./textures";
+
+    /** 默认构造函数，使用空 #BlockDataMap，#TargetSurface::Side 和 DEFAULT_TEXTURE_DIR_PATH 为默认参数 */
     BlockImageFactory();
     explicit BlockImageFactory(
         const BlockDataMap& blockDataMap,
