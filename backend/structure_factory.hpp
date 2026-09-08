@@ -73,9 +73,9 @@ public:
     const BlockDataMap& getBlockDataMap() const;
     BlockDataMap& getBlockDataMapRef();
 
-    /** 生成图像结构文件，如果参数不合法返回空 #nbt::Tag。 */
+    /** 生成图像结构文件，如果参数不合法返回无效 #nbt::Tag（TT_END）。 */
     nbt::Tag generateSingleStructure(cv::Mat image);
-    /** 生成视频结构文件（单个结构文件），如果参数不合法返回空 #nbt::Tag。 */
+    /** 生成视频结构文件（单个结构文件），如果参数不合法返回无效 #nbt::Tag（TT_END）。 */
     nbt::Tag generateSingleStructure(ImageFramesOStream& stream);
     /**
      * 生成视频结构文件（每帧一个结构文件），如果参数不合法返回空数组。
