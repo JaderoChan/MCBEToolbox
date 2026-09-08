@@ -210,6 +210,7 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
             structure.size()[0] = frameCols;
             structure.size()[1] = frameRows;
             structure.size()[2] = frameCount;
+            break;
         default:
             return nbt::Tag();
     }
@@ -290,17 +291,18 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
                     case TargetSurface::Up:
                         x = frameCols - col - 1;
                         y = frameCount - frameIdx - 1;
-                        z = row;
+                        z = frameRows - row - 1;
                         break;
                     case TargetSurface::Down:
                         x = frameCols - col - 1;
                         y = frameIdx;
-                        z = frameRows - row - 1;
+                        z = row;
                         break;
                     case TargetSurface::Side:
                         x = frameCols - col - 1;
-                        y = row;
+                        y = frameRows - row - 1;
                         z = frameIdx;
+                        break;
                     default: return nbt::Tag();
                 }
 
@@ -328,9 +330,9 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
     for (const auto& blockData : paletteCaches)
     {
         nbt::Tag paletteItem = nbt::Tag::compound();
-        palette["name"]    = blockData->id;
-        palette["states"]  = nbt::Tag::compound();
-        palette["version"] = blockFormatVersionHash;
+        paletteItem["name"]    = blockData->id;
+        paletteItem["states"]  = nbt::Tag::compound();
+        paletteItem["version"] = blockFormatVersionHash;
         palette.pushBack(std::move(paletteItem));
     }
 

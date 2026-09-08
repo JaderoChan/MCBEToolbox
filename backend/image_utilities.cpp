@@ -32,9 +32,11 @@ cv::Size limitsSize(const cv::Size& size, int maxWidth, int maxHeight)
         return size;
 
     double ratio = 1.0;
-    if (maxWidth > 0 && maxHeight > 0) ratio = std::min(maxWidth / size.width, maxHeight / size.height);
-    else if (maxWidth > 0)             ratio = maxWidth  / size.width;
-    else                               ratio = maxHeight / size.height;
+    const double w = size.width;
+    const double h = size.height;
+    if (maxWidth > 0 && maxHeight > 0) ratio = std::min(maxWidth / w, maxHeight / h);
+    else if (maxWidth > 0)             ratio = maxWidth  / w;
+    else                               ratio = maxHeight / h;
 
     return cv::Size(size.width * ratio, size.height * ratio);
 }
