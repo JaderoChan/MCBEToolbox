@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
         image = limitsImageSize(image, 1080, 1080);
     }
 
-    // 转换图像
+    // 转换图像为方块图
     BlockImageFactory blockImageFactory(filteredBlockDataMap, TargetSurface::Side);
     blockImageFactory.setFallbackBlock(&AIR_BLOCK_DATA_PAIR);
     blockImageFactory.setProgressCallback(&progressCallback);
