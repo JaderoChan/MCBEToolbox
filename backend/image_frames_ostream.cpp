@@ -102,13 +102,13 @@ bool VideoImageFramesOStream::isOpened() const
 }
 
 LimitedSizeVideoImageFrameOStream::LimitedSizeVideoImageFrameOStream(
-    const std::string& videoFilepath, const cv::Size& frameMaxSize)
-    : VideoImageFramesOStream(videoFilepath), frameMaxSize_(frameMaxSize)
+    const std::string& videoFilepath, int maxFrameWidth, int maxFrameHeight)
+    : VideoImageFramesOStream(videoFilepath), maxFrameWidth_(maxFrameWidth), maxFrameHeight_(maxFrameHeight)
 {}
 
 LimitedSizeVideoImageFrameOStream::LimitedSizeVideoImageFrameOStream(
-    int cameraIndex, const cv::Size& frameMaxSize)
-    : VideoImageFramesOStream(cameraIndex), frameMaxSize_(frameMaxSize)
+    int cameraIndex, int maxFrameWidth, int maxFrameHeight)
+    : VideoImageFramesOStream(cameraIndex), maxFrameWidth_(maxFrameWidth), maxFrameHeight_(maxFrameHeight)
 {}
 
 cv::Mat LimitedSizeVideoImageFrameOStream::nextFrame()
@@ -122,17 +122,33 @@ cv::Size LimitedSizeVideoImageFrameOStream::frameSize() const
     if (frameSize_.empty())
     {
         frameSize_ = VideoImageFramesOStream::frameSize();
-        frameSize_ = limitsSize(frameSize_, frameMaxSize_);
+        frameSize_ = limitsSize(frameSize_, maxFrameWidth_, maxFrameHeight_);
     }
     return frameSize_;
 }
 
-cv::Size LimitedSizeVideoImageFrameOStream::frameMaxSize() const
+int LimitedSizeVideoImageFrameOStream::maxFrameWidth() const
 {
-    return frameMaxSize_;
+    return maxFrameWidth_;
 }
 
-void LimitedSizeVideoImageFrameOStream::setFrameMaxSize(const cv::Size& frameMaxSize)
+int LimitedSizeVideoImageFrameOStream::maxFrameHeight() const
 {
-    frameMaxSize_ = frameMaxSize;
+    return maxFrameHeight_;
+}
+
+void LimitedSizeVideoImageFrameOStream::setMaxFrameWidth(int maxFrameWidth)
+{
+    maxFrameWidth_ = maxFrameWidth;
+}
+
+void LimitedSizeVideoImageFrameOStream::setMaxFrameHeight(int maxFrameHeight)
+{
+    maxFrameHeight_ = maxFrameHeight;
+}
+
+void LimitedSizeVideoImageFrameOStream::setMaxFrameSize(int maxFrameWidth, int maxFrameHeight)
+{
+    maxFrameWidth_  = maxFrameWidth;
+    maxFrameHeight_ = maxFrameHeight;
 }

@@ -92,17 +92,21 @@ class LimitedSizeVideoImageFrameOStream : public VideoImageFramesOStream
 {
 public:
     explicit LimitedSizeVideoImageFrameOStream(
-        const std::string& videoFilepath, const cv::Size& frameMaxSize);
+        const std::string& videoFilepath, int maxFrameWidth, int maxFrameHeight);
     explicit LimitedSizeVideoImageFrameOStream(
-        int cameraIndex, const cv::Size& frameMaxSize);
+        int cameraIndex, int maxFrameWidth, int maxFrameHeight);
 
     cv::Mat  nextFrame() override;
     cv::Size frameSize() const override;
 
-    cv::Size frameMaxSize() const;
-    void setFrameMaxSize(const cv::Size& frameMaxSize);
+    int maxFrameWidth() const;
+    int maxFrameHeight() const;
+    void setMaxFrameWidth(int maxFrameWidth);
+    void setMaxFrameHeight(int maxFrameHeight);
+    void setMaxFrameSize(int maxFrameWidth, int maxFrameHeight);
 
 private:
-    cv::Size frameMaxSize_;
+    int maxFrameWidth_;
+    int maxFrameHeight_;
     mutable cv::Size frameSize_;
 };

@@ -16,31 +16,6 @@ cv::Mat convertImageColorToBgra(const cv::Mat& image)
     }
 }
 
-cv::Size limitsSize(const cv::Size& size, const cv::Size& maxSize)
-{
-    if (size.empty() || (maxSize.width == 0 || maxSize.height == 0) ||
-        (maxSize.width < 0 && maxSize.height < 0))
-        return cv::Size();
-
-    if (size.width < maxSize.width && size.height < maxSize.height)
-        return size;
-
-    double ratio = 0.0;
-    if (maxSize.width > 0 && maxSize.height > 0)
-        ratio = std::min(maxSize.width / size.width, maxSize.height / size.height);
-    else if (maxSize.width > 0)
-        ratio = maxSize.width  / size.width;
-    else
-        ratio = maxSize.height / size.height;
-
-    return cv::Size(size.width * ratio, size.height * ratio);
-}
-
-cv::Size limitsSize(const cv::Size& size, int maxWidth, int maxHeight)
-{
-    return limitsSize(size, cv::Size(maxWidth, maxHeight));
-}
-
 cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size)
 {
     cv::Mat ret;
@@ -48,15 +23,26 @@ cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size)
     return ret;
 }
 
-cv::Mat limitsImageSize(const cv::Mat& image, const cv::Size& maxSize)
+cv::Size limitsSize(const cv::Size& size, int maxWidth, int maxHeight)
 {
-    if (image.empty()) return cv::Mat();
-    const cv::Size size = limitsSize(cv::Size(image.cols, image.rows), maxSize);
-    if (size.empty()) return cv::Mat();
-    return resizeImage(image, size);
+    if (size.empty() || (maxWidth == 0 || maxHeight == 0) || (maxWidth < 0 && maxHeight < 0))
+        return cv::Size();
+
+    if (size.width < maxWidth && size.height < maxHeight)
+        return size;
+
+    double ratio = 1.0;
+    if (maxWidth > 0 && maxHeight > 0) ratio = std::min(maxWidth / size.width, maxHeight / size.height);
+    else if (maxWidth > 0)             ratio = maxWidth  / size.width;
+    else                               ratio = maxHeight / size.height;
+
+    return cv::Size(size.width * ratio, size.height * ratio);
 }
 
 cv::Mat limitsImageSize(const cv::Mat& image, int maxWidth, int maxHeight)
 {
-    return limitsImageSize(image, cv::Size(maxWidth, maxHeight));
+    if (image.empty()) return cv::Mat();
+    const cv::Size size = limitsSize(cv::Size(image.cols, image.rows), maxWidth, maxHeight);
+    if (size.empty()) return cv::Mat();
+    return resizeImage(image, size);
 }
