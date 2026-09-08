@@ -25,10 +25,11 @@ cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size)
 
 cv::Size limitsSize(const cv::Size& size, int maxWidth, int maxHeight)
 {
-    if (size.empty() || (maxWidth == 0 || maxHeight == 0) || (maxWidth < 0 && maxHeight < 0))
+    if (size.empty() || (maxWidth == 0 || maxHeight == 0))
         return cv::Size();
 
-    if (size.width < maxWidth && size.height < maxHeight)
+    if ((size.width < maxWidth && size.height < maxHeight) ||
+        (maxWidth < 0 && maxHeight < 0))
         return size;
 
     double ratio = 1.0;
@@ -44,6 +45,7 @@ cv::Size limitsSize(const cv::Size& size, int maxWidth, int maxHeight)
 cv::Mat limitsImageSize(const cv::Mat& image, int maxWidth, int maxHeight)
 {
     if (image.empty()) return cv::Mat();
+    if (maxWidth < 0 && maxHeight < 0) return image;
     const cv::Size size = limitsSize(cv::Size(image.cols, image.rows), maxWidth, maxHeight);
     if (size.empty()) return cv::Mat();
     return resizeImage(image, size);
