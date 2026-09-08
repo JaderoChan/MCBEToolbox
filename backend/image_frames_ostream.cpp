@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include "image_utilities.hpp"
+
 SingleImageFramesOStream::SingleImageFramesOStream(cv::Mat image)
     : image_(std::move(image))
 {}
@@ -97,4 +99,40 @@ bool VideoImageFramesOStream::isEnd() const
 bool VideoImageFramesOStream::isOpened() const
 {
     return capture_.isOpened();
+}
+
+LimitedSizeVideoImageFrameOStream::LimitedSizeVideoImageFrameOStream(
+    const std::string& videoFilepath, const cv::Size& frameMaxSize)
+    : VideoImageFramesOStream(videoFilepath), frameMaxSize_(frameMaxSize)
+{}
+
+LimitedSizeVideoImageFrameOStream::LimitedSizeVideoImageFrameOStream(
+    int cameraIndex, const cv::Size& frameMaxSize)
+    : VideoImageFramesOStream(cameraIndex), frameMaxSize_(frameMaxSize)
+{}
+
+cv::Mat LimitedSizeVideoImageFrameOStream::nextFrame()
+{
+    const cv::Mat& frame = VideoImageFramesOStream::nextFrame();
+    return resizeImage(frame, frameSize());
+}
+
+cv::Size LimitedSizeVideoImageFrameOStream::frameSize() const
+{
+    if (frameSize_.empty())
+    {
+        frameSize_ = VideoImageFramesOStream::frameSize();
+        frameSize_ = limitsSize(frameSize_, frameMaxSize_);
+    }
+    return frameSize_;
+}
+
+cv::Size LimitedSizeVideoImageFrameOStream::frameMaxSize() const
+{
+    return frameMaxSize_;
+}
+
+void LimitedSizeVideoImageFrameOStream::setFrameMaxSize(const cv::Size& frameMaxSize)
+{
+    frameMaxSize_ = frameMaxSize;
 }

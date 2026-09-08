@@ -82,3 +82,27 @@ private:
     long long        currentFrameIndex_ = INVALID_INDEX;
     bool             isEnd_             = false;
 };
+
+/**
+ * 将输出帧大小限制在指定尺寸内
+ *
+ * @sa limitsSize()
+ */
+class LimitedSizeVideoImageFrameOStream : public VideoImageFramesOStream
+{
+public:
+    explicit LimitedSizeVideoImageFrameOStream(
+        const std::string& videoFilepath, const cv::Size& frameMaxSize);
+    explicit LimitedSizeVideoImageFrameOStream(
+        int cameraIndex, const cv::Size& frameMaxSize);
+
+    cv::Mat  nextFrame() override;
+    cv::Size frameSize() const override;
+
+    cv::Size frameMaxSize() const;
+    void setFrameMaxSize(const cv::Size& frameMaxSize);
+
+private:
+    cv::Size frameMaxSize_;
+    mutable cv::Size frameSize_;
+};

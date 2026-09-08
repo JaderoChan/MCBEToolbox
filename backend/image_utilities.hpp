@@ -10,12 +10,32 @@
 cv::Mat convertImageColorToBgra(const cv::Mat& image);
 
 /**
- * 等比例限制给定图像的尺寸
+ * 等比例缩放给定尺寸，使其满足最大尺寸要求.
+ *
+ * @example
+ * ([400, 200], 500, 500) -> [400, 200]
+ * ([400, 200], 200, 200) -> [200, 100]
+ * ([400, 200], 100, 100) -> [100, 25 ]
+ * ([400, 200], -1,  100) -> [200, 100]
+ * ([400, 200], 100, -1 ) -> [100, 25 ]
+ * ([400, 200], 0,   0  ) -> [0,   0  ]
+ * ([400, 200], -1,  -1 ) -> [0,   0  ]
+ */
+cv::Size limitsSize(const cv::Size& size, const cv::Size& maxSize);
+
+cv::Size limitsSize(const cv::Size& size, int maxWidth, int maxHeight);
+
+cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size);
+
+/**
+ * 等比例缩放图像，使其满足最大尺寸要求。
  *
  * - 如果输入图像两个维度的尺寸均小于给定参数则不做任何处理。
- *
  * - 如果 \p maxWidth 和 \p maxHeight 存在且仅有一者小于 0，则仅处理大于 0 的维度。
  *
  * @return 如果输入图像为空或给定参数不合法则返回空图像。
+ * @sa limitsSize()
  */
+cv::Mat limitsImageSize(const cv::Mat& image, const cv::Size& maxSize);
+
 cv::Mat limitsImageSize(const cv::Mat& image, int maxWidth, int maxHeight);
