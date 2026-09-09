@@ -84,8 +84,6 @@ public:
     /** 以图像进行构造。 */
     explicit SingleFramesOStream(cv::Mat image, int maxw = -1, int maxh = -1) noexcept
         : FramesOStream(maxw, maxh), image_(std::move(image)) {}
-
-    /** 析构函数。 */
     ~SingleFramesOStream() override = default;
 
     long long frameCount() const override        { return isOpened() ? 1 : INVALID_INDEX; }
