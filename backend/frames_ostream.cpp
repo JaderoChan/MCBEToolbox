@@ -47,7 +47,13 @@ long long VideoFramesOStream::frameCount() const
         return INVALID_INDEX;
 
     const double count = capture_.get(cv::CAP_PROP_FRAME_COUNT);
-    return count > 0 ? static_cast<long long>(count) : INVALID_INDEX;
+    const long long rawCount = count > 0 ? static_cast<long long>(count) : INVALID_INDEX;
+
+    if (maxFrameCount_ < 0)
+        return rawCount;
+    if (rawCount == INVALID_INDEX)
+        return maxFrameCount_;
+    return rawCount < maxFrameCount_ ? rawCount : maxFrameCount_;
 }
 
 long long VideoFramesOStream::currentFrameIndex() const
@@ -59,6 +65,13 @@ cv::Mat VideoFramesOStream::readNextFrame()
 {
     if (!capture_.isOpened() || isEnd_)
         return cv::Mat();
+
+    // 已达到 maxFrameCount 上限，视作流结束
+    if (maxFrameCount_ >= 0 && currentFrameIndex_ + 1 >= maxFrameCount_)
+    {
+        isEnd_ = true;
+        return cv::Mat();
+    }
 
     cv::Mat frame;
     if (!capture_.read(frame) || frame.empty())

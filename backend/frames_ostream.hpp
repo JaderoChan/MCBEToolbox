@@ -106,12 +106,19 @@ private:
 class VideoFramesOStream : public FramesOStream
 {
 public:
-    /** 以视频文件路径构造。 */
-    explicit VideoFramesOStream(const std::string& videoFilePath, int maxw = -1, int maxh = -1) noexcept
-        : FramesOStream(maxw, maxh), capture_(videoFilePath) {}
+    /**
+     * 以视频文件路径构造。
+     *
+     * @param maxFrameCount 读取的最大帧数上限，-1 表示不限制
+     */
+    explicit VideoFramesOStream(
+        const std::string& videoFilePath,
+        long long maxFrameCount = -1, int maxw = -1, int maxh = -1) noexcept
+        : FramesOStream(maxw, maxh), capture_(videoFilePath), maxFrameCount_(maxFrameCount)
+    {}
     ~VideoFramesOStream() override = default;
 
-    /** 获取总帧数，如果无法获知（如损坏的视频文件）返回 #INVALID_INDEX。 */
+    /** 获取总帧数（已受 maxFrameCount 限制），如果无法获知（如损坏的视频文件）返回 #INVALID_INDEX。 */
     long long frameCount() const override;
     long long currentFrameIndex() const override;
     bool      isEnd() const override    { return isEnd_ || !capture_.isOpened(); }
@@ -128,6 +135,7 @@ protected:
     cv::VideoCapture capture_;
 
 private:
+    long long maxFrameCount_     = INVALID_INDEX;
     long long currentFrameIndex_ = INVALID_INDEX;
     bool      isEnd_             = false;
 };
