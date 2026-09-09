@@ -19,6 +19,12 @@ set(3RDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty)
 # 配置 OpenCV 库
 find_package(OpenCV REQUIRED COMPONENTS core imgcodecs videoio)
 
+# 查找 OpenCV FFmpeg 插件
+if(WIN32)
+    get_filename_component(OPENCV_BIN_DIR "${OpenCV_DIR}/../bin" ABSOLUTE)
+    file(GLOB OPENCV_FFMPEG_DLLS "${OPENCV_BIN_DIR}/opencv_videoio_ffmpeg*.dll")
+endif()
+
 # 配置 Json 库
 FetchContent_Declare(
     json
@@ -59,6 +65,14 @@ function(copy_runtime_dependencies TARGET_NAME)
             $<TARGET_FILE_DIR:${TARGET_NAME}>
             COMMAND_EXPAND_LISTS
         )
+        if(OPENCV_FFMPEG_DLLS)
+            add_custom_command(
+                TARGET ${TARGET_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${OPENCV_FFMPEG_DLLS}
+                $<TARGET_FILE_DIR:${TARGET_NAME}>
+            )
+        endif()
     endif()
 endfunction()
 
