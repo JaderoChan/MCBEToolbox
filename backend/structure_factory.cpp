@@ -289,7 +289,9 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
     {
         cv::Mat frame = stream.nextFrame();
         frame = convertColorToBgra(frame);
-        if (frame.empty() || frame.cols != frameCols || frame.rows != frameRows)
+        if (frame.empty())
+            continue;
+        if (frame.cols != frameCols || frame.rows != frameRows)
             return nbt::Tag();
 
         for (int row = 0; row < frameRows; ++row)
