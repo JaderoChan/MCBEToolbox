@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
             printf("- '%s': ", pair.first.c_str());
             try
             {
-                BlockEntryMap blockEntryMap = parseBlockEntryMapFromJson(json);
+                BlockEntryMap blockEntryMap = parseBlockEntryMap(json);
                 printf(
                     "[parse Success, expect result: %s]\n",
                     (pair.second ? "Success" : "Fail")

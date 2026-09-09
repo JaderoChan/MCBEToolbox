@@ -24,11 +24,11 @@ int main(int argc, char* argv[])
     BlockEntryMap blockEntryMap;
     // 加载并解析 BlockEntryMap
     {
-        const std::string blockEntriesFilepath = "./block_entries.json";
-        std::ifstream blockEntriesFile(blockEntriesFilepath);
+        const std::string blockEntriesFilePath = "./block_entries.json";
+        std::ifstream blockEntriesFile(blockEntriesFilePath);
         if (!blockEntriesFile.is_open())
         {
-            std::cout << "Failed to open the file: " << blockEntriesFilepath << std::endl;
+            std::cout << "Failed to open the file: " << blockEntriesFilePath << std::endl;
             return 1;
         }
 
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
         try
         {
-            blockEntryMap = parseBlockEntryMapFromJson(json);
+            blockEntryMap = parseBlockEntryMap(json);
         }
         catch (std::exception& e)
         {
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
     auto defaultBlockDataMap = resolveBlockEntryMap(blockEntryMap);
     constexpr BlockAttributes attributes =
         BLOCK_ATTRI_HAS_PATTERN | BLOCK_ATTRI_IS_INCOMPLETE | BLOCK_ATTRI_IS_TRANSPARENT;
-    auto filteredBlockDataMap = filterBlockAttributes(
+    auto filteredBlockDataMap = filterBlockDataMap(
         defaultBlockDataMap,
         BlockAttributeMatchMode::Disjoint,
         attributes
@@ -63,19 +63,19 @@ int main(int argc, char* argv[])
     // 加载图片
     cv::Mat image;
     {
-        std::string imageFilepath;
+        std::string imageFilePath;
         std::cout << "Please input the image file path:" << std::endl;
-        std::cin >> imageFilepath;
+        std::cin >> imageFilePath;
 
-        image = cv::imread(imageFilepath, cv::IMREAD_UNCHANGED);
+        image = cv::imread(imageFilePath, cv::IMREAD_UNCHANGED);
         if (image.empty())
         {
-            std::cout << "Failed to load the image: " << imageFilepath << std::endl;
+            std::cout << "Failed to load the image: " << imageFilePath << std::endl;
             return 1;
         }
 
         // 将图像限制在一定尺寸内
-        image = limitsImageSize(image, 1080, 1080);
+        image = limitImageSize(image, 1080, 1080);
     }
 
     // 转换图像为方块图

@@ -58,31 +58,25 @@ int main(int argc, char* argv[])
         attributes
     );
 
-    // 加载图片
-    cv::Mat image;
+    // 加载视频
+    std::string videoFilePath;
+    std::cout << "Please input the video file path:" << std::endl;
+    std::cin >> videoFilePath;
+    // 最多 300 帧
+    VideoFramesOStream stream(videoFilePath, 300, -1, 180);
+    if (!stream.isOpened())
     {
-        std::string imageFilePath;
-        std::cout << "Please input the image file path:" << std::endl;
-        std::cin >> imageFilePath;
-
-        image = cv::imread(imageFilePath, cv::IMREAD_UNCHANGED);
-        if (image.empty())
-        {
-            std::cout << "Failed to load the image: " << imageFilePath << std::endl;
-            return 1;
-        }
-
-        // 将图像限制在一定尺寸内
-        image = limitImageSize(image, -1, 300);
+        std::cout << "Failed to open the video file: " << videoFilePath << std::endl;
+        return 1;
     }
 
-    // 转换图像为结构文件
+    // 转换视频为结构文件
     StructureFactory structureFactory(filteredBlockDataMap, TargetSurface::Side);
     structureFactory.setFallbackBlock(&AIR_BLOCK_DATA_PAIR);
     structureFactory.setProgressCallback(&progressCallback);
 
     std::cout << "=> Start Convert" << std::endl;
-    nbt::Tag structure = structureFactory.generateSingleStructure(image);
+    nbt::Tag structure = structureFactory.generateSingleStructure(stream);
     if (structure.type() == nbt::TT_END)
     {
         std::cout << "Failed to convert image to MC Structure" << std::endl;
