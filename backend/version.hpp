@@ -25,7 +25,7 @@ struct Version
     std::string toString() const;
 
     /** 将版本号转换为无符号整数值。 */
-    unsigned int toUInt32() const
+    constexpr unsigned int toUInt32() const
     {
         return
             (static_cast<unsigned int>(major) << 24) |
