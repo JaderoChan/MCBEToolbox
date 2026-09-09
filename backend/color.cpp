@@ -50,6 +50,7 @@ static inline char intToHexChar(int i, bool uppercase)
 
     if (i >= 0  && i <= 9)  return i + '0';
     if (i >= 10 && i <= 15) return (uppercase ? (i - 10 + 'A') : (i - 10 + 'a'));
+    throw std::invalid_argument("Rgb::toHex(): invalid integer for hex character");
 }
 
 std::string Rgb::toHex(const Rgb& rgb, bool uppercase, bool prefixed) const
