@@ -1,7 +1,7 @@
 #pragma once
 
-#include <map>
-#include <memory>
+#include <map>          // std::map
+#include <memory>       // std::unique_ptr
 #include <string>
 #include <string_view>
 
@@ -12,7 +12,7 @@
 // 实现类前置声明
 class BlockImageFactoryPrivate;
 
-/** 以给定图像生成方块图 */
+/** 方块图生成工厂 */
 class BlockImageFactory
 {
 public:
@@ -30,15 +30,14 @@ public:
         std::size_t    total,
         const cv::Mat& blockImage,
         bool&          stop,
-        void*          userdata
-    );
+        void*          userdata);
 
     // 使用透明比较器以支持 string_view 的异构查找
     using BlockUsageCountType = std::map<std::string, std::size_t, std::less<>>;
 
+    // 默认材质文件路径
     static constexpr const char* DEFAULT_TEXTURE_DIR_PATH = "./textures";
 
-    /** 默认构造函数，使用空 #BlockDataMap，#TargetSurface::Side 和 DEFAULT_TEXTURE_DIR_PATH 为默认参数 */
     BlockImageFactory();
     explicit BlockImageFactory(
         const BlockDataMap& blockDataMap,
@@ -46,29 +45,35 @@ public:
         std::string_view    textureDirPath = DEFAULT_TEXTURE_DIR_PATH);
     ~BlockImageFactory();
 
-    /** 设置可用的方块数据 */
+    /** 设置可用的方块数据。 */
     void setBlockDataMap(const BlockDataMap& blockDataMap);
-    /** 设置目标方块面 */
+
+    /** 设置目标方块面。 */
     void setTargetSurface(TargetSurface targetSurface);
-    /** 设置材质文件夹路径 */
+
+    /** 设置材质文件夹路径。 */
     void setTextureDirPath(std::string_view textureDirPath);
-    /** 设置透明像素的替代方块，置空或传入指定面材质路径为空的方块则保留透明区域 */
+
+    /** 设置透明像素的替代方块，置空或传入指定面材质路径为空的方块则保留透明区域。 */
     void setFallbackBlock(const BlockDataPair* fallbackBlock = nullptr);
-    /** 设置任务进度回调函数 */
+
+    /** 设置任务进度回调函数。 */
     void setProgressCallback(ProgressCallback callback = nullptr);
-    /** 设置回调函数用户自定义数据 */
+
+    /** 设置回调函数用户自定义数据。 */
     void setUserdata(void* userdata = nullptr);
 
     const BlockDataMap& getBlockDataMap() const;
+
     BlockDataMap& getBlockDataMapRef();
 
-    /** 生成方块图，如果参数不合法或生成出错返回空 #cv::Mat */
+    /** 生成方块图，如果参数不合法或生成出错返回空 #cv::Mat。 */
     cv::Mat generateBlockImage(cv::Mat image);
 
-    /** 获取方块用量信息 */
+    /** 获取方块用量信息。 */
     const BlockUsageCountType& getBlockUsageCount() const;
 
-    /** 释放临时缓存数据 */
+    /** 释放临时缓存数据。 */
     void releaseCaches();
 
 private:

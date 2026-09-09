@@ -1,10 +1,10 @@
 #include "image_utilities.hpp"
 
-#include <algorithm>
+#include <algorithm>            // std::min
 
-#include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc.hpp>  // cv::cvtColor, cv::resize
 
-cv::Mat convertImageColorToBgra(const cv::Mat& image)
+cv::Mat convertColorToBgra(const cv::Mat& image) noexcept
 {
     cv::Mat ret;
     switch (image.type())
@@ -16,37 +16,36 @@ cv::Mat convertImageColorToBgra(const cv::Mat& image)
     }
 }
 
-cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size)
+cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size) noexcept
 {
     cv::Mat ret;
+    if (size.empty()) return ret;
     cv::resize(image, ret, size);
     return ret;
 }
 
-cv::Size limitsSize(const cv::Size& size, int maxWidth, int maxHeight)
+cv::Size limitSize(const cv::Size& size, int maxw, int maxh) noexcept
 {
-    if (size.empty() || (maxWidth == 0 || maxHeight == 0))
+    if (size.empty() || (maxw == 0 || maxh == 0))
         return cv::Size();
 
-    if ((size.width < maxWidth && size.height < maxHeight) ||
-        (maxWidth < 0 && maxHeight < 0))
+    if ((size.width < maxw && size.height < maxh) || (maxw < 0 && maxh < 0))
         return size;
 
     double ratio = 1.0;
     const double w = size.width;
     const double h = size.height;
-    if (maxWidth > 0 && maxHeight > 0) ratio = std::min(maxWidth / w, maxHeight / h);
-    else if (maxWidth > 0)             ratio = maxWidth  / w;
-    else                               ratio = maxHeight / h;
+    if (maxw > 0 && maxh > 0) ratio = std::min(maxw / w, maxh / h);
+    else if (maxw > 0)        ratio = maxw / w;
+    else                      ratio = maxh / h;
 
     return cv::Size(size.width * ratio, size.height * ratio);
 }
 
-cv::Mat limitsImageSize(const cv::Mat& image, int maxWidth, int maxHeight)
+cv::Mat limitImageSize(const cv::Mat& image, int maxw, int maxh) noexcept
 {
-    if (image.empty()) return cv::Mat();
-    if (maxWidth < 0 && maxHeight < 0) return image;
-    const cv::Size size = limitsSize(cv::Size(image.cols, image.rows), maxWidth, maxHeight);
-    if (size.empty()) return cv::Mat();
+    if (image.empty())        return cv::Mat();
+    if (maxw < 0 && maxh < 0) return image;
+    const cv::Size size = limitSize(cv::Size(image.cols, image.rows), maxw, maxh);
     return resizeImage(image, size);
 }

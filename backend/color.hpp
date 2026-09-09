@@ -3,12 +3,13 @@
 #include <string>
 #include <string_view>
 
+#pragma pack(push, 1)
+/** 8 位 RGB 颜色值 */
 struct Rgb
 {
     static_assert(sizeof(unsigned char) == 1, "sizeof(unsigned char) != 1");
-    static_assert(sizeof(unsigned int)  >= 3, "sizeof(unsigned int) < 3");
 
-    constexpr Rgb() noexcept : r(0), g(0), b(0) {}
+    constexpr Rgb() noexcept = default;
     constexpr Rgb(unsigned char r, unsigned char g, unsigned char b) noexcept : r(r), g(g), b(b) {}
 
     /**
@@ -19,19 +20,19 @@ struct Rgb
     static Rgb fromHex(std::string_view hex);
 
     /**
-     * 获取字符串形式的 RGB 颜色值。
+     * 将 RGB 颜色值转换为十六进制颜色值字符串。
      *
-     * @param isUppercase  使用大写的十六进制字符
-     * @param withPrefixed 以井号 '#' 作为字符串前缀
+     * @param uppercase 使用大写的十六进制字符
+     * @param prefixed  以井号 '#' 作为字符串前缀
      */
-    std::string toHex(const Rgb& rgb, bool isUppercase = true, bool withPrefixed = true) const;
+    std::string toHex(const Rgb& rgb, bool uppercase = true, bool prefixed = true) const;
 
-    unsigned char r, g, b;
+    unsigned char r = 0, g = 0, b = 0;
 };
-
+#pragma pack(pop)
 static_assert(sizeof(Rgb) == 3, "sizeof(Rgb) != 3");
 
-static inline bool operator==(const Rgb& lhs, const Rgb& rhs)
+static inline constexpr bool operator==(const Rgb& lhs, const Rgb& rhs)
 {
     return (lhs.r == rhs.r) && (lhs.g == rhs.g) && (lhs.b == rhs.b);
 }
@@ -42,6 +43,8 @@ namespace std
 template<>
 struct hash<Rgb>
 {
+    static_assert(sizeof(unsigned int) >= 3, "sizeof(unsigned int) < 3");
+
     std::size_t operator()(const Rgb& rgb) const
     {
         const unsigned int v =

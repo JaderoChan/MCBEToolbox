@@ -60,10 +60,10 @@ void parseBlockAttributes(const nlohmann::json& obj, BlockAttributes& attributes
 #define TRY_OVERRIDE_ATTRIBUTE(attribute_name, attribute_value)                 \
 do {                                                                            \
     if (obj.contains(attribute_name) && obj[attribute_name].is_boolean())       \
-        attributes = (                                                          \
+        attributes =                                                            \
             obj[attribute_name]                                                 \
             ? BITS_TO_ONE(attributes,  attribute_value)                         \
-            : BITS_TO_ZERO(attributes, attribute_value));                       \
+            : BITS_TO_ZERO(attributes, attribute_value);                        \
 } while(0);
 
     TRY_OVERRIDE_ATTRIBUTE("is_incomplete",     BLOCK_ATTRI_IS_INCOMPLETE);
@@ -115,8 +115,8 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
     //（如 colors 指定 side 面，而 textures 指定了所有面；或者 colors 缺失 textures 对应的键）
     #define THROW_PATTERN_NOT_MATCH(obj_name)                                                       \
     throw std::runtime_error(std::string(                                                           \
-            "key 'colors' pattern is not match to 'textures' pattern in object '") + objName + "'"  \
-        );
+        "key 'colors' pattern is not match to 'textures' pattern in object '") + objName + "'"      \
+    );
 
         if (force)
         {
@@ -186,7 +186,7 @@ void parseBlockData(const nlohmann::json& obj, const char* objName, BlockData& d
     }
 }
 
-void parseBlockEntryMapFromJsonHelper(std::string_view json, BlockEntryMap& blockEntryMap)
+void parseBlockEntryMapHelper(std::string_view json, BlockEntryMap& blockEntryMap)
 {
     const nlohmann::json j = nlohmann::json::parse(json, nullptr, true, true);
     if (j.is_discarded() || !j.is_object())
@@ -268,18 +268,18 @@ void parseBlockEntryMapFromJsonHelper(std::string_view json, BlockEntryMap& bloc
 
 } // namespace
 
-BlockEntryMap parseBlockEntryMapFromJson(std::string_view json)
+BlockEntryMap parseBlockEntryMap(std::string_view json)
 {
     // 包装一层异常消息
     BlockEntryMap ret;
     try
     {
-        parseBlockEntryMapFromJsonHelper(json, ret);
+        parseBlockEntryMapHelper(json, ret);
     }
     catch (std::exception& e)
     {
         throw std::runtime_error(
-            std::string("parseBlockEntryMapFromJson(): invalid json for parse 'Block Entry Map': ") + e.what()
+            std::string("parseBlockEntryMap(): invalid json for parse 'Block Entry Map': ") + e.what()
         );
     }
     return ret;
@@ -309,6 +309,7 @@ BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version ta
         {
             if (version > targetVersion)
                 continue;
+
             if (version > lastestVersion)
             {
                 lastestVersion = version;
@@ -321,7 +322,7 @@ BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version ta
     return ret;
 }
 
-BlockDataMap filterBlockAttributes(
+BlockDataMap filterBlockDataMap(
     const BlockDataMap&     blockDataMap,
     BlockAttributeMatchMode matchMode,
     BlockAttributes         attributes)
@@ -338,7 +339,7 @@ BlockDataMap filterBlockAttributes(
             case BlockAttributeMatchMode::SubsetOf:
                 if ((data->attributes & attributes) == data->attributes) ret[id] = data; break;
             default:
-                throw std::invalid_argument("invalid block attribute match mode");
+                throw std::invalid_argument("filterBlockDataMap(): invalid block attribute match mode");
         }
     }
     return ret;

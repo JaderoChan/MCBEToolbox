@@ -6,7 +6,7 @@ set(
     ./block.hpp
     ./color_kd_tree.hpp
     ./color.hpp
-    ./image_frames_ostream.hpp
+    ./frames_ostream.hpp
     ./image_utilities.hpp
     ./mcbe_toolbox_api.hpp
     ./structure_factory.hpp
@@ -19,7 +19,7 @@ set(
     ./block.cpp
     ./color_kd_tree.cpp
     ./color.cpp
-    ./image_frames_ostream.cpp
+    ./frames_ostream.cpp
     ./image_utilities.cpp
     ./mcbe_toolbox_api.cpp
     ./structure_factory.cpp

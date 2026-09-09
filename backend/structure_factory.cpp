@@ -1,8 +1,8 @@
 #include "structure_factory.hpp"
 
-#include <algorithm>
-#include <atomic>
-#include <unordered_map>
+#include <algorithm>        // std::max
+#include <atomic>           // std::atomic
+#include <unordered_map>    // std::unordered_map
 
 #include <mcnbt/be/mcstructure.hpp>
 
@@ -60,11 +60,11 @@ public:
 
     nbt::Tag generateSingleStructure(cv::Mat image);
 
-    nbt::Tag generateSingleStructure(VideoImageFramesOStream& stream);
+    nbt::Tag generateSingleStructure(VideoFramesOStream& stream);
 
-    std::vector<nbt::Tag> generateDetachStructure(VideoImageFramesOStream& stream, int numThreads);
+    std::vector<nbt::Tag> generateDetachStructure(VideoFramesOStream& stream, int numThreads);
 
-    std::vector<nbt::Tag> generateDetachStructure(RealTimeVideoImageFramesOStream& stream, int numThreads);
+    std::vector<nbt::Tag> generateDetachStructure(RealTimeFramesOStream& stream, int numThreads);
 
     const BlockUsageCountType& getBlockUsageCount() const
     { return blockUsageCount_; }
@@ -74,7 +74,7 @@ public:
 
 private:
     static nbt::Tag generateSingleStructureHelper(
-        ImageFramesOStream&  stream,
+        FramesOStream&       stream,
         const BlockDataMap&  blockDataMap,
         const TargetSurface& targetSurface,
         const Version&       blockFormatVersion,
@@ -82,15 +82,13 @@ private:
         ProgressCallback     callback,
         void*                userdata,
         BlockUsageCountType& blockUsageCount,
-        const ColorKdTree&   colorKdTree
-    );
+        const ColorKdTree&   colorKdTree);
 
     std::vector<nbt::Tag> generateDetachStructureHelper(
-        ImageFramesOStream&  stream,
-        int                  numThreads,
-        ProgressCallback     callback,
-        void*                userdata
-    );
+        FramesOStream&   stream,
+        int              numThreads,
+        ProgressCallback callback,
+        void*            userdata);
 
     BlockDataMap         blockDataMap_;
     TargetSurface        targetSurface_;
@@ -108,7 +106,7 @@ private:
 nbt::Tag StructureFactoryPrivate::generateSingleStructure(cv::Mat image)
 {
     releaseCaches();
-    SingleImageFramesOStream stream(image);
+    SingleFramesOStream stream(image);
     return generateSingleStructureHelper(
         stream,
         blockDataMap_,
@@ -122,7 +120,7 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructure(cv::Mat image)
     );
 }
 
-nbt::Tag StructureFactoryPrivate::generateSingleStructure(VideoImageFramesOStream& stream)
+nbt::Tag StructureFactoryPrivate::generateSingleStructure(VideoFramesOStream& stream)
 {
     releaseCaches();
     return generateSingleStructureHelper(
@@ -138,20 +136,21 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructure(VideoImageFramesOStrea
     );
 }
 
-std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructure(
-    VideoImageFramesOStream& stream, int numThreads)
+std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructure(VideoFramesOStream& stream, int numThreads)
 {
     return generateDetachStructureHelper(stream, numThreads, callback_, userdata_);
 }
 
-std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructure(
-    RealTimeVideoImageFramesOStream& stream, int numThreads)
+std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructure(RealTimeFramesOStream& stream, int numThreads)
 {
     return generateDetachStructureHelper(stream, numThreads, nullptr, nullptr);
 }
 
 std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructureHelper(
-    ImageFramesOStream& stream, int numThreads, ProgressCallback callback, void* userdata)
+    FramesOStream&   stream,
+    int              numThreads,
+    ProgressCallback callback,
+    void*            userdata)
 {
     releaseCaches();
     if (!stream.isOpened())
@@ -187,7 +186,7 @@ std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructureHelper(
                 if (stopRequested.load(std::memory_order_relaxed))
                     return TaskResult();
 
-                SingleImageFramesOStream frameStream(std::move(frame));
+                SingleFramesOStream frameStream(std::move(frame));
                 BlockUsageCountType localUsageCount;
                 nbt::Tag tag = generateSingleStructureHelper(
                     frameStream,
@@ -230,7 +229,7 @@ std::vector<nbt::Tag> StructureFactoryPrivate::generateDetachStructureHelper(
 }
 
 nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
-    ImageFramesOStream&  stream,
+    FramesOStream&       stream,
     const BlockDataMap&  blockDataMap,
     const TargetSurface& targetSurface,
     const Version&       blockFormatVersion,
@@ -284,14 +283,12 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
     std::vector<const BlockData*> paletteCaches;
     std::unordered_map<std::string, std::size_t> paletteIdxCaches;
 
-    const int blockFormatVersionHash = static_cast<int>(blockFormatVersion.hash());
-
     // 填充方块调色板索引
     auto& indices = structure.blockIndices1();
     for (int frameIdx = 0; frameIdx < frameCount; ++frameIdx)
     {
         cv::Mat frame = stream.nextFrame();
-        frame = convertImageColorToBgra(frame);
+        frame = convertColorToBgra(frame);
         if (frame.empty() || frame.cols != frameCols || frame.rows != frameRows)
             return nbt::Tag();
 
@@ -379,22 +376,21 @@ nbt::Tag StructureFactoryPrivate::generateSingleStructureHelper(
     }
 
     // 填充调色板
+    const int blockFormatVersionValue = static_cast<int>(blockFormatVersion.toUInt32());
     auto& palette = structure.blockPalette();
     for (const auto& blockData : paletteCaches)
     {
         nbt::Tag paletteItem = nbt::Tag::compound();
         paletteItem["name"]    = blockData->id;
         paletteItem["states"]  = nbt::Tag::compound();
-        paletteItem["version"] = blockFormatVersionHash;
+        paletteItem["version"] = blockFormatVersionValue;
         palette.pushBack(std::move(paletteItem));
     }
 
     return structure.root;
 }
 
-StructureFactory::StructureFactory()
-    : StructureFactory(BlockDataMap())
-{}
+StructureFactory::StructureFactory() : StructureFactory(BlockDataMap()) {}
 
 StructureFactory::StructureFactory(
     const BlockDataMap& blockDataMap,
@@ -432,13 +428,13 @@ BlockDataMap& StructureFactory::getBlockDataMapRef()
 nbt::Tag StructureFactory::generateSingleStructure(cv::Mat image)
 { return ptr_->generateSingleStructure(image); }
 
-nbt::Tag StructureFactory::generateSingleStructure(VideoImageFramesOStream& stream)
+nbt::Tag StructureFactory::generateSingleStructure(VideoFramesOStream& stream)
 { return ptr_->generateSingleStructure(stream); }
 
-std::vector<nbt::Tag> StructureFactory::generateDetachStructure(VideoImageFramesOStream& stream, int numThreads)
+std::vector<nbt::Tag> StructureFactory::generateDetachStructure(VideoFramesOStream& stream, int numThreads)
 { return ptr_->generateDetachStructure(stream, numThreads); }
 
-std::vector<nbt::Tag> StructureFactory::generateDetachStructure(RealTimeVideoImageFramesOStream& stream, int numThreads)
+std::vector<nbt::Tag> StructureFactory::generateDetachStructure(RealTimeFramesOStream& stream, int numThreads)
 { return ptr_->generateDetachStructure(stream, numThreads); }
 
 const StructureFactory::BlockUsageCountType& StructureFactory::getBlockUsageCount() const

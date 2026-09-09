@@ -1,51 +1,51 @@
 #include "version.hpp"
 
-#include <stdint.h>
+#include <stdint.h> // UINT8_MAX
 #include <stdexcept>
 
 Version Version::fromString(std::string_view str)
 {
     if (str.empty())
-        throw std::invalid_argument("empty version string");
+        throw std::invalid_argument("Version::fromString(): empty version string");
 
-#define THROW_INVALID_VERSION_STRING(string_view) \
-throw std::invalid_argument("invalid version string '" + std::string(string_view) + "'")
+#define THROW_INVALID_VERSION_STRING \
+throw std::invalid_argument("Version::fromString(): invalid version string '" + std::string(str) + "'")
 
-    const std::size_t pos1 = str.find('.');
-    if (pos1 == std::string_view::npos) THROW_INVALID_VERSION_STRING(str);
-    const std::size_t pos2 = str.find('.', pos1 + 1);
-    if (pos2 == std::string_view::npos) THROW_INVALID_VERSION_STRING(str);
-    const std::size_t pos3 = str.find('.', pos2 + 1);
+    int  values[4] = {0};   // 各个字段的值
+    int  pos       = 0;     // 当前正在解析的字段下标（0~3）
+    bool hasDigit  = false; // 当前字段是否至少读到一位数字
+
+    for (char c : str)
+    {
+        if (c >= '0' && c <= '9')
+        {
+            if (pos == 4) THROW_INVALID_VERSION_STRING;
+            values[pos] = values[pos] * 10 + static_cast<unsigned int>(c - '0');
+            if (values[pos] > UINT8_MAX) THROW_INVALID_VERSION_STRING;
+            hasDigit = true;
+        }
+        else if (c == '.')
+        {
+            if (!hasDigit) THROW_INVALID_VERSION_STRING;
+            if (++pos == 4) THROW_INVALID_VERSION_STRING;
+            hasDigit = false;
+        }
+        else
+        {
+            THROW_INVALID_VERSION_STRING;
+        }
+    }
+
+    if (!hasDigit) THROW_INVALID_VERSION_STRING;
+
+    return Version(
+        static_cast<unsigned char>(values[0]),
+        static_cast<unsigned char>(values[1]),
+        static_cast<unsigned char>(values[2]),
+        static_cast<unsigned char>(values[3])
+    );
 
 #undef THROW_INVALID_VERSION_STRING
-
-    std::string_view majorStr = str.substr(0, pos1);
-    std::string_view minorStr = str.substr(pos1 + 1, pos2 - pos1 - 1);
-    std::string_view patchStr = str.substr(pos2 + 1, (pos3 == std::string_view::npos ? str.size() : pos3) - pos2 - 1);
-    std::string_view tweakStr = (pos3 == std::string_view::npos ? "" : str.substr(pos3 + 1));
-    const int major = std::stoi(std::string(majorStr));
-    const int minor = std::stoi(std::string(minorStr));
-    const int patch = std::stoi(std::string(patchStr));
-    const int tweak = tweakStr.empty() ? 0 : std::stoi(std::string(tweakStr));
-
-    if ((major >= 0 && major <= UINT8_MAX) &&
-        (minor >= 0 && minor <= UINT8_MAX) &&
-        (patch >= 0 && patch <= UINT8_MAX) &&
-        (tweak >= 0 && tweak <= UINT8_MAX))
-    {
-        return Version(
-            static_cast<unsigned char>(major),
-            static_cast<unsigned char>(minor),
-            static_cast<unsigned char>(patch),
-            static_cast<unsigned char>(tweak));
-    }
-    else
-    {
-        throw std::invalid_argument(
-            "unsupported version string '" + std::string(str) +
-            "' the version value is too large, it should be between 0 and 255"
-        );
-    }
 }
 
 std::string Version::toString() const

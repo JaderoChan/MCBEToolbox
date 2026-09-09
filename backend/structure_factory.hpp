@@ -1,14 +1,14 @@
 #pragma once
 
-#include <map>
-#include <memory>
-#include <vector>
+#include <map>      // std::map
+#include <memory>   // std::unique_ptr
+#include <vector>   // std::vector
 
 #include <mcnbt/mcnbt.hpp>
 #include <opencv2/core/mat.hpp>
 
 #include "block.hpp"
-#include "image_frames_ostream.hpp"
+#include "frames_ostream.hpp"
 
 // 实现类前置声明
 class StructureFactoryPrivate;
@@ -43,13 +43,12 @@ public:
         std::size_t current,
         std::size_t total,
         bool&       stop,
-        void*       userdata
-    );
+        void*       userdata);
 
     // 使用透明比较器以支持 string_view 的异构查找
     using BlockUsageCountType = std::map<std::string, std::size_t, std::less<>>;
 
-    /** 默认构造函数，使用空 #BlockDataMap，#TargetSurface::Side 和 Version(1, 21, 50, 7) 为默认参数 */
+    /** 默认构造函数，使用空 #BlockDataMap，#TargetSurface::Side 和 Version(1, 21, 50, 7) 为默认参数。 */
     StructureFactory();
     explicit StructureFactory(
         const BlockDataMap& blockDataMap,
@@ -57,17 +56,17 @@ public:
         const Version&      blockFormatVersion = Version(1, 21, 50, 7));
     ~StructureFactory();
 
-    /** 设置可用的方块数据 */
+    /** 设置可用的方块数据。 */
     void setBlockDataMap(const BlockDataMap& blockDataMap);
-    /** 设置目标方块面和结构排布方式 */
+    /** 设置目标方块面和结构排布方式。 */
     void setTargetSurface(TargetSurface targetSurface);
-    /** 设置结构文件中方块格式的版本 */
+    /** 设置结构文件中方块格式的版本。 */
     void setBlockFormatVersion(const Version& blockFormatVersion);
-    /** 设置透明像素的替代方块，置空使用结构空位 */
+    /** 设置透明像素的替代方块，置空使用结构空位。 */
     void setFallbackBlock(const BlockDataPair* fallbackBlock = nullptr);
-    /** 设置任务进度回调函数 */
+    /** 设置任务进度回调函数。 */
     void setProgressCallback(ProgressCallback callback = nullptr);
-    /** 设置回调函数用户自定义数据 */
+    /** 设置回调函数用户自定义数据。 */
     void setUserdata(void* userdata = nullptr);
 
     const BlockDataMap& getBlockDataMap() const;
@@ -77,7 +76,7 @@ public:
     nbt::Tag generateSingleStructure(cv::Mat image);
 
     /** 生成视频结构文件（单个结构文件），如果参数不合法返回无效 #nbt::Tag（TT_END）。 */
-    nbt::Tag generateSingleStructure(VideoImageFramesOStream& stream);
+    nbt::Tag generateSingleStructure(VideoFramesOStream& stream);
 
     /**
      * 生成视频结构文件（每帧一个结构文件），如果参数不合法返回空数组。
@@ -87,7 +86,7 @@ public:
      * - 中止时会停止提交新任务，并尝试跳过尚未开始执行的已提交任务；
      *   已在执行中的任务无法被中断，但其结果仍会被丢弃
      */
-    std::vector<nbt::Tag> generateDetachStructure(VideoImageFramesOStream& stream, int numThreads = 2);
+    std::vector<nbt::Tag> generateDetachStructure(VideoFramesOStream& stream, int numThreads = 2);
 
     /**
      * 生成视频结构文件（每帧一个结构文件），用于实时视频流。
@@ -95,12 +94,12 @@ public:
      * - 支持多线程处理
      * - 不支持回调函数（实时流总帧数未知，进度无法被定义）
      */
-    std::vector<nbt::Tag> generateDetachStructure(RealTimeVideoImageFramesOStream& stream, int numThreads = 2);
+    std::vector<nbt::Tag> generateDetachStructure(RealTimeFramesOStream& stream, int numThreads = 2);
 
-    /** 获取方块用量信息 */
+    /** 获取方块用量信息。 */
     const BlockUsageCountType& getBlockUsageCount() const;
 
-    /** 释放临时缓存数据 */
+    /** 释放临时缓存数据。 */
     void releaseCaches();
 
 private:

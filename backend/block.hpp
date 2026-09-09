@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
-#include <utility>
+#include <utility>      // std::pair
 
 #include "color.hpp"
 #include "version.hpp"
@@ -38,7 +38,7 @@ constexpr BlockAttributes BLOCK_ATTRI_ALL  = 0xFFFFFFFF; ///< 包含所有方块
 /**
  * 方块属性匹配模式
  *
- * 可用于 #filterBlockAttributes()
+ * 可用于 #filterBlockDataMap()
  */
 enum class BlockAttributeMatchMode
 {
@@ -82,7 +82,7 @@ struct BlockSurface
             case TargetSurface::Up:   return up;
             case TargetSurface::Down: return down;
             case TargetSurface::Side: return side;
-            default: throw std::invalid_argument("BlockSurface::get() invalid target surface");
+            default: throw std::invalid_argument("BlockSurface::get(): invalid target surface");
         }
     }
 
@@ -155,7 +155,7 @@ using BlockEntryMap = std::map<std::string, BlockEntry>;
  * @throw std::runtime_error
  * @throw std::invalid_argument
  */
-BlockEntryMap parseBlockEntryMapFromJson(std::string_view json);
+BlockEntryMap parseBlockEntryMap(std::string_view json);
 
 /** 从 #BlockEntryMap 中解析默认方块数据组成的 #BlockDataMap。 */
 BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap);
@@ -163,8 +163,8 @@ BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap);
 /** 从 #BlockEntryMap 中解析符合目标版本的 #BlockDataMap。 */
 BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version targetVersion);
 
-/** 从 #BlockDataMap 中筛选出符合方块属性规则的子集。 */
-BlockDataMap filterBlockAttributes(
+/** 根据给定方块属性与匹配模式从 #BlockDataMap 中筛选出符合规则的子集。 */
+BlockDataMap filterBlockDataMap(
     const BlockDataMap&     blockDataMap,
     BlockAttributeMatchMode matchMode,
     BlockAttributes         attributes);

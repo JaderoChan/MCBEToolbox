@@ -12,7 +12,10 @@ struct RgbCloud
 {
     std::vector<Rgb> pts;
 
-    std::size_t kdtree_get_point_count() const { return pts.size(); }
+    std::size_t kdtree_get_point_count() const
+    {
+        return pts.size();
+    }
 
     float kdtree_get_pt(const std::size_t idx, const std::size_t dim) const
     {
@@ -24,7 +27,10 @@ struct RgbCloud
     }
 
     template<class BBOX>
-    bool kdtree_get_bbox(BBOX&) const { return false; }
+    bool kdtree_get_bbox(BBOX&) const
+    {
+        return false;
+    }
 };
 
 }
@@ -40,13 +46,53 @@ public:
 
     using BlockDataVector = std::vector<BlockDataPair>;
 
-    ColorKdTreePrivate();
-    ColorKdTreePrivate(const BlockDataMap& blockDataMap, TargetSurface targetSurface);
+    ColorKdTreePrivate() : tree_(3, cloud_, AdaptorParams(10, AdaptorFlags::SkipInitialBuildIndex)) {}
 
-    void rebuild(const BlockDataMap& blockDataMap, TargetSurface targetSurface);
-    bool isBuilt();
+    ColorKdTreePrivate(const BlockDataMap& blockDataMap, TargetSurface targetSurface)
+        : ColorKdTreePrivate() { rebuild(blockDataMap, targetSurface); }
 
-    BlockDataPair findNearest(const Rgb& query) const;
+    void rebuild(const BlockDataMap& blockDataMap, TargetSurface targetSurface)
+    {
+        const std::size_t n = blockDataMap.size();
+        cloud_.pts.clear();
+        blockDataVec_.clear();
+        cloud_.pts.reserve(n);
+        blockDataVec_.reserve(n);
+
+        for (const auto& [id, data] : blockDataMap)
+        {
+            const auto& surface = data->surface.get(targetSurface);
+            cloud_.pts.push_back(surface.second);
+            blockDataVec_.emplace_back(id, data);
+        }
+
+        tree_.buildIndex();
+        isBuilt_ = !blockDataMap.empty();
+    }
+
+    bool isBuilt() const
+    {
+        return isBuilt_;
+    }
+
+    BlockDataPair findNearest(const Rgb& rgb) const
+    {
+        assert(isBuilt_);
+
+        const float rgbPt[3] = {
+            static_cast<float>(rgb.r),
+            static_cast<float>(rgb.g),
+            static_cast<float>(rgb.b)
+        };
+
+        std::size_t retIdx;
+        float outDistSq;
+        nanoflann::KNNResultSet<float> resultSet(1);
+        resultSet.init(&retIdx, &outDistSq);
+        tree_.findNeighbors(resultSet, rgbPt);
+
+        return blockDataVec_[retIdx];
+    }
 
 private:
     bool            isBuilt_ = false;
@@ -55,62 +101,10 @@ private:
     BlockDataVector blockDataVec_;
 };
 
-ColorKdTreePrivate::ColorKdTreePrivate()
-    : tree_(3, cloud_, AdaptorParams(10, AdaptorFlags::SkipInitialBuildIndex)) {}
-
-ColorKdTreePrivate::ColorKdTreePrivate(const BlockDataMap& blockDataMap, TargetSurface targetSurface)
-    : ColorKdTreePrivate() { rebuild(blockDataMap, targetSurface); }
-
-void ColorKdTreePrivate::rebuild(const BlockDataMap& blockDataMap, TargetSurface targetSurface)
-{
-    const std::size_t n = blockDataMap.size();
-    cloud_.pts.clear();
-    blockDataVec_.clear();
-    cloud_.pts.reserve(n);
-    blockDataVec_.reserve(n);
-
-    for (const auto& [id, data] : blockDataMap)
-    {
-        const auto& surface = data->surface.get(targetSurface);
-        cloud_.pts.push_back(surface.second);
-        blockDataVec_.emplace_back(id, data);
-    }
-
-    tree_.buildIndex();
-    isBuilt_ = !blockDataMap.empty();
-}
-
-bool ColorKdTreePrivate::isBuilt()
-{
-    return isBuilt_;
-}
-
-BlockDataPair ColorKdTreePrivate::findNearest(const Rgb& query) const
-{
-    assert(isBuilt_);
-
-    const float queryPt[3] = {
-        static_cast<float>(query.r),
-        static_cast<float>(query.g),
-        static_cast<float>(query.b)
-    };
-
-    std::size_t retIdx;
-    float outDistSq;
-    nanoflann::KNNResultSet<float> resultSet(1);
-    resultSet.init(&retIdx, &outDistSq);
-    tree_.findNeighbors(resultSet, queryPt);
-
-    return blockDataVec_[retIdx];
-}
-
-ColorKdTree::ColorKdTree()
-    : ptr_(new ColorKdTreePrivate())
-{}
+ColorKdTree::ColorKdTree() : ptr_(new ColorKdTreePrivate()) {}
 
 ColorKdTree::ColorKdTree(const BlockDataMap& blockDataMap, TargetSurface targetSurface)
-    : ptr_(new ColorKdTreePrivate(blockDataMap, targetSurface))
-{}
+    : ptr_(new ColorKdTreePrivate(blockDataMap, targetSurface)) {}
 
 ColorKdTree::~ColorKdTree() = default;
 

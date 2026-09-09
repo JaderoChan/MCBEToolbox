@@ -1,9 +1,9 @@
 #include "block_image_factory.hpp"
 
-#include <algorithm>
-#include <unordered_map>
+#include <algorithm>                // std::max
+#include <unordered_map>            // std::unordered_map
 
-#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgcodecs.hpp>    // cv::imread
 
 #include "image_utilities.hpp"
 #include "color_kd_tree.hpp"
@@ -93,7 +93,7 @@ cv::Mat BlockImageFactoryPrivate::generateBlockImage(cv::Mat image)
 
     if (image.type() != CV_8UC1 && image.type() != CV_8UC3 && image.type() != CV_8UC4)
         return cv::Mat();
-    image = convertImageColorToBgra(image);
+    image = convertColorToBgra(image);
     if (image.empty() || blockDataMap_.empty() || !colorKdTree_.isBuilt())
         return cv::Mat();
 
@@ -141,7 +141,7 @@ cv::Mat BlockImageFactoryPrivate::generateBlockImage(cv::Mat image)
                     {
                         cv::Mat texture = cv::imread(texturePath, cv::IMREAD_UNCHANGED);
                         if (!texture.empty())
-                            texture = convertImageColorToBgra(texture);
+                            texture = convertColorToBgra(texture);
                         if (texture.empty())
                             texture = cv::Mat(16, 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
                         cache_[texturePath] = texture;
@@ -177,9 +177,7 @@ cv::Mat BlockImageFactoryPrivate::generateBlockImage(cv::Mat image)
     return ret;
 }
 
-BlockImageFactory::BlockImageFactory()
-    : BlockImageFactory(BlockDataMap())
-{}
+BlockImageFactory::BlockImageFactory() : BlockImageFactory(BlockDataMap()) {}
 
 BlockImageFactory::BlockImageFactory(
     const BlockDataMap& blockDataMap,
