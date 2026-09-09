@@ -114,7 +114,7 @@ public:
     explicit VideoFramesOStream(
         const std::string& videoFilePath,
         long long maxFrameCount = -1, int maxw = -1, int maxh = -1) noexcept
-        : FramesOStream(maxw, maxh), capture_(videoFilePath), maxFrameCount_(maxFrameCount)
+        : FramesOStream(maxw, maxh), capture_(videoFilePath, cv::CAP_FFMPEG), maxFrameCount_(maxFrameCount)
     {}
     ~VideoFramesOStream() override = default;
 
