@@ -25,33 +25,35 @@ if(WIN32)
     file(GLOB OPENCV_FFMPEG_DLLS "${OPENCV_BIN_DIR}/opencv_videoio_ffmpeg*.dll")
 endif()
 
+# 配置 zlib 库
+set(ZLIB_BUILD_SHARED ON)
+set(ZLIB_BUILD_STATIC OFF)
+add_subdirectory(${3RDPARTY_DIR}/zlib)
+
 # 配置 Json 库
-FetchContent_Declare(
-    json
-    SOURCE_DIR ${3RDPARTY_DIR}/json
-)
-FetchContent_MakeAvailable(json)
-
-# 配置 MC NBT 库
-FetchContent_Declare(
-    mcnbt
-    SOURCE_DIR ${3RDPARTY_DIR}/mcnbt
-)
-FetchContent_MakeAvailable(mcnbt)
-
-# 配置 Easy Translate 库
-FetchContent_Declare(
-    easy_translate
-    SOURCE_DIR ${3RDPARTY_DIR}/easy_translate
-)
-FetchContent_MakeAvailable(easy_translate)
-
+add_subdirectory(${3RDPARTY_DIR}/json)
 # 配置 nanoflann 库
-FetchContent_Declare(
-    nanoflann
-    SOURCE_DIR ${3RDPARTY_DIR}/nanoflann
-)
-FetchContent_MakeAvailable(nanoflann)
+add_subdirectory(${3RDPARTY_DIR}/nanoflann)
+# 配置 Easy Translate 库
+add_subdirectory(${3RDPARTY_DIR}/easy_translate)
+# 配置 MC NBT 库
+set(MCNBT_USE_BUILTIN_ZLIB OFF)
+add_subdirectory(${3RDPARTY_DIR}/mcnbt)
+
+# 配置 minizip 库
+set(MZ_COMPAT OFF)
+set(MZ_ZLIB ON)
+set(MZ_BZIP2 OFF)
+set(MZ_LZMA OFF)
+set(MZ_PPMD OFF)
+set(MZ_ZSTD OFF)
+set(MZ_PKCRYPT OFF)
+set(MZ_WZAES OFF)
+set(MZ_OPENSSL OFF)
+set(MZ_ICONV OFF)
+set(MZ_COMPRESS_ONLY ON)
+set(MZ_FETCH_LIBS OFF)
+add_subdirectory(${3RDPARTY_DIR}/minizip-ng)
 
 # 重定向目标文件输出目录
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)

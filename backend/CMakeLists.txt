@@ -9,6 +9,7 @@ set(
     ./frames_ostream.hpp
     ./image_utilities.hpp
     ./mcbe_toolbox_api.hpp
+    ./mcpack_factory.hpp
     ./structure_factory.hpp
     ./thread_pool.hpp
     ./version.hpp
@@ -22,6 +23,7 @@ set(
     ./frames_ostream.cpp
     ./image_utilities.cpp
     ./mcbe_toolbox_api.cpp
+    ./mcpack_factory.cpp
     ./structure_factory.cpp
     ./thread_pool.cpp
     ./version.cpp
@@ -41,4 +43,5 @@ target_link_libraries(
     PRIVATE
     json
     nanoflann
+    MINIZIP::minizip
 )
