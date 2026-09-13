@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
-#include <string_view>
+#include <string>      // std::string
+#include <string_view> // std::string_view
 
 #pragma pack(push, 1)
 /** 8 位 RGB 颜色值 */

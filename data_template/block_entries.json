@@ -1,15 +1,15 @@
 {
-  "block_id": {                        // 方块 ID（与游戏无关的 ID）
+  "block_id": { // 方块 ID（与游戏无关的 ID）
     "name":                   "Block", // 方块英文名
-    "name_translations": {             // 方块译名（可选）
+    "localization_names": { // 本地化方块名（可选）
       "zh":                   "方块"   // 方块中文名
       // ...
     },
     "min_version":            "1.21.50",  // 最低游戏版本（可选，默认为 1.21.50）
-    "default": { // 默认的方块数据
-      "id":                   "block",
-      "textures":             "./textures/block.png", // 默认方块材质文件路径
-      "colors":               "#000000",              // 默认方块颜色
+    "base": { // 基础方块数据
+      "id":                   "block",                // 方块 ID（游戏相关）
+      "textures":             "./textures/block.png", // 方块材质文件路径
+      "colors":               "#000000",              // 方块颜色
       "attributes": { // 方块属性（可选，默认均为假）
         "is_incomplete":      false, // 是非完整方块
         "is_transparent":     false, // 是透明/半透明方块
@@ -22,7 +22,7 @@
         "enderman_pickable":  false  // 可被末影人拿起的方块
       }
     },
-    "variants": { // 不同版本对应的方块数据（可选）
+    "versioned": { // 不同版本对应的方块数据（可选）
       // 较新版本的字段值在没有指定的情况下使用上一个版本/默认的字段值
       "0.1.0": {  // 具体版本的方块数据
         "textures":           "./textures/block.png", // 方块材质文件路径（string 或 object 类型）
@@ -30,15 +30,15 @@
       },
       "0.2.0": {
         "id":                 "block_0.2.0",
-        // textures 和 colors 字段为 object 类型时，必须包含 up，down 和 side 三个字段
+        // textures 和 colors 字段为 object 类型时，必须包含 up，bottom 和 side 三个字段
         "textures": {
           "up":               "./textures/block_up.png",
-          "down":             "./textures/block_down.png",
+          "bottom":           "./textures/block_bottom.png",
           "side":             "./textures/block_side.png"
         },
         "colors": {
           "up":               "#FF0000",
-          "down":             "#00FF00",
+          "bottom":           "#00FF00",
           "side":             "#0000FF"
         }
       }

@@ -1,8 +1,9 @@
-#include "block.hpp"
+#include <block.hpp>
 
-#include <assert.h>
+#include <assert.h> // assert
+#include <fstream>  // std::ifstream
 
-#include <nlohmann/json.hpp>
+#include <nlohmann/json.hpp> // nlohmann::*
 
 namespace
 {
@@ -52,18 +53,13 @@ void parseBlockAttributes(const nlohmann::json& obj, BlockAttributes& attributes
 {
     assert(!obj.is_discarded() && obj.is_object());
 
-// 将 value 指定位，置为 1
-#define BITS_TO_ONE(value,  bits) (value | bits)
-// 将 value 指定位，置为 0
-#define BITS_TO_ZERO(value, bits) (~((~value) | bits))
 // 尝试读取新的属性值并覆盖原有值
 #define TRY_OVERRIDE_ATTRIBUTE(attribute_name, attribute_value)                 \
 do {                                                                            \
     if (obj.contains(attribute_name) && obj[attribute_name].is_boolean())       \
-        attributes =                                                            \
-            obj[attribute_name]                                                 \
-            ? BITS_TO_ONE(attributes,  attribute_value)                         \
-            : BITS_TO_ZERO(attributes, attribute_value);                        \
+        obj[attribute_name]                                                     \
+        ? SET_BLOCK_ATTRIS(attributes,  attribute_value)                        \
+        : UNSET_BLOCK_ATTRIS(attributes, attribute_value);                      \
 } while(0);
 
     TRY_OVERRIDE_ATTRIBUTE("is_incomplete",     BLOCK_ATTRI_IS_INCOMPLETE);
@@ -77,17 +73,15 @@ do {                                                                            
     TRY_OVERRIDE_ATTRIBUTE("enderman_pickable", BLOCK_ATTRI_ENDERMAN_PICKABLE);
 
 #undef TRY_OVERRIDE_ATTRIBUTE
-#undef BITS_TO_ZERO
-#undef BITS_TO_ONE
 }
 
 // 解析方块面数据
 // 如果 force 为真，则要求对象必须包含所有面信息。
-void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData& data, bool force)
+void parseBlockSurfaceData(const nlohmann::json& obj, const char* objName, BlockData& block, bool force)
 {
     assert(!obj.is_discarded() && obj.is_object());
 
-    auto& surface = data.surface;
+    auto& surfaceData = block.surfaceData;
     if (obj["textures"].is_string())
     {
         if (!obj["colors"].is_string())
@@ -97,9 +91,9 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
 
         const Rgb rgb = readRgb(obj, "colors");
         const std::pair<std::string, Rgb> value = {obj["textures"], rgb};
-        surface.up   = value;
-        surface.down = value;
-        surface.side = value;
+        surfaceData.up     = value;
+        surfaceData.bottom = value;
+        surfaceData.side   = value;
     }
     else if (obj["textures"].is_object())
     {
@@ -120,33 +114,33 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
 
         if (force)
         {
-            CHECK_KEY(texturesObj, "textures", "up",   string);
-            CHECK_KEY(texturesObj, "textures", "down", string);
-            CHECK_KEY(texturesObj, "textures", "side", string);
-            CHECK_KEY(colorsObj,   "colors",   "up",   string);
-            CHECK_KEY(colorsObj,   "colors",   "down", string);
-            CHECK_KEY(colorsObj,   "colors",   "side", string);
+            CHECK_KEY(texturesObj, "textures", "up",     string);
+            CHECK_KEY(texturesObj, "textures", "bottom", string);
+            CHECK_KEY(texturesObj, "textures", "side",   string);
+            CHECK_KEY(colorsObj,   "colors",   "up",     string);
+            CHECK_KEY(colorsObj,   "colors",   "bottom", string);
+            CHECK_KEY(colorsObj,   "colors",   "side",   string);
 
-            surface.up   = {texturesObj["up"],   readRgb(colorsObj, "up")};
-            surface.down = {texturesObj["down"], readRgb(colorsObj, "down")};
-            surface.side = {texturesObj["side"], readRgb(colorsObj, "side")};
+            surfaceData.up     = {texturesObj["up"],     readRgb(colorsObj, "up")};
+            surfaceData.bottom = {texturesObj["bottom"], readRgb(colorsObj, "bottom")};
+            surfaceData.side   = {texturesObj["side"],   readRgb(colorsObj, "side")};
         }
         else
         {
             if (texturesObj.contains("up"))
             {
                 if (!colorsObj.contains("up")) THROW_PATTERN_NOT_MATCH(objName);
-                surface.up = {texturesObj["up"], readRgb(colorsObj, "up")};
+                surfaceData.up = {texturesObj["up"], readRgb(colorsObj, "up")};
             }
-            if (texturesObj.contains("down"))
+            if (texturesObj.contains("bottom"))
             {
-                if (!colorsObj.contains("down")) THROW_PATTERN_NOT_MATCH(objName);
-                surface.down = {texturesObj["down"], readRgb(colorsObj, "down")};
+                if (!colorsObj.contains("bottom")) THROW_PATTERN_NOT_MATCH(objName);
+                surfaceData.bottom = {texturesObj["bottom"], readRgb(colorsObj, "bottom")};
             }
             if (texturesObj.contains("side"))
             {
                 if (!colorsObj.contains("side")) THROW_PATTERN_NOT_MATCH(objName);
-                surface.side = {texturesObj["side"], readRgb(colorsObj, "side")};
+                surfaceData.side = {texturesObj["side"], readRgb(colorsObj, "side")};
             }
         }
     }
@@ -160,7 +154,7 @@ void parseBlockSurface(const nlohmann::json& obj, const char* objName, BlockData
 
 // 解析方块数据
 // 如果 force 为真，则要求对象必须包含 id 和所有面数据
-void parseBlockData(const nlohmann::json& obj, const char* objName, BlockData& data, bool force)
+void parseBlockData(const nlohmann::json& obj, const char* objName, BlockData& block, bool force)
 {
     assert(!obj.is_discarded() && obj.is_object());
 
@@ -173,39 +167,39 @@ void parseBlockData(const nlohmann::json& obj, const char* objName, BlockData& d
     if (obj.contains("id"))
     {
         CHECK_KEY(obj, objName, "id", string);
-        data.id = obj["id"];
+        block.id = obj["id"];
     }
     if (obj.contains("attributes"))
     {
         CHECK_KEY(obj, objName, "attributes", object);
-        parseBlockAttributes(obj["attributes"], data.attributes);
+        parseBlockAttributes(obj["attributes"], block.attributes);
     }
     if (obj.contains("textures") && obj.contains("colors"))
     {
-        parseBlockSurface(obj, objName, data, force);
+        parseBlockSurfaceData(obj, objName, block, force);
     }
 }
 
-void parseBlockEntryMapHelper(std::string_view json, BlockEntryMap& blockEntryMap)
+void parseBlockEntriesHelper(std::string_view json, BlockEntryMap& blockEntries)
 {
     const nlohmann::json j = nlohmann::json::parse(json, nullptr, true, true);
     if (j.is_discarded() || !j.is_object())
         throw std::runtime_error("illegal json data or root item is not 'object' type");
 
-    for (const auto& [k, v] : j.items())
+    for (const auto& [id, entryObj] : j.items())
     {
         // 如果不是 object 类型的字段直接跳过。
-        if (!v.is_object()) continue;
+        if (!entryObj.is_object()) continue;
 
         BlockEntry entry;
 
         // 读取 name 和 min_version 字段。
-        CHECK_KEY(v, k, "name", string);
-        entry.name = v["name"];
-        if (v.contains("min_version"))
+        CHECK_KEY(entryObj, id, "name", string);
+        entry.name = entryObj["name"];
+        if (entryObj.contains("min_version"))
         {
-            CHECK_KEY(v, k, "min_version", string);
-            entry.minVersion = readVersion(v, "min_version");
+            CHECK_KEY(entryObj, id, "min_version", string);
+            entry.minVersion = readVersion(entryObj, "min_version");
         }
         else
         {
@@ -214,51 +208,51 @@ void parseBlockEntryMapHelper(std::string_view json, BlockEntryMap& blockEntryMa
             entry.minVersion = defaultVersion;
         }
 
-        // 解析 name_translations 字段。
-        if (v.contains("name_translations"))
+        // 解析 localization_names 字段。
+        if (entryObj.contains("localization_names"))
         {
-            CHECK_KEY(v, k, "name_translations", object);
-            const auto& nameTransObj = v["name_translations"];
-            for (const auto& [lang, trans] : nameTransObj.items())
+            CHECK_KEY(entryObj, id, "localization_names", object);
+            const auto& localizationNamesObj = entryObj["localization_names"];
+            for (const auto& [locale, name] : localizationNamesObj.items())
             {
-                CHECK_KEY(nameTransObj, "name_translations", lang, string);
-                entry.nameTranslations[lang] = trans;
+                CHECK_KEY(localizationNamesObj, "localization_names", locale, string);
+                entry.localizationNames[locale] = name;
             }
         }
 
-        // 解析 default 方块数据
-        CHECK_KEY(v, k, "default", object);
-        const auto& defaultObj = v["default"];
-        parseBlockData(defaultObj, "default", entry.defaultBlockData, true);
+        // 解析 base 方块数据
+        CHECK_KEY(entryObj, id, "base", object);
+        const auto& baseBlockObj = entryObj["base"];
+        parseBlockData(baseBlockObj, "base", entry.baseBlock, true);
 
         // 解析不同版本的方块数据
-        if (v.contains(("variants")))
+        if (entryObj.contains(("versioned")))
         {
-            CHECK_KEY(v, k, "variants", object);
-            const auto& variantsObj = v["variants"];
+            CHECK_KEY(entryObj, id, "versioned", object);
+            const auto& versionedObj = entryObj["versioned"];
 
-            // 按照版本号对变体数据进行排序，用于实现 “新版本数据继承上一版本数据” 的功能
-            std::map<Version, const nlohmann::json*> sortedVariants;
-            for (const auto& [versionStr, dataObj] : variantsObj.items())
+            // 按照版本号进行排序，用于实现 “新版本数据继承上一版本数据” 的功能
+            std::map<Version, const nlohmann::json*> sortedObjs;
+            for (const auto& [versionStr, blockObj] : versionedObj.items())
             {
-                if (dataObj.empty()) continue;
-                CHECK_KEY(variantsObj, "variants", versionStr, object);
+                if (blockObj.empty()) continue;
+                CHECK_KEY(versionedObj, "versioned", versionStr, object);
                 const Version version = Version::fromString(versionStr);
-                sortedVariants[version] = &dataObj;
+                sortedObjs[version] = &blockObj;
             }
 
             // 实际解析行为
-            BlockData lastData = entry.defaultBlockData;
-            for (const auto& [version, dataObj] : sortedVariants)
+            BlockData lastestBlock = entry.baseBlock;
+            for (const auto& [version, blockObj] : sortedObjs)
             {
-                BlockData data = lastData;
-                parseBlockData(*dataObj, version.toString().c_str(), data, false);
-                lastData = data;
-                entry.variants[version] = std::move(data);
+                BlockData block = lastestBlock;
+                parseBlockData(*blockObj, version.toString().c_str(), block, false);
+                lastestBlock = block;
+                entry.versionedBlocks[version] = std::move(block);
             }
         }
 
-        blockEntryMap[k] = entry;
+        blockEntries[id] = entry;
     }
 }
 
@@ -268,35 +262,50 @@ void parseBlockEntryMapHelper(std::string_view json, BlockEntryMap& blockEntryMa
 
 } // namespace
 
-BlockEntryMap parseBlockEntryMap(std::string_view json)
+BlockEntryMap parseBlockEntries(std::string_view json)
 {
     // 包装一层异常消息
     BlockEntryMap ret;
     try
     {
-        parseBlockEntryMapHelper(json, ret);
+        parseBlockEntriesHelper(json, ret);
     }
     catch (std::exception& e)
     {
         throw std::runtime_error(
-            std::string("parseBlockEntryMap(): invalid json for parse 'Block Entry Map': ") + e.what()
+            std::string("parseBlockEntries(): invalid json for parse 'Block Entry Map': ") + e.what()
         );
     }
     return ret;
 }
 
-BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap)
+BlockEntryMap parseBlockEntriesFromFile(const std::string& filepath)
+{
+    std::ifstream file(filepath);
+    if (!file.is_open())
+        throw std::runtime_error("parseBlockEntriesFromFile(): can't open the file '" + filepath + "'");
+
+    std::string json(
+        (std::istreambuf_iterator<char>(file)),
+        std::istreambuf_iterator<char>()
+    );
+    file.close();
+
+    return parseBlockEntries(json);
+}
+
+BlockDataMap resolveBlockEntries(const BlockEntryMap& blockEntries)
 {
     BlockDataMap ret;
-    for (const auto& [id, entry] : blockEntryMap)
-        ret[id] = &entry.defaultBlockData;
+    for (const auto& [id, entry] : blockEntries)
+        ret[id] = &entry.baseBlock;
     return ret;
 }
 
-BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version targetVersion)
+BlockDataMap resolveBlockEntries(const BlockEntryMap& blockEntries, Version targetVersion)
 {
     BlockDataMap ret;
-    for (const auto& [id, entry] : blockEntryMap)
+    for (const auto& [id, entry] : blockEntries)
     {
         // 如果加入版本比目标版本更新，说明在目标版本中此方块还未被加入，直接跳过。
         if (entry.minVersion > targetVersion)
@@ -304,8 +313,8 @@ BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version ta
 
         // 目标是获取不超过 targetVersion 的最新版本的方块数据。
         Version lastestVersion(0, 0, 0);
-        const BlockData* lastestData = &entry.defaultBlockData;
-        for (const auto& [version, data] : entry.variants)
+        const BlockData* lastestBlock = &entry.baseBlock;
+        for (const auto& [version, block] : entry.versionedBlocks)
         {
             if (version > targetVersion)
                 continue;
@@ -313,33 +322,30 @@ BlockDataMap resolveBlockEntryMap(const BlockEntryMap& blockEntryMap, Version ta
             if (version > lastestVersion)
             {
                 lastestVersion = version;
-                lastestData    = &data;
+                lastestBlock   = &block;
             }
         }
 
-        ret[id] = lastestData;
+        ret[id] = lastestBlock;
     }
     return ret;
 }
 
-BlockDataMap filterBlockDataMap(
-    const BlockDataMap&     blockDataMap,
-    BlockAttributeMatchMode matchMode,
-    BlockAttributes         attributes)
+BlockDataMap filterBlocks(const BlockDataMap& blocks, BlockAttributeFilterMode filterMode, BlockAttributes attributes)
 {
     BlockDataMap ret;
-    for (const auto& [id, data] : blockDataMap)
+    for (const auto& [id, block] : blocks)
     {
-        switch (matchMode)
+        switch (filterMode)
         {
-            case BlockAttributeMatchMode::ContainsAll:
-                if ((data->attributes & attributes) == attributes)       ret[id] = data; break;
-            case BlockAttributeMatchMode::Disjoint:
-                if ((data->attributes & attributes) == 0)                ret[id] = data; break;
-            case BlockAttributeMatchMode::SubsetOf:
-                if ((data->attributes & attributes) == data->attributes) ret[id] = data; break;
+            case BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL:
+                if ((block->attributes & attributes) == attributes)        ret[id] = block; break;
+            case BLOCK_ATTRI_FILTER_MODE_DISJOINT:
+                if ((block->attributes & attributes) == 0)                 ret[id] = block; break;
+            case BLOCK_ATTRI_FILTER_MODE_SUBSETOF:
+                if ((block->attributes & attributes) == block->attributes) ret[id] = block; break;
             default:
-                throw std::invalid_argument("filterBlockDataMap(): invalid block attribute match mode");
+                throw std::invalid_argument("filterBlocks(): invalid block attribute filter mode");
         }
     }
     return ret;

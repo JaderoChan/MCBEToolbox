@@ -1,10 +1,10 @@
-#include "image_utilities.hpp"
+#include <image_utilities.hpp>
 
-#include <algorithm>            // std::min
+#include <algorithm> // std::min
 
-#include <opencv2/imgproc.hpp>  // cv::cvtColor, cv::resize
+#include <opencv2/imgproc.hpp> // cv::cvtColor, cv::resize
 
-cv::Mat convertColorToBgra(const cv::Mat& image) noexcept
+cv::Mat convertColorToBgra(const cv::Mat& image)
 {
     cv::Mat ret;
     switch (image.type())
@@ -16,7 +16,7 @@ cv::Mat convertColorToBgra(const cv::Mat& image) noexcept
     }
 }
 
-cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size) noexcept
+cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size)
 {
     cv::Mat ret;
     if (size.empty()) return ret;
@@ -24,7 +24,7 @@ cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size) noexcept
     return ret;
 }
 
-cv::Size limitSize(const cv::Size& size, int maxw, int maxh) noexcept
+cv::Size limitSize(const cv::Size& size, int maxw, int maxh)
 {
     if (size.empty() || (maxw == 0 || maxh == 0))
         return cv::Size();
@@ -42,7 +42,7 @@ cv::Size limitSize(const cv::Size& size, int maxw, int maxh) noexcept
     return cv::Size(size.width * ratio, size.height * ratio);
 }
 
-cv::Mat limitImageSize(const cv::Mat& image, int maxw, int maxh) noexcept
+cv::Mat limitImageSize(const cv::Mat& image, int maxw, int maxh)
 {
     if (image.empty())        return cv::Mat();
     if (maxw < 0 && maxh < 0) return image;

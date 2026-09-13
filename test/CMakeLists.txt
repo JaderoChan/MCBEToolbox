@@ -1,4 +1,1 @@
-add_subdirectory(block_entries_parse_test)
-add_subdirectory(image_to_block_image_test)
-add_subdirectory(image_to_structure_test)
-add_subdirectory(video_to_single_structure_test)
+add_subdirectory(backend_test)

@@ -1,7 +1,7 @@
-#include "color.hpp"
+#include <color.hpp>
 
-#include <assert.h>
-#include <stdexcept>
+#include <assert.h>  // assert
+#include <stdexcept> // std::invalid_argument
 
 static inline int hexCharToInt(char c)
 {

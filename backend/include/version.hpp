@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
-#include <string_view>
+#include <string>      // std::string
+#include <string_view> // std::string_view
 
 #pragma pack(push, 1)
 /** 版本号（字段最大值为 255） */

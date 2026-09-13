@@ -1,7 +1,7 @@
 // 仅供预处理生成 block_entries 数据使用
 {
   "block_id_1": {
-    "default": {
+    "base": {
       "textures": "./textures/block_1.png",
       "colors":   "#000000"
     },
@@ -12,19 +12,19 @@
     // ...
   },
   "block_id_2": {
-    "default": {
+    "base": {
       "textures": "./textures/block_2.png",
       "colors":   "#000000"
     },
     "0.1.0": {
       "textures": {
         "up":     "./textures/block_2_up.png",
-        "down":   "./textures/block_2_down.png",
+        "bottom": "./textures/block_2_bottom.png",
         "side":   "./textures/block_2_side.png"
       },
       "colors": {
         "up":     "#FF0000",
-        "down":   "#00FF00",
+        "bottom": "#00FF00",
         "side":   "#0000FF"
       }
     }
