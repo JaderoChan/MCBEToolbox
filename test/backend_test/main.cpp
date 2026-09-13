@@ -423,4 +423,6 @@ int main(int argc, char* argv)
 
     menu.show();
     menu.startReceiveInput();
+
+    return 0;
 }
