@@ -1,27 +1,33 @@
-#include <iostream>
-#include <string>
+#include <filesystem> // std::filesystem::*
+#include <iostream>   // std::cin, std::cout
+#include <string>     // std::string, std::to_string
 
-#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgcodecs.hpp> // cv::imwrite
 #include <mcbe_toolbox_api.hpp>
 
 #include "command_line_menu.hpp"
 
+constexpr BlockAttributes DEFAULT_FILTER_BLOCK_ATTRIBUTES =
+    BLOCK_ATTRI_HAS_PATTERN   |
+    BLOCK_ATTRI_IS_INCOMPLETE |
+    BLOCK_ATTRI_IS_TRANSPARENT;
+constexpr BlockAttributeFilterMode DEFAULT_FILTER_MODE = BLOCK_ATTRI_FILTER_MODE_DISJOINT;
+
 struct Configurations
 {
     BlockEntryMap            blockEntries;
-    BlockAttributes          filterAttributes =
-        BLOCK_ATTRI_HAS_PATTERN   |
-        BLOCK_ATTRI_IS_INCOMPLETE |
-        BLOCK_ATTRI_IS_TRANSPARENT;
-    BlockAttributeFilterMode filterMode = BLOCK_ATTRI_FILTER_MODE_DISJOINT;
+    BlockAttributes          filterAttributes = DEFAULT_FILTER_BLOCK_ATTRIBUTES;
+    BlockAttributeFilterMode filterMode       = DEFAULT_FILTER_MODE;
     BlockDataMap             blocks;
-    const BlockDataPair*     fallbackBlock = nullptr;
-    cv::Size                 frameMaxSize  = cv::Size(1080, 1080);
-    int                      frameMaxCount = -1;
+    const BlockDataPair*     fallbackBlock    = nullptr;
+    cv::Size                 frameMaxSize     = cv::Size(1080, 1080);
+    int                      frameMaxCount    = 600;
 };
 
+// 全局配置
 static Configurations config;
 
+// 加载 BlockEntryMap，并按照默认参数处理得到 BlockDataMap
 bool loadBlockEntries()
 {
     constexpr const char* BLOCK_ENTRIES_FILEPATH = "./block_entries.json";
@@ -39,35 +45,69 @@ bool loadBlockEntries()
     }
 }
 
+// 进度回调函数
 void progressCllback(std::size_t current, std::size_t total, bool& stop, void* userdata)
 {
     const std::size_t step = *static_cast<std::size_t*>(userdata);
+    // 按照指定步长打印日志
     if (current % step == 0 || current == total)
         std::cout << "[" << current << "/" << total << "]\n";
 }
 
+// 通过 CLI 获取期望面
 SurfaceDirection getDesiredSurface()
 {
+    CommandLineMenu menu;
+    menu.setTopText("Please select the desired surface");
 
+    SurfaceDirection desiredSurface = SURFACE_DIRECTION_NORTH;
+    menu.addOption("Up",     [&]() { desiredSurface = SURFACE_DIRECTION_UP;     menu.endReceiveInput(); }, false, false);
+    menu.addOption("Bottom", [&]() { desiredSurface = SURFACE_DIRECTION_BOTTOM; menu.endReceiveInput(); }, false, false);
+    menu.addOption("North",  [&]() { desiredSurface = SURFACE_DIRECTION_NORTH;  menu.endReceiveInput(); }, false, false);
+    menu.addOption("South",  [&]() { desiredSurface = SURFACE_DIRECTION_SOUTH;  menu.endReceiveInput(); }, false, false);
+    menu.addOption("East",   [&]() { desiredSurface = SURFACE_DIRECTION_EAST;   menu.endReceiveInput(); }, false, false);
+    menu.addOption("West",   [&]() { desiredSurface = SURFACE_DIRECTION_WEST;   menu.endReceiveInput(); }, false, false);
+
+    menu.show();
+    menu.startReceiveInput();
+    menu.clearConsole();
+
+    return desiredSurface;
 }
 
 void generateBlockImageTriggered()
 {
     BlockImageFactory factory(config.blocks, getDesiredSurface());
     factory.setFallbackBlock(config.fallbackBlock);
-    factory.setProgressCallback(progressCllback);
-    std::size_t callbackStep = 1000;
+    factory.setProgressCallback(&progressCllback);
+    std::size_t callbackStep = 1000; // 每 1000 个像素打印一次日志
     factory.setUserData(static_cast<void*>(&callbackStep));
 
+    // 输入图像
     std::string filepath;
     std::cout << "Please input the image filepath: " << std::endl;
     std::cin >> filepath;
     ImageFramesOStream stream(filepath, config.frameMaxSize.width, config.frameMaxSize.height);
+    if (!stream.isOpened())
+    {
+        std::cerr << "Failed open the image: " << filepath << std::endl;
+        return;
+    }
 
+    // 生成方块图
     std::cout << "Start generate block image" << std::endl;
     const cv::Mat image = factory.generateBlockImage(stream);
-    std::cout << "Block image generate finished" << std::endl;
+    if (image.empty())
+    {
+        std::cerr << "Failed to generate the block image" << std::endl;
+        return;
+    }
+    else
+    {
+        std::cout << "Block image generate finished" << std::endl;
+    }
 
+    // 保存结果
     if (cv::imwrite("./out.png", image))
         std::cout << "Successfully save the block image to './out.png'" << std::endl;
     else
@@ -76,12 +116,132 @@ void generateBlockImageTriggered()
 
 void generateImageStructureTriggered()
 {
+    MCStructureFactory factory(config.blocks, getDesiredSurface());
+    factory.setFallbackBlock(config.fallbackBlock);
+    factory.setProgressCallback(progressCllback);
+    std::size_t callbackStep = 1000;
+    factory.setUserData(static_cast<void*>(&callbackStep));
 
+    // 输入图像
+    std::string filepath;
+    std::cout << "Please input the image filepath: " << std::endl;
+    std::cin >> filepath;
+    ImageFramesOStream stream(filepath, config.frameMaxSize.width, config.frameMaxSize.height);
+    if (!stream.isOpened())
+    {
+        std::cerr << "Failed open the image: " << filepath << std::endl;
+        return;
+    }
+
+    // 生成 MC Structure
+    std::cout << "Start generate MC Structure" << std::endl;
+    const nbt::Tag mcstructure = factory.generateSingleMCStructure(stream);
+    if (mcstructure.type() == nbt::TT_END)
+    {
+        std::cerr << "Failed to generate the MC Structure" << std::endl;
+        return;
+    }
+    else
+    {
+        std::cout << "MC Structure generate finished" << std::endl;
+    }
+
+    // 保存结果
+    mcstructure.dump("./out.mcstructure", false);
+    std::cout << "Successfully save the MC Structure to './out.mcstructure'" << std::endl;
 }
 
 void generateVideoStructureTriggered()
 {
+    MCStructureFactory factory(config.blocks, getDesiredSurface());
+    factory.setFallbackBlock(config.fallbackBlock);
+    factory.setProgressCallback(progressCllback);
+    std::size_t callbackStep = 1;
+    factory.setUserData(static_cast<void*>(&callbackStep));
 
+    bool asDetach = true;
+    std::string input;
+    std::cout << "Generate MC Structure as detach file? (Y/N)" << std::endl;
+    std::cin >> input;
+    if (input == "Y" || input == "y")
+    {
+        asDetach = true;
+    }
+    else if (input == "N" || input == "n")
+    {
+        asDetach = false;
+    }
+    else
+    {
+        std::cerr << "Invalid input" << std::endl;
+        return;
+    }
+
+    // 输入视频
+    std::string filepath;
+    std::cout << "Please input the video filepath: " << std::endl;
+    std::cin >> filepath;
+    VideoFramesOStream stream(filepath, config.frameMaxCount, config.frameMaxSize.width, config.frameMaxSize.height);
+    if (!stream.isOpened())
+    {
+        std::cerr << "Failed open the video: " << filepath << std::endl;
+        return;
+    }
+
+    // 生成 MC Structure
+    std::cout << "Start generate MC Structure" << std::endl;
+    if (asDetach)
+    {
+        const auto mcstructures = factory.generateDetachMCStructure(stream);
+        if (mcstructures.empty())
+        {
+            std::cerr << "Failed to generate the MC Structure" << std::endl;
+            return;
+        }
+        else
+        {
+            std::cout << "MC Structure generate finished" << std::endl;
+        }
+
+        // 保存结果
+        if (!std::filesystem::exists("./out"))
+        {
+            if (!std::filesystem::create_directory("./out"))
+            {
+                std::cerr << "Failed to create the directory: './out'" << std::endl;
+                return;
+            }
+        }
+        else
+        {
+            if (!std::filesystem::is_directory("./out"))
+            {
+                std::cerr << "Target path './out' is not a directory" << std::endl;
+                return;
+            }
+        }
+
+        for (std::size_t i = 0; i < mcstructures.size(); ++i)
+            mcstructures[i].dump("./out/" + std::to_string(i) + ".mcstructure", false);
+        std::cout << "Successfully save MC Structures to directory './out'" << std::endl;
+    }
+    else
+    {
+        const nbt::Tag mcstructure = factory.generateSingleMCStructure(stream);
+        if (mcstructure.type() == nbt::TT_END)
+        {
+            std::cerr << "Failed to generate the MC Structure" << std::endl;
+            return;
+        }
+        else
+        {
+            std::cout << "MC Structure generate finished" << std::endl;
+        }
+
+        // 保存结果
+        mcstructure.dump("./out.mcstructure", false);
+        std::cout << "Successfully save the MC Structure to './out.mcstructure'" << std::endl;
+    }
 }
 
 void filterBlocksTriggered()
