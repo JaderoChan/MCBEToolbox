@@ -32,8 +32,6 @@ add_subdirectory(${3RDPARTY_DIR}/zlib)
 
 # 配置 Json 库
 add_subdirectory(${3RDPARTY_DIR}/json)
-# 配置 nanoflann 库
-add_subdirectory(${3RDPARTY_DIR}/nanoflann)
 # 配置 Easy Translate 库
 add_subdirectory(${3RDPARTY_DIR}/easy_translate)
 # 配置 MC NBT 库

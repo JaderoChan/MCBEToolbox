@@ -3,7 +3,7 @@
 #include <assert.h> // assert
 #include <vector>   // std::vector
 
-#include <nanoflann.hpp> // nanoflann::*
+#include "nanoflann.hpp" // nanoflann::*
 
 #include <block.hpp>
 

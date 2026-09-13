@@ -18,6 +18,7 @@ set(
     ./include/video_frames_ostream.hpp
 
     ./src/color_kd_tree.hpp
+    ./src/nanoflann.hpp
     ./src/thread_pool.hpp
 )
 set(
@@ -52,6 +53,5 @@ target_link_libraries(
     mcnbt::mcnbt
     PRIVATE
     json
-    nanoflann
     MINIZIP::minizip
 )
