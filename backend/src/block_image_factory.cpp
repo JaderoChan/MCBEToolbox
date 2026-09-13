@@ -67,7 +67,7 @@ cv::Mat BlockImageFactory::generateBlockImage(ImageFramesOStream& stream)
             }
 
             // 回调函数
-            if (executeCallback(row * image.cols + col + 1, total));
+            if (executeCallback(row * image.cols + col + 1, total))
                 return cv::Mat();
         }
     }
