@@ -22,7 +22,7 @@ find_package(OpenCV REQUIRED COMPONENTS core imgcodecs videoio)
 # 查找 OpenCV FFmpeg 插件
 if(WIN32)
     get_filename_component(OPENCV_BIN_DIR "${OpenCV_DIR}/../bin" ABSOLUTE)
-    file(GLOB OPENCV_FFMPEG_DLLS "${OPENCV_BIN_DIR}/opencv_videoio_msmf*.dll")
+    file(GLOB OPENCV_MSMF_DLLS "${OPENCV_BIN_DIR}/opencv_videoio_msmf*.dll")
 endif()
 
 # 配置 zlib 库
@@ -65,11 +65,11 @@ function(copy_runtime_dependencies TARGET_NAME)
             $<TARGET_FILE_DIR:${TARGET_NAME}>
             COMMAND_EXPAND_LISTS
         )
-        if(OPENCV_FFMPEG_DLLS)
+        if(OPENCV_MSMF_DLLS)
             add_custom_command(
                 TARGET ${TARGET_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${OPENCV_FFMPEG_DLLS}
+                ${OPENCV_MSMF_DLLS}
                 $<TARGET_FILE_DIR:${TARGET_NAME}>
             )
         endif()
