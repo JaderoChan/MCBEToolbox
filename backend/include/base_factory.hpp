@@ -53,7 +53,7 @@ protected:
 
     // 根据给定颜色值查找最合适的方块数据，如果是透明像素则返回 fallbackBlock（若不存在则返回空无效 BlockDataPair）。
     BlockDataPair retrieveAppropriateBlock(const cv::Vec4b& color);
-    std::array<int, 3> compPosition(int x, int y, int z, int xs, int ys, int zs) const;
+    std::array<int, 3> computePosition(int x, int y, int z, int xs, int ys, int zs) const;
     void updateBlockUsageCount(std::string_view id, std::size_t increment);
     bool executeCallback(std::size_t current, std::size_t total);
 

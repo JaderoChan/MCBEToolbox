@@ -144,8 +144,8 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
                 {
                     if (lastBlock)
                     {
-                        const auto pos1 = compPosition(lastCol, row, num, w, h, n);
-                        const auto pos2 = compPosition(col - 1, row, num, w, h, n);
+                        const auto pos1 = computePosition(lastCol, row, num, w, h, n);
+                        const auto pos2 = computePosition(col - 1, row, num, w, h, n);
                         snprintf(
                             buf, sizeof(buf),
                             "fill ~%d ~%d ~%d ~%d ~%d ~%d %s",
@@ -173,8 +173,8 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
 
             if (lastBlock)
             {
-                const auto pos1 = compPosition(lastCol, row, num, w, h, n);
-                const auto pos2 = compPosition(w - 1,   row, num, w, h, n);
+                const auto pos1 = computePosition(lastCol, row, num, w, h, n);
+                const auto pos2 = computePosition(w - 1,   row, num, w, h, n);
                 snprintf(
                     buf, sizeof(buf),
                     "fill ~%d ~%d ~%d ~%d ~%d ~%d %s",

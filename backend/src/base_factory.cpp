@@ -68,7 +68,7 @@ BlockDataPair BaseFactory::retrieveAppropriateBlock(const cv::Vec4b& color)
     }
 }
 
-std::array<int, 3> BaseFactory::compPosition(int x, int y, int z, int xs, int ys, int zs) const
+std::array<int, 3> BaseFactory::computePosition(int x, int y, int z, int xs, int ys, int zs) const
 {
     std::array<int, 3> ret;
     switch (desiredSurface_)
@@ -104,7 +104,7 @@ std::array<int, 3> BaseFactory::compPosition(int x, int y, int z, int xs, int ys
             ret[2] = x;
             break;
         default:
-            throw std::invalid_argument("BaseFactory::compPosition(): invalid surface direction");
+            throw std::invalid_argument("BaseFactory::computePosition(): invalid surface direction");
     }
     return ret;
 }

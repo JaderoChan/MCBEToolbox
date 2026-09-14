@@ -186,7 +186,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
                 }
 
                 // 转换坐标系
-                const auto pos = compPosition(col, row, num, w, h, n);
+                const auto pos = computePosition(col, row, num, w, h, n);
                 const int x = pos[0];
                 const int y = pos[1];
                 const int z = pos[2];
