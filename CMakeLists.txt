@@ -19,7 +19,7 @@ set(3RDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty)
 # 配置 OpenCV 库
 find_package(OpenCV REQUIRED COMPONENTS core imgcodecs videoio)
 
-# 查找 OpenCV FFmpeg 插件
+# 查找 OpenCV MSMF 插件
 if(WIN32)
     get_filename_component(OPENCV_BIN_DIR "${OpenCV_DIR}/../bin" ABSOLUTE)
     file(GLOB OPENCV_MSMF_DLLS "${OPENCV_BIN_DIR}/opencv_videoio_msmf*.dll")
@@ -37,6 +37,8 @@ add_subdirectory(${3RDPARTY_DIR}/easy_translate)
 # 配置 MC NBT 库
 set(MCNBT_USE_BUILTIN_ZLIB OFF)
 add_subdirectory(${3RDPARTY_DIR}/mcnbt)
+# 配置 GIF 库
+add_subdirectory(${3RDPARTY_DIR}/gifdec)
 
 # 配置 minizip 库
 set(MZ_COMPAT OFF)
