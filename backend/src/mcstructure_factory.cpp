@@ -6,6 +6,7 @@
 #include <string_view>   // std::string_view
 #include <unordered_map> // std::unordered_map
 
+#include <opencv2/core/mat.hpp>     // cv::Mat
 #include <mcnbt/be/mcstructure.hpp> // nbt::be::MCStructure
 
 #include "thread_pool.hpp"

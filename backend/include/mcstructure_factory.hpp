@@ -2,7 +2,6 @@
 
 #include <vector> // std::vector
 
-#include <opencv2/core/mat.hpp> // cv::Mat
 #include <mcnbt/mcnbt.hpp>      // nbt::Tag
 
 #include "base_factory.hpp"
