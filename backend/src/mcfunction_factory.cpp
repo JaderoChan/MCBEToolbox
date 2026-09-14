@@ -16,13 +16,13 @@ MCFunctionFactory::MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirectio
 MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(ImageFramesOStream& stream)
 {
     reset();
-    generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageCount_, false);
+    return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageCount_, false);
 }
 
 MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(VideoFramesOStream& stream)
 {
     reset();
-    generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageCount_, true);
+    return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageCount_, true);
 }
 
 std::vector<MCFunctionFactory::MCFunction>
