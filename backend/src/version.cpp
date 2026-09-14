@@ -1,6 +1,7 @@
 #include <version.hpp>
 
 #include <stdint.h>  // UINT8_MAX
+#include <string.h>  // snprintf
 #include <stdexcept> // std::invalid_argument
 
 Version Version::fromString(std::string_view str)
@@ -50,9 +51,14 @@ throw std::invalid_argument("Version::fromString(): invalid version string '" + 
 
 std::string Version::toString() const
 {
-    return
-        std::to_string(static_cast<int>(major)) + "." +
-        std::to_string(static_cast<int>(minor)) + "." +
-        std::to_string(static_cast<int>(patch)) + "." +
-        std::to_string(static_cast<int>(tweak));
+    char buf[256];
+    snprintf(
+        buf, sizeof(buf),
+        "%d.%d.%d.%d",
+        static_cast<int>(major),
+        static_cast<int>(minor),
+        static_cast<int>(patch),
+        static_cast<int>(tweak)
+    );
+    return std::string(buf);
 }
