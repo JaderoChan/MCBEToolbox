@@ -66,9 +66,8 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
         }
     }
 
-    const int fps    = stream.fps();
-    const int fourcc = stream.fourcc();
-    const cv::Size frameSize = stream.frameSize();
+    int fps = stream.fps();
+    cv::Size frameSize = stream.frameSize();
     if (frameSize.empty())
     {
         fprintf(
@@ -80,16 +79,30 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
         return false;
     }
 
-    // 假定所有材质图片尺寸为 16*16
-    const cv::Size outSize(frameSize.width * 16, frameSize.height * 16);
+    fps = fps > 0 ? fps : 25;
+    frameSize = limitSize(frameSize, VIDEO_FRAME_MAX_WIDTH, VIDEO_FRAME_MAX_HEIGHT);
 
-    cv::VideoWriter writer(outFilePath, fourcc, fps > 0 ? fps : 25, outSize);
+    // 优先使用 H264 编码，若打不开（例如系统未注册对应的硬件/软件编码器），
+    // 尝试改用 avc1 标签，输出文件名应该以 .mp4 为后缀
+    const int fourccCandidates[] = {
+        cv::VideoWriter::fourcc('H', '2', '6', '4'),
+        cv::VideoWriter::fourcc('a', 'v', 'c', '1'),
+    };
+
+    cv::VideoWriter writer;
+    for (const int fourcc : fourccCandidates)
+    {
+        writer.open(outFilePath, DEFAULT_VIDEO_BACKEND, fourcc, fps, frameSize);
+        if (writer.isOpened())
+            break;
+    }
     if (!writer.isOpened())
     {
         fprintf(
             stderr,
             "BlockImageFactory::generateBlockVideo() "
-            "Failed to open the video writer created by file '%s'\n",
+            "Failed to open the video writer created by file '%s' with all attempted codecs, "
+            "please check whether a H264 video encoder is available on this system\n",
             outFilePath.c_str()
         );
         return false;
@@ -132,6 +145,7 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
                     { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
                     static_cast<void*>(&shouldStop), localUsageCount, localTexturesCache, true
                 );
+                blockImage = resizeImage(blockImage, frameSize);
 
                 const std::size_t current = completed.fetch_add(1, std::memory_order_relaxed) + 1;
                 if (executeCallback(current, numFrames))
