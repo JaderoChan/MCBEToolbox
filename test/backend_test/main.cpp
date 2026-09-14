@@ -114,6 +114,41 @@ void generateBlockImageTriggered()
         std::cerr << "Failed to save the block image to './out.png'" << std::endl;
 }
 
+void generateBlockVideoTriggered()
+{
+    BlockImageFactory factory(config.blocks, getDesiredSurface());
+    factory.setFallbackBlock(config.fallbackBlock);
+    factory.setProgressCallback(&progressCllback);
+    std::size_t callbackStep = 1;
+    factory.setUserData(static_cast<void*>(&callbackStep));
+
+    // 输入视频
+    std::string filepath;
+    std::cout << "Please input the video filepath: " << std::endl;
+    std::cin >> filepath;
+    VideoFramesOStream stream(filepath, -1, config.frameMaxSize.width, config.frameMaxSize.height);
+    if (!stream.isOpened())
+    {
+        std::cerr << "Failed open the video: " << filepath << std::endl;
+        return;
+    }
+
+    // 生成方块视频
+    std::cout << "Start generate block video" << std::endl;
+    const bool ok = factory.generateBlockVideo(stream, "./out.mp4");
+    if (!ok)
+    {
+        std::cerr << "Failed to generate the block video" << std::endl;
+        return;
+    }
+    else
+    {
+        std::cout << "Block video generate finished" << std::endl;
+    }
+
+    std::cout << "Successfully save the block video to './out.mp4'" << std::endl;
+}
+
 void generateImageStructureTriggered()
 {
     MCStructureFactory factory(config.blocks, getDesiredSurface());
@@ -244,6 +279,159 @@ void generateVideoStructureTriggered()
     }
 }
 
+void generateImageFunctionTriggered()
+{
+    MCFunctionFactory factory(config.blocks, getDesiredSurface());
+    factory.setFallbackBlock(config.fallbackBlock);
+    factory.setProgressCallback(progressCllback);
+    std::size_t callbackStep = 1000;
+    factory.setUserData(static_cast<void*>(&callbackStep));
+
+    // 输入图像
+    std::string filepath;
+    std::cout << "Please input the image filepath: " << std::endl;
+    std::cin >> filepath;
+    ImageFramesOStream stream(filepath, config.frameMaxSize.width, config.frameMaxSize.height);
+    if (!stream.isOpened())
+    {
+        std::cerr << "Failed open the image: " << filepath << std::endl;
+        return;
+    }
+
+    // 生成 MC Function
+    std::cout << "Start generate MC Function" << std::endl;
+    const auto mcfunction = factory.generateSingleMCFunction(stream);
+    if (mcfunction.empty())
+    {
+        std::cerr << "Failed to generate the MC Function" << std::endl;
+        return;
+    }
+    else
+    {
+        std::cout << "MC Function generate finished" << std::endl;
+    }
+
+    // 保存结果
+    std::ofstream file("./out.mcfunction");
+    if (!file.is_open())
+    {
+        std::cerr << "Failed to open the out file: './out.mcfunction'" << std::endl;
+        return;
+    }
+
+    for (const auto& command : mcfunction)
+        file << command << std::endl;
+    file.close();
+}
+
+void generateVideoFunctionTriggered()
+{
+    MCFunctionFactory factory(config.blocks, getDesiredSurface());
+    factory.setFallbackBlock(config.fallbackBlock);
+    factory.setProgressCallback(progressCllback);
+    std::size_t callbackStep = 1;
+    factory.setUserData(static_cast<void*>(&callbackStep));
+
+    bool asDetach = true;
+    std::string input;
+    std::cout << "Generate MC Structure as detach file? (Y/N)" << std::endl;
+    std::cin >> input;
+    if (input == "Y" || input == "y")
+    {
+        asDetach = true;
+    }
+    else if (input == "N" || input == "n")
+    {
+        asDetach = false;
+    }
+    else
+    {
+        std::cerr << "Invalid input" << std::endl;
+        return;
+    }
+
+    // 输入视频
+    std::string filepath;
+    std::cout << "Please input the video filepath: " << std::endl;
+    std::cin >> filepath;
+    VideoFramesOStream stream(filepath, config.frameMaxCount, config.frameMaxSize.width, config.frameMaxSize.height);
+    if (!stream.isOpened())
+    {
+        std::cerr << "Failed open the video: " << filepath << std::endl;
+        return;
+    }
+
+    // 生成 MC Function
+    std::cout << "Start generate MC Function" << std::endl;
+    if (asDetach)
+    {
+        const auto mcfunctions = factory.generateDetachMCFunction(stream);
+        if (mcfunctions.empty())
+        {
+            std::cerr << "Failed to generate the MC Functions" << std::endl;
+            return;
+        }
+        else
+        {
+            std::cout << "MC Functions generate finished" << std::endl;
+        }
+
+        // 保存结果
+        if (!std::filesystem::exists("./out"))
+        {
+            if (!std::filesystem::create_directory("./out"))
+            {
+                std::cerr << "Failed to create the directory: './out'" << std::endl;
+                return;
+            }
+        }
+        else
+        {
+            if (!std::filesystem::is_directory("./out"))
+            {
+                std::cerr << "Target path './out' is not a directory" << std::endl;
+                return;
+            }
+        }
+
+        for (std::size_t i = 0; i < mcfunctions.size(); ++i)
+        {
+            std::ofstream file("./out/" + std::to_string(i) + ".mcfunction");
+            if (!file.is_open())
+                continue;
+            for (const auto& command : mcfunctions[i])
+                file << command << std::endl;
+            file.close();
+        }
+        std::cout << "Successfully save MC Functions to directory './out'" << std::endl;
+    }
+    else
+    {
+        const auto mcfunction = factory.generateSingleMCFunction(stream);
+        if (mcfunction.empty())
+        {
+            std::cerr << "Failed to generate the MC Function" << std::endl;
+            return;
+        }
+        else
+        {
+            std::cout << "MC Function generate finished" << std::endl;
+        }
+
+        // 保存结果
+        std::ofstream file("./out.mcfunction");
+        if (!file.is_open())
+        {
+            std::cerr << "Failed to open the out file: './out.mcfunction'" << std::endl;
+            return;
+        }
+
+        for (const auto& command : mcfunction)
+            file << command << std::endl;
+        file.close();
+    }
+}
+
 void filterBlocksTriggered()
 {
 #define TOGGLE_BLOCK_ATTRIBUTE(attri)                                           \
@@ -291,7 +479,7 @@ menu.addOption(                                                                 
             << ". (press any key to return)"
             << std::endl;
         menu.endReceiveInput();
-    }, false, false);
+    }, false, true);
 
     menu.show();
     menu.startReceiveInput();
@@ -318,7 +506,7 @@ menu.setTopText(CREATE_MENU_TOP_TEXT)
     {
         std::cout << "Successfully update fallback block. (press any key to return)" << std::endl;
         menu.endReceiveInput();
-    }, false, false);
+    }, false, true);
 
     menu.show();
     menu.startReceiveInput();
@@ -362,7 +550,7 @@ menu.setTopText(CREATE_MENU_TOP_TEXT)
     {
         std::cout << "Successfully update frame max size. (press any key to return)" << std::endl;
         menu.endReceiveInput();
-    }, false, false);
+    }, false, true);
 
     menu.show();
     menu.startReceiveInput();
@@ -395,7 +583,7 @@ menu.setTopText(CREATE_MENU_TOP_TEXT)
     {
         std::cout << "Successfully update frame max count. (press any key to return)" << std::endl;
         menu.endReceiveInput();
-    }, false, false);
+    }, false, true);
 
     menu.show();
     menu.startReceiveInput();
@@ -413,12 +601,15 @@ int main(int argc, char* argv)
     menu.setMaxColumn(3);
 
     menu.addOption("Generate Block Image",     &generateBlockImageTriggered);
+    menu.addOption("Generate Block Video",     &generateBlockVideoTriggered);
     menu.addOption("Generate Image Structure", &generateImageStructureTriggered);
     menu.addOption("Generate Video Structure", &generateVideoStructureTriggered);
-    menu.addOption("Filter Blocks",            &filterBlocksTriggered);
-    menu.addOption("Select Fallback Block",    &selectFallbackBlockTriggered);
-    menu.addOption("Limit Frame Size",         &limitFrameSizeTriggered);
-    menu.addOption("Limit Frame Count",        &limitFrameCountTriggered);
+    menu.addOption("Generate Image Function",  &generateImageFunctionTriggered);
+    menu.addOption("Generate Video Function",  &generateVideoFunctionTriggered);
+    menu.addOption("Filter Blocks",            &filterBlocksTriggered,        true, false);
+    menu.addOption("Select Fallback Block",    &selectFallbackBlockTriggered, true, false);
+    menu.addOption("Limit Frame Size",         &limitFrameSizeTriggered,      true, false);
+    menu.addOption("Limit Frame Count",        &limitFrameCountTriggered,     true, false);
     menu.addOption("Exit", [&]() { menu.endReceiveInput(); }, false, false);
 
     menu.show();
