@@ -51,7 +51,7 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(VideoFramesO
         if (shouldStop.load(std::memory_order_relaxed))
             break;
 
-        cv::Mat frame = stream.nextFrame();
+        const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
             continue;
 
@@ -60,19 +60,26 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(VideoFramesO
             if (shouldStop.load(std::memory_order_relaxed))
                 return TaskResult();
 
-            ImageFramesOStream imageStream(frame);
-            BlockUsageMap localUsageCount;
-            nbt::Tag mcstructure = generateSingleMCStructureHelper(
-                imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
-                { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
-                static_cast<void*>(&shouldStop), localUsageCount, false
-            );
+            try
+            {
+                ImageFramesOStream imageStream(frame);
+                BlockUsageMap localUsageCount;
+                nbt::Tag mcstructure = generateSingleMCStructureHelper(
+                    imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
+                    { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
+                    static_cast<void*>(&shouldStop), localUsageCount, true
+                );
 
-            const std::size_t current = completed.fetch_add(1, std::memory_order_relaxed) + 1;
-            if (executeCallback(current, numFrames))
-                shouldStop.store(true);
+                const std::size_t current = completed.fetch_add(1, std::memory_order_relaxed) + 1;
+                if (executeCallback(current, numFrames))
+                    shouldStop.store(true);
 
-            return TaskResult(std::move(mcstructure), std::move(localUsageCount));
+                return TaskResult(std::move(mcstructure), std::move(localUsageCount));
+            }
+            catch (...)
+            {
+                return TaskResult(nbt::Tag(), BlockUsageMap());
+            }
         }));
     }
 
@@ -132,6 +139,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
     const int xs = mcstructure.size()[0].getInt();
     const int ys = mcstructure.size()[1].getInt();
     const int zs = mcstructure.size()[2].getInt();
+    std::size_t current = 0;
     const std::size_t total =
         static_cast<std::size_t>(xs) *
         static_cast<std::size_t>(ys) *
@@ -141,12 +149,12 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
 
     // 缓存调色板方块及其名称与索引
     std::vector<const BlockData*> paletteCache;
-    std::unordered_map<std::string_view, std::size_t> paletteIdxCache;
+    std::unordered_map<std::string_view, int> paletteIdxCache;
 
     auto& indices = mcstructure.blockIndices1();
     for (int num = 0; num < n; ++num)
     {
-        cv::Mat frame = stream.nextFrame();
+        const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
             return nbt::Tag();
 
@@ -177,53 +185,25 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
                 }
 
                 // 转换坐标系
-                int x = 0, y = 0, z = 0;
-                switch (desiredSurface_)
-                {
-                    case SURFACE_DIRECTION_UP:
-                        x = w - col - 1;
-                        y = n - num - 1;
-                        z = h - row - 1;
-                        break;
-                    case SURFACE_DIRECTION_BOTTOM:
-                        x = w - col - 1;
-                        y = num;
-                        z = row;
-                        break;
-                    case SURFACE_DIRECTION_NORTH:
-                        x = w - col - 1;
-                        y = h - row - 1;
-                        z = num;
-                        break;
-                    case SURFACE_DIRECTION_SOUTH:
-                        x = col;
-                        y = h - row - 1;
-                        z = n - num - 1;
-                        break;
-                    case SURFACE_DIRECTION_EAST:
-                        x = num;
-                        y = h - row - 1;
-                        z = w - col - 1;
-                        break;
-                    case SURFACE_DIRECTION_WEST:
-                        x = n - num - 1;
-                        y = h - row - 1;
-                        z = col;
-                        break;
-                    default:
-                        return nbt::Tag();
-                }
+                const auto pos = compPosition(col, row, num, w, h, n);
+                const int x = pos[0];
+                const int y = pos[1];
+                const int z = pos[2];
 
                 // 计算索引值
-                const std::size_t indicesIdx = x * zs * ys + y * zs + z;
+                const std::size_t indicesIdx =
+                    static_cast<std::size_t>(x) * static_cast<std::size_t>(zs) * static_cast<std::size_t>(ys) +
+                    static_cast<std::size_t>(y) * static_cast<std::size_t>(zs) +
+                    static_cast<std::size_t>(z);
                 indices[indicesIdx] = nbt::Tag(paletteIdx);
 
                 // 更新方块用量信息
-                updateBlockUsageCount(blockUsageCount, id, 1);
+                if (block) updateBlockUsageCount(blockUsageCount, id, 1);
 
                 if (!useFrameIndexCallback)
                 {
-                    if (executeCallback(callback, userdata, num * h * w + row * w + col + 1, total))
+                    ++current;
+                    if (executeCallback(callback, userdata, current, total))
                         return nbt::Tag();
                 }
             }

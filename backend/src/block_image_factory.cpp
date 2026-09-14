@@ -25,7 +25,8 @@ cv::Mat BlockImageFactory::generateBlockImage(ImageFramesOStream& stream)
 
     assert(image.type() == CV_8UC4);
 
-    const std::size_t total = image.rows * image.cols;
+    std::size_t current = 0;
+    const std::size_t total = static_cast<std::size_t>(image.rows) * static_cast<std::size_t>(image.cols);
 
     // 假定所有材质图片尺寸为 16*16，所以每个像素对应 16*16 的方块材质区域
     cv::Mat ret(image.rows * 16, image.cols * 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
@@ -55,11 +56,12 @@ cv::Mat BlockImageFactory::generateBlockImage(ImageFramesOStream& stream)
                     }
 
                     // 直接从缓存中加载方块材质
-                    cv::Mat texture = texturesCache_[texturePath];
+                    const cv::Mat texture = texturesCache_[texturePath];
                     // 复制方块材质至像素映射区域
                     texture.copyTo(ret(
                         cv::Range(row * 16, row * 16 + 16),
-                        cv::Range(col * 16, col * 16 + 16)));
+                        cv::Range(col * 16, col * 16 + 16)
+                    ));
                 }
 
                 // 更新方块用量信息
@@ -67,7 +69,8 @@ cv::Mat BlockImageFactory::generateBlockImage(ImageFramesOStream& stream)
             }
 
             // 回调函数
-            if (executeCallback(row * image.cols + col + 1, total))
+            ++current;
+            if (executeCallback(current, total))
                 return cv::Mat();
         }
     }
