@@ -3,9 +3,8 @@
 #include <assert.h> // assert
 #include <vector>   // std::vector
 
-#include "nanoflann.hpp" // nanoflann::*
-
 #include <block.hpp>
+#include "nanoflann.hpp" // nanoflann::*
 
 struct RgbCloud
 {
