@@ -1,6 +1,9 @@
 #include <base_factory.hpp>
 
-#include <stdexcept> // std::invalid_argument
+#include <stdio.h>      // fprintf
+#include <filesystem>   // std::filesystem
+#include <stdexcept>    // std::invalid_argument
+#include <system_error> // std::error_code
 
 #include "color_kd_tree.hpp"
 
@@ -40,6 +43,29 @@ bool BaseFactory::executeCallback(ProgressCallback callback, void* userdata, std
         return stop;
     }
     return false;
+}
+
+bool BaseFactory::ensureDirectoryExists(const std::string& dirPath, const char* logPrefix)
+{
+    const std::filesystem::path path(dirPath);
+    if (std::filesystem::exists(path))
+    {
+        if (!std::filesystem::is_directory(path))
+        {
+            fprintf(stderr, "%s Target path '%s' is not a directory\n", logPrefix, dirPath.c_str());
+            return false;
+        }
+        return true;
+    }
+
+    std::error_code ec;
+    std::filesystem::create_directories(path, ec);
+    if (ec)
+    {
+        fprintf(stderr, "%s Failed to create the directory '%s'\n", logPrefix, dirPath.c_str());
+        return false;
+    }
+    return true;
 }
 
 bool BaseFactory::isConfigured() const

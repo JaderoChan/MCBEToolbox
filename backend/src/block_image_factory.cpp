@@ -10,7 +10,7 @@
 #include <opencv2/videoio.hpp>   // cv::VideoWriter
 
 #include <image_utilities.hpp>
-#include "thread_pool.hpp"
+#include "frame_pipeline.hpp"
 
 BlockImageFactory::BlockImageFactory(
     const BlockDataMap& blocks,
@@ -43,27 +43,11 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
     }
 
     // 确保输出路径的父目录存在
-    std::filesystem::path outPath(outFilePath);
-    if (outPath.has_parent_path() && !std::filesystem::exists(outPath.parent_path()))
+    const std::filesystem::path outPath(outFilePath);
+    if (outPath.has_parent_path())
     {
-        fprintf(
-            stderr,
-            "BlockImageFactory::generateBlockVideo() "
-            "The parent path of out file '%s' is not exists, will create it\n",
-            outPath.string().c_str()
-        );
-        std::error_code ec;
-        std::filesystem::create_directories(outPath.parent_path(), ec);
-        if (ec)
-        {
-            fprintf(
-                stderr,
-                "BlockImageFactory::generateBlockVideo() "
-                "Failed to create the directory '%s'\n",
-                outPath.parent_path().string().c_str()
-            );
+        if (!ensureDirectoryExists(outPath.parent_path().string(), "BlockImageFactory::generateBlockVideo()"))
             return false;
-        }
     }
 
     int fps = stream.fps();
@@ -124,84 +108,46 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
     const auto numFrames = stream.frameCount();
 
     using TaskResult = std::pair<cv::Mat, BlockUsageMap>;
-    std::vector<std::future<TaskResult>> results;
 
-    std::atomic<std::size_t> completed{0};
-    std::atomic<bool>        shouldStop{false};
-
-    ThreadPool threadPool(numThreads);
-
-    while (!stream.isEnd())
-    {
-        if (shouldStop.load(std::memory_order_relaxed))
-            break;
-
-        const cv::Mat frame = stream.nextFrame();
-        if (frame.empty())
+    return runFramePipeline<TaskResult>(
+        stream,
+        numThreads,
+        TASK_WINDOW_SIZE_FACTOR,
+        "BlockImageFactory::generateBlockVideo()",
+        [this](const cv::Mat& frame, std::atomic<bool>& shouldStop)
         {
-            if (stream.isEnd())
-                break;
-            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Empty frame be got, skip it\n");
-            continue;
-        }
-
-        results.emplace_back(threadPool.submit([=, &completed, &shouldStop]()
+            ImageFramesOStream imageStream(frame);
+            BlockUsageMap   localUsageCount;
+            BlockTextureMap localTexturesCache;
+            cv::Mat blockImage = generateBlockImageHelper(
+                imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
+                { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
+                static_cast<void*>(&shouldStop), localUsageCount, localTexturesCache, true
+            );
+            return TaskResult(std::move(blockImage), std::move(localUsageCount));
+        },
+        [this, numFrames](std::size_t current)
         {
-            if (shouldStop.load(std::memory_order_relaxed))
-                return TaskResult();
-
-            try
+            return executeCallback(current, numFrames);
+        },
+        [this, &writer](TaskResult&& result)
+        {
+            auto& [blockImage, localUsageCount] = result;
+            if (blockImage.empty())
             {
-                ImageFramesOStream imageStream(frame);
-                BlockUsageMap   localUsageCount;
-                BlockTextureMap localTexturesCache;
-                cv::Mat blockImage = generateBlockImageHelper(
-                    imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
-                    { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
-                    static_cast<void*>(&shouldStop), localUsageCount, localTexturesCache, true
-                );
-
-                const std::size_t current = completed.fetch_add(1, std::memory_order_relaxed) + 1;
-                if (executeCallback(current, numFrames))
-                    shouldStop.store(true);
-
-                return TaskResult(std::move(blockImage), std::move(localUsageCount));
+                fprintf(stderr, "BlockImageFactory::generateBlockVideo() Got a unexpected empty block image\n");
+                return false;
             }
-            catch (std::exception& e)
-            {
-                fprintf(
-                    stderr,
-                    "BlockImageFactory::generateBlockVideo() "
-                    "Error occurred when other thread execute generateBlockImageHelper(), "
-                    "error message is '%s'\n",
-                    e.what()
-                );
-                return TaskResult(cv::Mat(), BlockUsageMap());
-            }
-        }));
-    }
 
-    if (shouldStop.load(std::memory_order_relaxed))
-        return false;
+            for (auto& [id, count] : localUsageCount)
+                updateBlockUsageCount(id, count);
 
-    for (auto& fut : results)
-    {
-        auto [blockImage, localUsageCount] = fut.get();
-        if (blockImage.empty())
-        {
-            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Got a unexpected empty block image\n");
-            return false;
+            cv::Mat image;
+            cv::cvtColor(blockImage, image, cv::COLOR_BGRA2BGR);
+            writer.write(image);
+            return true;
         }
-
-        for (auto& [id, count] : localUsageCount)
-            updateBlockUsageCount(id, count);
-
-        cv::Mat image;
-        cv::cvtColor(blockImage, image, cv::COLOR_BGRA2BGR);
-        writer.write(image);
-    }
-
-    return true;
+    );
 }
 
 cv::Mat BlockImageFactory::generateBlockImageHelper(

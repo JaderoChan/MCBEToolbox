@@ -21,11 +21,15 @@ public:
      * @param current  进度当前检查点索引
      * @param total    进度总检查点数量
      * @param stop     控制是否中止任务
-     * @param userdata 传入给回调函数的用户自定义数据
+     * @param userdata 传递给回调函数的用户自定义数据
      */
     using ProgressCallback = void (*)(std::size_t current, std::size_t total, bool& stop, void* userdata);
     /** {程序用方块 ID : 方块用量} */
     using BlockUsageMap    = std::map<std::string, std::size_t, std::less<>>;
+
+    // 并行生成任务时，挂起中的任务（已提交但结果尚未被消费）数量的滑动窗口大小相对于线程数的倍率，
+    // 用于限制内存占用，实际窗口大小为 numThreads * TASK_WINDOW_SIZE_FACTOR。
+    static constexpr std::size_t TASK_WINDOW_SIZE_FACTOR = 2;
 
     BaseFactory(const BlockDataMap& blocks, SurfaceDirection desiredSurface);
     virtual ~BaseFactory();
@@ -47,6 +51,8 @@ public:
 protected:
     static void updateBlockUsageCount(BlockUsageMap& blockUsageCount, std::string_view id, std::size_t increment);
     static bool executeCallback(ProgressCallback callback, void* userdata, std::size_t current, std::size_t total);
+    // 确保给定目录存在，如果不存在则创建，已存在但不是目录则失败。
+    static bool ensureDirectoryExists(const std::string& dirPath, const char* logPrefix);
 
     virtual bool isConfigured() const;
     virtual void reset();

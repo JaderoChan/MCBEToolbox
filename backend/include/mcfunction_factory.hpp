@@ -1,7 +1,11 @@
 #pragma once
 
-#include <string> // std::string
-#include <vector> // std::vector
+#include <atomic>  // std::atomic
+#include <string>  // std::string
+#include <utility> // std::pair
+#include <vector>  // std::vector
+
+#include <opencv2/core/mat.hpp> // cv::Mat
 
 #include "base_factory.hpp"
 #include "image_frames_ostream.hpp"
@@ -17,6 +21,7 @@ public:
     MCFunction generateSingleMCFunction(ImageFramesOStream& stream);
     MCFunction generateSingleMCFunction(VideoFramesOStream& stream);
     std::vector<MCFunction> generateDetachMCFunction(FramesOStream& stream, int numThreads = 4);
+    bool generateDetachMCFunction(FramesOStream& stream, const std::string& outDirPath, int numThreads = 4);
 
 private:
     MCFunction generateSingleMCFunctionHelper(
@@ -25,4 +30,6 @@ private:
         void*            userdata,
         BlockUsageMap&   blockUsageCount,
         bool             useFrameIndexCallback);
+
+    std::pair<MCFunction, BlockUsageMap> processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop);
 };

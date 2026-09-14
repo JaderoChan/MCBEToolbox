@@ -5,10 +5,10 @@
 #include <stdio.h>     // fprintf
 #include <string.h>    // snprintf
 #include <array>       // std::array
-#include <atomic>      // std::atomic
+#include <fstream>     // std::ofstream
 #include <string_view> // std::string_view
 
-#include "thread_pool.hpp"
+#include "frame_pipeline.hpp"
 
 MCFunctionFactory::MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirection desiredSurface)
     : BaseFactory(blocks, desiredSurface)
@@ -46,77 +46,97 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
 
     const auto numFrames = stream.frameCount();
 
-    using TaskResult = std::pair<MCFunction, BlockUsageMap>;
-    std::vector<std::future<TaskResult>> results;
+    std::vector<MCFunction> ret;
+    ret.reserve(static_cast<std::size_t>(numFrames));
 
-    std::atomic<std::size_t> completed{0};
-    std::atomic<bool>        shouldStop{false};
-
-    ThreadPool threadPool(numThreads);
-
-    while (!stream.isEnd())
-    {
-        if (shouldStop.load(std::memory_order_relaxed))
-            break;
-
-        const cv::Mat frame = stream.nextFrame();
-        if (frame.empty())
+    const bool ok = runFramePipeline<std::pair<MCFunction, BlockUsageMap>>(
+        stream,
+        numThreads,
+        TASK_WINDOW_SIZE_FACTOR,
+        "MCFunctionFactory::generateDetachMCFunction()",
+        [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
+        [this, numFrames](std::size_t current) { return executeCallback(current, numFrames); },
+        [this, &ret](std::pair<MCFunction, BlockUsageMap>&& result)
         {
-            if (stream.isEnd())
-                break;
-            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Empty frame be got, skip it\n");
-            continue;
+            auto& [mcfunction, localUsageCount] = result;
+
+            for (auto& [id, count] : localUsageCount)
+                updateBlockUsageCount(id, count);
+
+            ret.push_back(std::move(mcfunction));
+            return true;
         }
+    );
 
-        results.emplace_back(threadPool.submit([=, &completed, &shouldStop]()
+    return ok ? std::move(ret) : std::vector<MCFunction>();
+}
+
+bool MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, const std::string& outDirPath, int numThreads)
+{
+    reset();
+    if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
+    {
+        if (!stream.isOpened())
+            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Stream is not opened\n");
+        if (!stream.isEnd())
+            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Stream is arrive end\n");
+        if (!isConfigured())
+            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Factory is not configured\n");
+        if (numThreads < 1)
+            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Parameter 'numThreads' is less than 1\n");
+        return false;
+    }
+    if (!ensureDirectoryExists(outDirPath, "MCFunctionFactory::generateDetachMCFunction()"))
+        return false;
+    assert(stream.frameCount() > 0);
+
+    const auto numFrames = stream.frameCount();
+
+    std::size_t frameIdx = 0;
+    return runFramePipeline<std::pair<MCFunction, BlockUsageMap>>(
+        stream,
+        numThreads,
+        TASK_WINDOW_SIZE_FACTOR,
+        "MCFunctionFactory::generateDetachMCFunction()",
+        [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
+        [this, numFrames](std::size_t current) { return executeCallback(current, numFrames); },
+        [this, &outDirPath, &frameIdx](std::pair<MCFunction, BlockUsageMap>&& result)
         {
-            if (shouldStop.load(std::memory_order_relaxed))
-                return TaskResult();
+            auto& [mcfunction, localUsageCount] = result;
 
-            try
-            {
-                ImageFramesOStream imageStream(frame);
-                BlockUsageMap localUsageCount;
-                MCFunction MCFunction = generateSingleMCFunctionHelper(
-                    imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
-                    { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
-                    static_cast<void*>(&shouldStop), localUsageCount, true
-                );
+            for (auto& [id, count] : localUsageCount)
+                updateBlockUsageCount(id, count);
 
-                const std::size_t current = completed.fetch_add(1, std::memory_order_relaxed) + 1;
-                if (executeCallback(current, numFrames))
-                    shouldStop.store(true);
-
-                return TaskResult(std::move(MCFunction), std::move(localUsageCount));
-            }
-            catch (std::exception& e)
+            std::ofstream file(outDirPath + "/" + std::to_string(frameIdx) + ".mcfunction");
+            if (!file.is_open())
             {
                 fprintf(
                     stderr,
-                    "MCFunctionFactory::generateDetachMCFunction() "
-                    "Error occurred when other thread execute generateSingleMCFunctionHelper(), "
-                    "error message is '%s'\n",
-                    e.what()
+                    "MCFunctionFactory::generateDetachMCFunction() Failed to open the out file for frame %zu\n",
+                    frameIdx
                 );
-                return TaskResult(MCFunction(), BlockUsageMap());
+                return false;
             }
-        }));
-    }
+            for (const auto& command : mcfunction)
+                file << command << '\n';
 
-    if (shouldStop.load(std::memory_order_relaxed))
-        return std::vector<MCFunction>();
+            ++frameIdx;
+            return true;
+        }
+    );
+}
 
-    std::vector<MCFunction> ret;
-    ret.reserve(results.size());
-    for (auto& fut : results)
-    {
-        auto [mcfunction, localUsageCount] = fut.get();
-        for (auto& [id, count] : localUsageCount)
-            updateBlockUsageCount(id, count);
-        ret.push_back(std::move(mcfunction));
-    }
-
-    return ret;
+std::pair<MCFunctionFactory::MCFunction, BaseFactory::BlockUsageMap>
+MCFunctionFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop)
+{
+    ImageFramesOStream imageStream(frame);
+    BlockUsageMap localUsageCount;
+    MCFunction mcfunction = generateSingleMCFunctionHelper(
+        imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
+        { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
+        static_cast<void*>(&shouldStop), localUsageCount, true
+    );
+    return {std::move(mcfunction), std::move(localUsageCount)};
 }
 
 MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(

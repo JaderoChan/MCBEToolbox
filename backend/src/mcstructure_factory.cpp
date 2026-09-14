@@ -3,14 +3,13 @@
 #include <assert.h>      // assert
 #include <limits.h>      // INT_MAX
 #include <stdio.h>       // fprintf
-#include <atomic>        // std::atomic
 #include <string_view>   // std::string_view
 #include <unordered_map> // std::unordered_map
 
 #include <opencv2/core/mat.hpp>     // cv::Mat
 #include <mcnbt/be/mcstructure.hpp> // nbt::be::MCStructure
 
-#include "thread_pool.hpp"
+#include "frame_pipeline.hpp"
 
 MCStructureFactory::MCStructureFactory(
     const BlockDataMap& blocks,
@@ -50,84 +49,98 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
 
     const auto numFrames = stream.frameCount();
 
-    using TaskResult = std::pair<nbt::Tag, BlockUsageMap>;
-    std::vector<std::future<TaskResult>> results;
+    std::vector<nbt::Tag> ret;
+    ret.reserve(static_cast<std::size_t>(numFrames));
 
-    std::atomic<std::size_t> completed{0};
-    std::atomic<bool>        shouldStop{false};
-
-    ThreadPool threadPool(numThreads);
-
-    while (!stream.isEnd())
-    {
-        if (shouldStop.load(std::memory_order_relaxed))
-            break;
-
-        const cv::Mat frame = stream.nextFrame();
-        if (frame.empty())
+    const bool ok = runFramePipeline<std::pair<nbt::Tag, BlockUsageMap>>(
+        stream,
+        numThreads,
+        TASK_WINDOW_SIZE_FACTOR,
+        "MCStructureFactory::generateDetachMCStructure()",
+        [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
+        [this, numFrames](std::size_t current) { return executeCallback(current, numFrames); },
+        [this, &ret](std::pair<nbt::Tag, BlockUsageMap>&& result)
         {
-            if (stream.isEnd())
-                break;
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Empty frame be got, skip it\n");
-            continue;
-        }
-
-        results.emplace_back(threadPool.submit([=, &completed, &shouldStop]()
-        {
-            if (shouldStop.load(std::memory_order_relaxed))
-                return TaskResult();
-
-            try
+            auto& [mcstructure, localUsageCount] = result;
+            if (mcstructure.type() == nbt::TT_END)
             {
-                ImageFramesOStream imageStream(frame);
-                BlockUsageMap localUsageCount;
-                nbt::Tag mcstructure = generateSingleMCStructureHelper(
-                    imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
-                    { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
-                    static_cast<void*>(&shouldStop), localUsageCount, true
-                );
-
-                const std::size_t current = completed.fetch_add(1, std::memory_order_relaxed) + 1;
-                if (executeCallback(current, numFrames))
-                    shouldStop.store(true);
-
-                return TaskResult(std::move(mcstructure), std::move(localUsageCount));
+                fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Got a unexpected invalid NBT tag\n");
+                return false;
             }
-            catch (std::exception& e)
+
+            for (auto& [id, count] : localUsageCount)
+                updateBlockUsageCount(id, count);
+
+            ret.push_back(std::move(mcstructure));
+            return true;
+        }
+    );
+
+    return ok ? std::move(ret) : std::vector<nbt::Tag>();
+}
+
+bool MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, const std::string& outDirPath, int numThreads)
+{
+    reset();
+    if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
+    {
+        if (!stream.isOpened())
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Stream is not opened\n");
+        if (!stream.isEnd())
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Stream is arrive end\n");
+        if (!isConfigured())
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Factory is not configured\n");
+        if (numThreads < 1)
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Parameter 'numThreads' is less than 1\n");
+        return false;
+    }
+    if (!ensureDirectoryExists(outDirPath, "MCStructureFactory::generateDetachMCStructure()"))
+        return false;
+    assert(stream.frameCount() > 0);
+
+    const auto numFrames = stream.frameCount();
+
+    std::size_t frameIdx = 0;
+    return runFramePipeline<std::pair<nbt::Tag, BlockUsageMap>>(
+        stream,
+        numThreads,
+        TASK_WINDOW_SIZE_FACTOR,
+        "MCStructureFactory::generateDetachMCStructure()",
+        [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
+        [this, numFrames](std::size_t current) { return executeCallback(current, numFrames); },
+        [this, &outDirPath, &frameIdx](std::pair<nbt::Tag, BlockUsageMap>&& result)
+        {
+            auto& [mcstructure, localUsageCount] = result;
+            if (mcstructure.type() == nbt::TT_END)
             {
                 fprintf(
                     stderr,
-                    "MCStructureFactory::generateDetachMCStructure() "
-                    "Error occurred when other thread execute generateSingleMCStructureHelper(), "
-                    "error message is '%s'\n",
-                    e.what()
+                    "MCStructureFactory::generateDetachMCStructure() Got a unexpected invalid NBT tag\n"
                 );
-                return TaskResult(nbt::Tag(), BlockUsageMap());
+                return false;
             }
-        }));
-    }
 
-    if (shouldStop.load(std::memory_order_relaxed))
-        return std::vector<nbt::Tag>();
+            for (auto& [id, count] : localUsageCount)
+                updateBlockUsageCount(id, count);
 
-    std::vector<nbt::Tag> ret;
-    ret.reserve(results.size());
-    for (auto& fut : results)
-    {
-        auto [mcstructure, localUsageCount] = fut.get();
-        if (mcstructure.type() == nbt::TT_END)
-        {
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Got a unexpected invalid NBT tag\n");
-            return std::vector<nbt::Tag>();
+            mcstructure.dump(outDirPath + "/" + std::to_string(frameIdx) + ".mcstructure", false);
+            ++frameIdx;
+            return true;
         }
+    );
+}
 
-        for (auto& [id, count] : localUsageCount)
-            updateBlockUsageCount(id, count);
-
-        ret.push_back(std::move(mcstructure));
-    }
-
-    return ret;
+std::pair<nbt::Tag, BaseFactory::BlockUsageMap>
+MCStructureFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop)
+{
+    ImageFramesOStream imageStream(frame);
+    BlockUsageMap localUsageCount;
+    nbt::Tag mcstructure = generateSingleMCStructureHelper(
+        imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
+        { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
+        static_cast<void*>(&shouldStop), localUsageCount, true
+    );
+    return {std::move(mcstructure), std::move(localUsageCount)};
 }
 
 nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
@@ -285,5 +298,5 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
         palette.pushBack(std::move(paletteItem));
     }
 
-    return mcstructure.root;
+    return std::move(mcstructure.root);
 }

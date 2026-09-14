@@ -8,6 +8,7 @@ set(
     ./include/block.hpp
     ./include/color.hpp
     ./include/frames_ostream.hpp
+    ./include/gif_frames_ostream.hpp
     ./include/image_frames_ostream.hpp
     ./include/image_utilities.hpp
     ./include/mcbe_toolbox_api.hpp
@@ -18,6 +19,7 @@ set(
     ./include/video_frames_ostream.hpp
 
     ./src/color_kd_tree.hpp
+    ./src/frame_pipeline.hpp
     ./src/nanoflann.hpp
     ./src/thread_pool.hpp
 )
@@ -29,6 +31,7 @@ set(
     ./src/color_kd_tree.cpp
     ./src/color.cpp
     ./src/frames_ostream.cpp
+    ./src/gif_frames_ostream.cpp
     ./src/image_frames_ostream.cpp
     ./src/image_utilities.cpp
     ./src/mcbe_toolbox_api.cpp
@@ -52,6 +55,7 @@ target_link_libraries(
     opencv_videoio
     mcnbt::mcnbt
     PRIVATE
+    gifdec
     json
     MINIZIP::minizip
 )
