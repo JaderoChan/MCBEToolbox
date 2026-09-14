@@ -227,38 +227,11 @@ void generateVideoStructureTriggered()
     std::cout << "Start generate MC Structure" << std::endl;
     if (asDetach)
     {
-        const auto mcstructures = factory.generateDetachMCStructure(stream);
-        if (mcstructures.empty())
-        {
-            std::cerr << "Failed to generate the MC Structure" << std::endl;
-            return;
-        }
-        else
-        {
+        const bool ok = factory.generateDetachMCStructure(stream, "./out");
+        if (ok)
             std::cout << "MC Structure generate finished" << std::endl;
-        }
-
-        // 保存结果
-        if (!std::filesystem::exists("./out"))
-        {
-            if (!std::filesystem::create_directory("./out"))
-            {
-                std::cerr << "Failed to create the directory: './out'" << std::endl;
-                return;
-            }
-        }
         else
-        {
-            if (!std::filesystem::is_directory("./out"))
-            {
-                std::cerr << "Target path './out' is not a directory" << std::endl;
-                return;
-            }
-        }
-
-        for (std::size_t i = 0; i < mcstructures.size(); ++i)
-            mcstructures[i].dump("./out/" + std::to_string(i) + ".mcstructure", false);
-        std::cout << "Successfully save MC Structures to directory './out'" << std::endl;
+            std::cerr << "Failed to generate the MC Structure" << std::endl;
     }
     else
     {
@@ -365,45 +338,11 @@ void generateVideoFunctionTriggered()
     std::cout << "Start generate MC Function" << std::endl;
     if (asDetach)
     {
-        const auto mcfunctions = factory.generateDetachMCFunction(stream);
-        if (mcfunctions.empty())
-        {
-            std::cerr << "Failed to generate the MC Functions" << std::endl;
-            return;
-        }
-        else
-        {
+        const bool ok = factory.generateDetachMCFunction(stream, "./out");
+        if (ok)
             std::cout << "MC Functions generate finished" << std::endl;
-        }
-
-        // 保存结果
-        if (!std::filesystem::exists("./out"))
-        {
-            if (!std::filesystem::create_directory("./out"))
-            {
-                std::cerr << "Failed to create the directory: './out'" << std::endl;
-                return;
-            }
-        }
         else
-        {
-            if (!std::filesystem::is_directory("./out"))
-            {
-                std::cerr << "Target path './out' is not a directory" << std::endl;
-                return;
-            }
-        }
-
-        for (std::size_t i = 0; i < mcfunctions.size(); ++i)
-        {
-            std::ofstream file("./out/" + std::to_string(i) + ".mcfunction");
-            if (!file.is_open())
-                continue;
-            for (const auto& command : mcfunctions[i])
-                file << command << std::endl;
-            file.close();
-        }
-        std::cout << "Successfully save MC Functions to directory './out'" << std::endl;
+            std::cerr << "Failed to generate the MC Functions" << std::endl;
     }
     else
     {
