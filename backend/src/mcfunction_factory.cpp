@@ -26,7 +26,7 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(VideoF
 }
 
 std::vector<MCFunctionFactory::MCFunction>
-MCFunctionFactory::generateDetachMCFunction(VideoFramesOStream& stream, int numThreads)
+MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThreads)
 {
     reset();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)

@@ -30,7 +30,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructure(VideoFramesOStream& strea
     return generateSingleMCStructureHelper(stream, callback_, userdata_, blockUsageCount_, true);
 }
 
-std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(VideoFramesOStream& stream, int numThreads)
+std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, int numThreads)
 {
     reset();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)

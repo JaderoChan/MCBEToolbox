@@ -16,7 +16,7 @@ public:
 
     MCFunction generateSingleMCFunction(ImageFramesOStream& stream);
     MCFunction generateSingleMCFunction(VideoFramesOStream& stream);
-    std::vector<MCFunction> generateDetachMCFunction(VideoFramesOStream& stream, int numThreads = 4);
+    std::vector<MCFunction> generateDetachMCFunction(FramesOStream& stream, int numThreads = 4);
 
 private:
     MCFunction generateSingleMCFunctionHelper(

@@ -24,7 +24,7 @@ public:
 
     nbt::Tag generateSingleMCStructure(ImageFramesOStream& stream);
     nbt::Tag generateSingleMCStructure(VideoFramesOStream& stream);
-    std::vector<nbt::Tag> generateDetachMCStructure(VideoFramesOStream& stream, int numThreads = 4);
+    std::vector<nbt::Tag> generateDetachMCStructure(FramesOStream& stream, int numThreads = 4);
 
 private:
     nbt::Tag generateSingleMCStructureHelper(
