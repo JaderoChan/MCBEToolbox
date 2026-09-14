@@ -67,6 +67,8 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
     }
 
     int fps = stream.fps();
+    fps = fps > 0 ? fps : 25;
+
     cv::Size frameSize = stream.frameSize();
     if (frameSize.empty())
     {
@@ -78,9 +80,20 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
         );
         return false;
     }
+    if (frameSize.width > VIDEO_FRAME_MAX_WIDTH || frameSize.height > VIDEO_FRAME_MAX_HEIGHT)
+    {
+        fprintf(
+            stderr,
+            "BlockImageFactory::generateBlockVideo() "
+            "The frame size (%d * %d) is too large for block video, "
+            "the maximum acceptable size is (%d * %d)\n",
+            frameSize.width, frameSize.height,
+            VIDEO_FRAME_MAX_WIDTH, VIDEO_FRAME_MAX_HEIGHT
+        );
+        return false;
+    }
 
-    fps = fps > 0 ? fps : 25;
-    frameSize = limitSize(frameSize, VIDEO_FRAME_MAX_WIDTH, VIDEO_FRAME_MAX_HEIGHT);
+    frameSize *= 16;
 
     // 优先使用 H264 编码，若打不开（例如系统未注册对应的硬件/软件编码器），
     // 尝试改用 avc1 标签，输出文件名应该以 .mp4 为后缀
@@ -147,7 +160,6 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
                     { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
                     static_cast<void*>(&shouldStop), localUsageCount, localTexturesCache, true
                 );
-                blockImage = resizeImage(blockImage, frameSize);
 
                 const std::size_t current = completed.fetch_add(1, std::memory_order_relaxed) + 1;
                 if (executeCallback(current, numFrames))
