@@ -39,13 +39,13 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
 
     const auto numFrames = stream.frameCount();
 
-    ThreadPool threadPool(numThreads);
-
     using TaskResult = std::pair<nbt::Tag, BlockUsageMap>;
     std::vector<std::future<TaskResult>> results;
 
     std::atomic<std::size_t> completed{0};
     std::atomic<bool>        shouldStop{false};
+
+    ThreadPool threadPool(numThreads);
 
     while (!stream.isEnd())
     {
@@ -84,6 +84,9 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
         }));
     }
 
+    if (shouldStop.load(std::memory_order_relaxed))
+        return std::vector<nbt::Tag>();
+
     std::vector<nbt::Tag> ret;
     ret.reserve(results.size());
     for (auto& fut : results)
@@ -91,8 +94,10 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
         auto [mcstructure, localUsageCount] = fut.get();
         if (mcstructure.type() == nbt::TT_END)
             return std::vector<nbt::Tag>();
+
         for (auto& [id, count] : localUsageCount)
             updateBlockUsageCount(id, count);
+
         ret.push_back(std::move(mcstructure));
     }
 

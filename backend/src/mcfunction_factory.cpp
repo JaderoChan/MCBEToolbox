@@ -35,13 +35,13 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
 
     const auto numFrames = stream.frameCount();
 
-    ThreadPool threadPool(numThreads);
-
     using TaskResult = std::pair<MCFunction, BlockUsageMap>;
     std::vector<std::future<TaskResult>> results;
 
     std::atomic<std::size_t> completed{0};
     std::atomic<bool>        shouldStop{false};
+
+    ThreadPool threadPool(numThreads);
 
     while (!stream.isEnd())
     {
@@ -79,6 +79,9 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
             }
         }));
     }
+
+    if (shouldStop.load(std::memory_order_relaxed))
+        return std::vector<MCFunction>();
 
     std::vector<MCFunction> ret;
     ret.reserve(results.size());
