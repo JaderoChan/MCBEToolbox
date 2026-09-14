@@ -6,8 +6,9 @@
 
 #include <opencv2/core/mat.hpp> // cv::Mat
 
-#include "image_frames_ostream.hpp"
 #include "base_factory.hpp"
+#include "image_frames_ostream.hpp"
+#include "video_frames_ostream.hpp"
 
 class BlockImageFactory : public BaseFactory
 {
@@ -25,9 +26,18 @@ public:
     std::string getTexturesDirPath() const                    { return texturesDirPath_;            }
 
     cv::Mat generateBlockImage(ImageFramesOStream& stream);
+    bool generateBlockVideo(VideoFramesOStream& stream, const std::string& outFilePath, int numThreads = 4);
 
 private:
     std::string createTexturePath(const std::string& path) { return texturesDirPath_ + "/" + path; }
+
+    cv::Mat generateBlockImageHelper(
+        FramesOStream&   stream,
+        ProgressCallback callback,
+        void*            userdata,
+        BlockUsageMap&   blockUsageCount,
+        BlockTextureMap& texturesCache,
+        bool             useFrameIndexCallback);
 
     std::string     texturesDirPath_;
     BlockTextureMap texturesCache_;

@@ -1,10 +1,15 @@
 #include <block_image_factory.hpp>
 
-#include <assert.h> // assert
+#include <assert.h>   // assert
+#include <atomic>     // std::atomic
+#include <filesystem> // std::filesystem
 
 #include <opencv2/imgcodecs.hpp> // cv::imread
+#include <opencv2/imgproc.hpp>   // cv::cvtColor
+#include <opencv2/videoio.hpp>   // cv::VideoWriter
 
 #include <image_utilities.hpp>
+#include "thread_pool.hpp"
 
 BlockImageFactory::BlockImageFactory(
     const BlockDataMap& blocks,
@@ -16,7 +21,115 @@ BlockImageFactory::BlockImageFactory(
 cv::Mat BlockImageFactory::generateBlockImage(ImageFramesOStream& stream)
 {
     reset();
+    return generateBlockImageHelper(stream, callback_, userdata_, blockUsageCount_, texturesCache_, false);
+}
 
+bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std::string& outFilePath, int numThreads)
+{
+    reset();
+
+    if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
+        return false;
+
+    // 确保输出路径的父目录存在
+    std::filesystem::path outPath(outFilePath);
+    if (outPath.has_parent_path())
+    {
+        std::error_code ec;
+        std::filesystem::create_directories(outPath.parent_path(), ec);
+        if (ec)
+            return false;
+    }
+
+    const int fps    = stream.fps();
+    const int fourcc = stream.fourcc();
+    const cv::Size frameSize = stream.frameSize();
+    if (frameSize.empty())
+        return false;
+
+    // 假定所有材质图片尺寸为 16*16
+    const cv::Size outSize(frameSize.width * 16, frameSize.height * 16);
+
+    cv::VideoWriter writer(outFilePath, fourcc, fps > 0 ? fps : 25, outSize);
+    if (!writer.isOpened())
+        return false;
+
+    const auto numFrames = stream.frameCount();
+
+    using TaskResult = std::pair<cv::Mat, BlockUsageMap>;
+    std::vector<std::future<TaskResult>> results;
+
+    std::atomic<std::size_t> completed{0};
+    std::atomic<bool>        shouldStop{false};
+
+    ThreadPool threadPool(numThreads);
+
+    while (!stream.isEnd())
+    {
+        if (shouldStop.load(std::memory_order_relaxed))
+            break;
+
+        const cv::Mat frame = stream.nextFrame();
+        if (frame.empty())
+            continue;
+
+        results.emplace_back(threadPool.submit([=, &completed, &shouldStop]()
+        {
+            if (shouldStop.load(std::memory_order_relaxed))
+                return TaskResult();
+
+            try
+            {
+                ImageFramesOStream imageStream(frame);
+                BlockUsageMap   localUsageCount;
+                BlockTextureMap localTexturesCache;
+                cv::Mat blockImage = generateBlockImageHelper(
+                    imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
+                    { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
+                    static_cast<void*>(&shouldStop), localUsageCount, localTexturesCache, true
+                );
+
+                const std::size_t current = completed.fetch_add(1, std::memory_order_relaxed) + 1;
+                if (executeCallback(current, numFrames))
+                    shouldStop.store(true);
+
+                return TaskResult(std::move(blockImage), std::move(localUsageCount));
+            }
+            catch (...)
+            {
+                return TaskResult(cv::Mat(), BlockUsageMap());
+            }
+        }));
+    }
+
+    if (shouldStop.load(std::memory_order_relaxed))
+        return false;
+
+    for (auto& fut : results)
+    {
+        auto [blockImage, localUsageCount] = fut.get();
+        if (blockImage.empty())
+            return false;
+
+        for (auto& [id, count] : localUsageCount)
+            updateBlockUsageCount(id, count);
+
+        cv::Mat image;
+        cv::cvtColor(blockImage, image, cv::COLOR_BGRA2BGR);
+        writer.write(image);
+    }
+
+    return true;
+}
+
+cv::Mat BlockImageFactory::generateBlockImageHelper(
+    FramesOStream&   stream,
+    ProgressCallback callback,
+    void*            userdata,
+    BlockUsageMap&   blockUsageCount,
+    BlockTextureMap& texturesCache,
+    bool             useFrameIndexCallback)
+{
     if (!stream.isOpened() || stream.isEnd() || !isConfigured())
         return cv::Mat();
     cv::Mat image = stream.nextFrame();
@@ -45,18 +158,18 @@ cv::Mat BlockImageFactory::generateBlockImage(ImageFramesOStream& stream)
                     const std::string texturePath = createTexturePath(surface.first);
 
                     // 如果当前材质还未被加载则将其加载至缓存中
-                    if (texturesCache_.find(texturePath) == texturesCache_.end())
+                    if (texturesCache.find(texturePath) == texturesCache.end())
                     {
                         cv::Mat texture = cv::imread(texturePath, cv::IMREAD_UNCHANGED);
                         if (!texture.empty())
                             texture = convertColorToBgra(texture);
                         if (texture.empty())
                             texture = cv::Mat(16, 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
-                        texturesCache_[texturePath] = texture;
+                        texturesCache[texturePath] = texture;
                     }
 
                     // 直接从缓存中加载方块材质
-                    const cv::Mat texture = texturesCache_[texturePath];
+                    const cv::Mat texture = texturesCache[texturePath];
                     // 复制方块材质至像素映射区域
                     texture.copyTo(ret(
                         cv::Range(row * 16, row * 16 + 16),
@@ -65,14 +178,22 @@ cv::Mat BlockImageFactory::generateBlockImage(ImageFramesOStream& stream)
                 }
 
                 // 更新方块用量信息
-                updateBlockUsageCount(id, 1);
+                updateBlockUsageCount(blockUsageCount, id, 1);
             }
 
-            // 回调函数
-            ++current;
-            if (executeCallback(current, total))
-                return cv::Mat();
+            if (!useFrameIndexCallback)
+            {
+                ++current;
+                if (executeCallback(callback, userdata, current, total))
+                    return cv::Mat();
+            }
         }
+    }
+
+    if (useFrameIndexCallback)
+    {
+        if (executeCallback(callback, userdata, 1, 1))
+            return cv::Mat();
     }
 
     return ret;
