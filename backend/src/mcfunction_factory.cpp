@@ -62,6 +62,8 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
         const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
         {
+            if (stream.isEnd())
+                break;
             fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Empty frame be got, skip it\n");
             continue;
         }

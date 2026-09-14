@@ -126,6 +126,8 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
         const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
         {
+            if (stream.isEnd())
+                break;
             fprintf(stderr, "BlockImageFactory::generateBlockVideo() Empty frame be got, skip it\n");
             continue;
         }

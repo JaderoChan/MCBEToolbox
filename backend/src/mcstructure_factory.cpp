@@ -66,6 +66,8 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
         const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
         {
+            if (stream.isEnd())
+                break;
             fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Empty frame be got, skip it\n");
             continue;
         }
