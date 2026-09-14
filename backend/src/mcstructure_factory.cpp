@@ -35,6 +35,7 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(VideoFramesO
     reset();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
         return std::vector<nbt::Tag>();
+    assert(stream.frameCount() > 0);
 
     const auto numFrames = stream.frameCount();
 
