@@ -1,6 +1,7 @@
 #include <block_image_factory.hpp>
 
 #include <assert.h>   // assert
+#include <stdio.h>    // fprintf
 #include <atomic>     // std::atomic
 #include <filesystem> // std::filesystem
 
@@ -29,30 +30,70 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
     reset();
 
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
+    {
+        if (!stream.isOpened())
+            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Stream is not opened\n");
+        if (!stream.isEnd())
+            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Stream is arrive end\n");
+        if (!isConfigured())
+            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Factory is not configured\n");
+        if (numThreads < 1)
+            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Parameter 'numThreads' is less than 1\n");
         return false;
+    }
 
     // 确保输出路径的父目录存在
     std::filesystem::path outPath(outFilePath);
-    if (outPath.has_parent_path())
+    if (outPath.has_parent_path() && !std::filesystem::exists(outPath.parent_path()))
     {
+        fprintf(
+            stderr,
+            "BlockImageFactory::generateBlockVideo() "
+            "The parent path of out file '%s' is not exists, will create it\n",
+            outPath.string().c_str()
+        );
         std::error_code ec;
         std::filesystem::create_directories(outPath.parent_path(), ec);
         if (ec)
+        {
+            fprintf(
+                stderr,
+                "BlockImageFactory::generateBlockVideo() "
+                "Failed to create the directory '%s'\n",
+                outPath.parent_path().string().c_str()
+            );
             return false;
+        }
     }
 
     const int fps    = stream.fps();
     const int fourcc = stream.fourcc();
     const cv::Size frameSize = stream.frameSize();
     if (frameSize.empty())
+    {
+        fprintf(
+            stderr,
+            "BlockImageFactory::generateBlockVideo() "
+            "The frame size (%d * %d) got from stream is invalid\n",
+            frameSize.width, frameSize.height
+        );
         return false;
+    }
 
     // 假定所有材质图片尺寸为 16*16
     const cv::Size outSize(frameSize.width * 16, frameSize.height * 16);
 
     cv::VideoWriter writer(outFilePath, fourcc, fps > 0 ? fps : 25, outSize);
     if (!writer.isOpened())
+    {
+        fprintf(
+            stderr,
+            "BlockImageFactory::generateBlockVideo() "
+            "Failed to open the video writer created by file '%s'\n",
+            outFilePath.c_str()
+        );
         return false;
+    }
 
     const auto numFrames = stream.frameCount();
 
@@ -71,7 +112,10 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
 
         const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
+        {
+            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Empty frame be got, skip it\n");
             continue;
+        }
 
         results.emplace_back(threadPool.submit([=, &completed, &shouldStop]()
         {
@@ -95,8 +139,15 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
 
                 return TaskResult(std::move(blockImage), std::move(localUsageCount));
             }
-            catch (...)
+            catch (std::exception& e)
             {
+                fprintf(
+                    stderr,
+                    "BlockImageFactory::generateBlockVideo() "
+                    "Error occurred when other thread execute generateBlockImageHelper(), "
+                    "error message is '%s'\n",
+                    e.what()
+                );
                 return TaskResult(cv::Mat(), BlockUsageMap());
             }
         }));
@@ -109,7 +160,10 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
     {
         auto [blockImage, localUsageCount] = fut.get();
         if (blockImage.empty())
+        {
+            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Got a unexpected empty block image\n");
             return false;
+        }
 
         for (auto& [id, count] : localUsageCount)
             updateBlockUsageCount(id, count);
@@ -131,10 +185,21 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
     bool             useFrameIndexCallback)
 {
     if (!stream.isOpened() || stream.isEnd() || !isConfigured())
+    {
+        if (!stream.isOpened())
+            fprintf(stderr, "BlockImageFactory::generateBlockImageHelper() Stream is not opened\n");
+        if (stream.isEnd())
+            fprintf(stderr, "BlockImageFactory::generateBlockImageHelper() Stream is arrive end\n");
+        if (!isConfigured())
+            fprintf(stderr, "BlockImageFactory::generateBlockImageHelper() Factory is not configured\n");
         return cv::Mat();
+    }
     cv::Mat image = stream.nextFrame();
     if (image.empty())
+    {
+        fprintf(stderr, "BlockImageFactory::generateBlockImageHelper() The frame got from stream is empty\n");
         return cv::Mat();
+    }
 
     assert(image.type() == CV_8UC4);
 

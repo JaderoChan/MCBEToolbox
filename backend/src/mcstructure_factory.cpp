@@ -2,6 +2,7 @@
 
 #include <assert.h>      // assert
 #include <limits.h>      // INT_MAX
+#include <stdio.h>       // fprintf
 #include <atomic>        // std::atomic
 #include <string_view>   // std::string_view
 #include <unordered_map> // std::unordered_map
@@ -34,7 +35,17 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
 {
     reset();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
+    {
+        if (!stream.isOpened())
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Stream is not opened\n");
+        if (!stream.isEnd())
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Stream is arrive end\n");
+        if (!isConfigured())
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Factory is not configured\n");
+        if (numThreads < 1)
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Parameter 'numThreads' is less than 1\n");
         return std::vector<nbt::Tag>();
+    }
     assert(stream.frameCount() > 0);
 
     const auto numFrames = stream.frameCount();
@@ -54,7 +65,10 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
 
         const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
+        {
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Empty frame be got, skip it\n");
             continue;
+        }
 
         results.emplace_back(threadPool.submit([=, &completed, &shouldStop]()
         {
@@ -77,8 +91,15 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
 
                 return TaskResult(std::move(mcstructure), std::move(localUsageCount));
             }
-            catch (...)
+            catch (std::exception& e)
             {
+                fprintf(
+                    stderr,
+                    "MCStructureFactory::generateDetachMCStructure() "
+                    "Error occurred when other thread execute generateSingleMCStructureHelper(), "
+                    "error message is '%s'\n",
+                    e.what()
+                );
                 return TaskResult(nbt::Tag(), BlockUsageMap());
             }
         }));
@@ -93,7 +114,10 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
     {
         auto [mcstructure, localUsageCount] = fut.get();
         if (mcstructure.type() == nbt::TT_END)
+        {
+            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Got a unexpected invalid NBT tag\n");
             return std::vector<nbt::Tag>();
+        }
 
         for (auto& [id, count] : localUsageCount)
             updateBlockUsageCount(id, count);
@@ -112,7 +136,21 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
     bool             useFrameIndexCallback)
 {
     if (!stream.isOpened() || stream.isEnd() || stream.frameCount() > INT_MAX || !isConfigured())
+    {
+        if (!stream.isOpened())
+            fprintf(stderr, "MCStructureFactory::generateSingleMCStructureHelper() Stream is not opened\n");
+        if (stream.isEnd())
+            fprintf(stderr, "MCStructureFactory::generateSingleMCStructureHelper() Stream is arrive end\n");
+        if (stream.frameCount() > INT_MAX)
+            fprintf(
+                stderr,
+                "MCStructureFactory::generateSingleMCStructureHelper() Stream's frame count (%lld) is too much\n",
+                stream.frameCount()
+            );
+        if (!isConfigured())
+            fprintf(stderr, "MCStructureFactory::generateSingleMCStructureHelper() Factory is not configured\n");
         return nbt::Tag();
+    }
 
     nbt::be::MCStructure mcstructure(1, 1, 1, 1);
     const int n = static_cast<int>(stream.frameCount());
@@ -139,6 +177,11 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
             mcstructure.size()[2] = w;
             break;
         default:
+            fprintf(
+                stderr,
+                "MCStructureFactory::generateSingleMCStructureHelper() The desired surface (%d) is invalid\n",
+                desiredSurface_
+            );
             return nbt::Tag();
     }
 
@@ -162,7 +205,13 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
     {
         const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
+        {
+            fprintf(
+                stderr,
+                "MCStructureFactory::generateSingleMCStructureHelper() The frame got from stream is empty\n"
+            );
             return nbt::Tag();
+        }
 
         assert(frame.cols == w && frame.rows == h);
         assert(frame.type() == CV_8UC4);

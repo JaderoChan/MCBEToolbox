@@ -1,5 +1,6 @@
 #include <image_utilities.hpp>
 
+#include <stdio.h>   // fprintf
 #include <algorithm> // std::min
 
 #include <opencv2/imgproc.hpp> // cv::cvtColor, cv::resize
@@ -12,7 +13,13 @@ cv::Mat convertColorToBgra(const cv::Mat& image)
         case CV_8UC1: cv::cvtColor(image, ret, cv::COLOR_GRAY2BGRA); return ret;
         case CV_8UC3: cv::cvtColor(image, ret, cv::COLOR_BGR2BGRA);  return ret;
         case CV_8UC4: ret = image; return ret;
-        default: return ret;
+        default:
+            fprintf(
+                stderr,
+                "convertColorToBgra() The type (%d) of image be passed is not support\n",
+                image.type()
+            );
+            return ret;
     }
 }
 

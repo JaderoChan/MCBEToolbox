@@ -2,6 +2,7 @@
 
 #include <assert.h>    // assert
 #include <limits.h>    // INT_MAX
+#include <stdio.h>     // fprintf
 #include <string.h>    // snprintf
 #include <array>       // std::array
 #include <atomic>      // std::atomic
@@ -30,7 +31,17 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
 {
     reset();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
+    {
+        if (!stream.isOpened())
+            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Stream is not opened\n");
+        if (!stream.isEnd())
+            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Stream is arrive end\n");
+        if (!isConfigured())
+            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Factory is not configured\n");
+        if (numThreads < 1)
+            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Parameter 'numThreads' is less than 1\n");
         return std::vector<MCFunction>();
+    }
     assert(stream.frameCount() > 0);
 
     const auto numFrames = stream.frameCount();
@@ -50,7 +61,10 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
 
         const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
+        {
+            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Empty frame be got, skip it\n");
             continue;
+        }
 
         results.emplace_back(threadPool.submit([=, &completed, &shouldStop]()
         {
@@ -73,8 +87,15 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
 
                 return TaskResult(std::move(MCFunction), std::move(localUsageCount));
             }
-            catch (...)
+            catch (std::exception& e)
             {
+                fprintf(
+                    stderr,
+                    "MCFunctionFactory::generateDetachMCFunction() "
+                    "Error occurred when other thread execute generateSingleMCFunctionHelper(), "
+                    "error message is '%s'\n",
+                    e.what()
+                );
                 return TaskResult(MCFunction(), BlockUsageMap());
             }
         }));
@@ -104,7 +125,21 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
     bool             useFrameIndexCallback)
 {
     if (!stream.isOpened() || stream.isEnd() || stream.frameCount() > INT_MAX || !isConfigured())
+    {
+        if (!stream.isOpened())
+            fprintf(stderr, "MCFunctionFactory::generateSingleMCFunctionHelper() Stream is not opened\n");
+        if (stream.isEnd())
+            fprintf(stderr, "MCFunctionFactory::generateSingleMCFunctionHelper() Stream is arrive end\n");
+        if (stream.frameCount() > INT_MAX)
+            fprintf(
+                stderr,
+                "MCFunctionFactory::generateSingleMCFunctionHelper() Stream's frame count (%lld) is too much\n",
+                stream.frameCount()
+            );
+        if (!isConfigured())
+            fprintf(stderr, "MCFunctionFactory::generateSingleMCFunctionHelper() Factory is not configured\n");
         return MCFunction();
+    }
 
     const int n = static_cast<int>(stream.frameCount());
     const int w = stream.frameSize().width;
@@ -122,7 +157,13 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
     {
         cv::Mat frame = stream.nextFrame();
         if (frame.empty())
+        {
+            fprintf(
+                stderr,
+                "MCFunctionFactory::generateSingleMCFunctionHelper() The frame got from stream is empty\n"
+            );
             return MCFunction();
+        }
 
         assert(frame.cols == w && frame.rows == h);
         assert(frame.type() == CV_8UC4);
