@@ -2,7 +2,7 @@
 
 #include <vector> // std::vector
 
-#include <mcnbt/mcnbt.hpp>      // nbt::Tag
+#include <mcnbt/mcnbt.hpp> // nbt::Tag
 
 #include "base_factory.hpp"
 #include "image_frames_ostream.hpp"
