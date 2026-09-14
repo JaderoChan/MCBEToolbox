@@ -22,7 +22,7 @@ find_package(OpenCV REQUIRED COMPONENTS core imgcodecs videoio)
 # 查找 OpenCV FFmpeg 插件
 if(WIN32)
     get_filename_component(OPENCV_BIN_DIR "${OpenCV_DIR}/../bin" ABSOLUTE)
-    file(GLOB OPENCV_FFMPEG_DLLS "${OPENCV_BIN_DIR}/opencv_videoio_ffmpeg*.dll")
+    file(GLOB OPENCV_FFMPEG_DLLS "${OPENCV_BIN_DIR}/opencv_videoio_msmf*.dll")
 endif()
 
 # 配置 zlib 库

@@ -6,6 +6,14 @@
 
 #include "frames_ostream.hpp"
 
+#ifdef _WIN32
+    #define DEFAULT_VIDEO_BACKEND cv::CAP_MSMF
+#elif defined(__APPLE__)
+    #define DEFAULT_VIDEO_BACKEND cv::CAP_AVFOUNDATION
+#else
+    #define DEFAULT_VIDEO_BACKEND cv::CAP_FFMPEG
+#endif
+
 /** 视频的图像帧数据流。 */
 class VideoFramesOStream : public FramesOStream
 {
@@ -21,6 +29,9 @@ public:
     bool      isEnd()      const override { return !capture_.isOpened() || isEnd_; }
     long long frameCount() const override;
     long long frameIndex() const override;
+
+    int fps()    const;
+    int fourcc() const;
 
 protected:
     cv::Mat  readNextFrame() override;

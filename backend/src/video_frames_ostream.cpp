@@ -1,7 +1,7 @@
 #include <video_frames_ostream.hpp>
 
 VideoFramesOStream::VideoFramesOStream(const std::string& videoFilePath, long long maxn, int maxw, int maxh) noexcept
-    : VideoFramesOStream(cv::VideoCapture(videoFilePath, cv::CAP_FFMPEG), maxn, maxw, maxh)
+    : VideoFramesOStream(cv::VideoCapture(videoFilePath, DEFAULT_VIDEO_BACKEND), maxn, maxw, maxh)
 {}
 
 VideoFramesOStream::VideoFramesOStream(cv::VideoCapture capture, long long maxn, int maxw, int maxh) noexcept
@@ -23,6 +23,20 @@ long long VideoFramesOStream::frameCount() const
 long long VideoFramesOStream::frameIndex() const
 {
     return frameIdx_;
+}
+
+int VideoFramesOStream::fps() const
+{
+    if (!isOpened())
+        return INVALID_INDEX;
+    return static_cast<int>(capture_.get(cv::CAP_PROP_FPS));
+}
+
+int VideoFramesOStream::fourcc() const
+{
+    if (!isOpened())
+        return INVALID_INDEX;
+    return static_cast<int>(capture_.get(cv::CAP_PROP_FOURCC));
 }
 
 cv::Mat VideoFramesOStream::readNextFrame()
