@@ -16,14 +16,14 @@ MCFunctionFactory::MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirectio
 
 MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(FramesOStream& stream, bool callbackPerFrame)
 {
-    reset();
-    return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageCount_, callbackPerFrame);
+    reinitializeState();
+    return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageMap_, callbackPerFrame);
 }
 
 std::vector<MCFunctionFactory::MCFunction>
 MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThreads)
 {
-    reset();
+    reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
     {
         if (!stream.isOpened())
@@ -49,13 +49,13 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
         TASK_WINDOW_SIZE_FACTOR,
         "MCFunctionFactory::generateDetachMCFunction()",
         [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
-        [this, numFrames](std::size_t current) { return executeCallback(current, numFrames); },
+        [this, numFrames](std::size_t current) { return invokeProgressCallback(current, numFrames); },
         [this, &ret](std::pair<MCFunction, BlockUsageMap>&& result)
         {
             auto& [mcfunction, localUsageCount] = result;
 
             for (auto& [id, count] : localUsageCount)
-                updateBlockUsageCount(id, count);
+                updateBlockUsageMap(id, count);
 
             ret.push_back(std::move(mcfunction));
             return true;
@@ -67,7 +67,7 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
 
 bool MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, const std::string& outDirPath, int numThreads)
 {
-    reset();
+    reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
     {
         if (!stream.isOpened())
@@ -93,13 +93,13 @@ bool MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, const st
         TASK_WINDOW_SIZE_FACTOR,
         "MCFunctionFactory::generateDetachMCFunction()",
         [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
-        [this, numFrames](std::size_t current) { return executeCallback(current, numFrames); },
+        [this, numFrames](std::size_t current) { return invokeProgressCallback(current, numFrames); },
         [this, &outDirPath, &frameIdx](std::pair<MCFunction, BlockUsageMap>&& result)
         {
             auto& [mcfunction, localUsageCount] = result;
 
             for (auto& [id, count] : localUsageCount)
-                updateBlockUsageCount(id, count);
+                updateBlockUsageMap(id, count);
 
             std::ofstream file(outDirPath + "/" + std::to_string(frameIdx) + ".mcfunction");
             if (!file.is_open())
@@ -137,7 +137,7 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
     FramesOStream&   stream,
     ProgressCallback callback,
     void*            userdata,
-    BlockUsageMap&   blockUsageCount,
+    BlockUsageMap&   blockUsageMap,
     bool             callbackPerFrame)
 {
     if (!stream.isOpened() || stream.isEnd() || stream.frameCount() > INT_MAX || !isConfigured())
@@ -216,7 +216,7 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
                         mcfunction.emplace_back(buf);
 
                         // 更新方块用量信息
-                        updateBlockUsageCount(blockUsageCount, lastId, col - lastCol);
+                        updateBlockUsageMap(blockUsageMap, lastId, col - lastCol);
                     }
                     lastId    = id;
                     lastBlock = block;
@@ -226,7 +226,7 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
                 if (!callbackPerFrame)
                 {
                     ++current;
-                    if (executeCallback(callback, userdata, current, total))
+                    if (invokeProgressCallback(callback, current, total, userdata))
                         return MCFunction();
                 }
             }
@@ -245,13 +245,13 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
                 mcfunction.emplace_back(buf);
 
                 // 更新方块用量信息
-                updateBlockUsageCount(blockUsageCount, lastId, w - lastCol);
+                updateBlockUsageMap(blockUsageMap, lastId, w - lastCol);
             }
         }
 
         if (callbackPerFrame)
         {
-            if (executeCallback(callback, userdata, num + 1, n))
+            if (invokeProgressCallback(callback, num + 1, n, userdata))
                 return MCFunction();
         }
     }

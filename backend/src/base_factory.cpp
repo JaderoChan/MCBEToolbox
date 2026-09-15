@@ -8,7 +8,7 @@
 #include "color_kd_tree.hpp"
 
 BaseFactory::BaseFactory(const BlockDataMap& blocks, SurfaceDirection desiredSurface)
-    : blocks_(blocks), desiredSurface_(desiredSurface), colorKdTree_(new ColorKdTree(blocks, desiredSurface))
+    : blocks_(blocks), desiredSurface_(desiredSurface) , colorKdTree_(new ColorKdTree(blocks, desiredSurface))
 {}
 
 BaseFactory::~BaseFactory() = default;
@@ -25,16 +25,16 @@ void BaseFactory::setDesiredSurface(SurfaceDirection desiredSurface)
     colorKdTree_->rebuild(blocks_, desiredSurface_);
 }
 
-void BaseFactory::updateBlockUsageCount(BlockUsageMap& blockUsageCount, std::string_view id, std::size_t increment)
+void BaseFactory::updateBlockUsageMap(BlockUsageMap& blockUsageMap, std::string_view id, std::size_t increment)
 {
-    auto it = blockUsageCount.find(id);
-    if (it == blockUsageCount.end())
-        blockUsageCount[std::string(id)] = increment;
+    auto it = blockUsageMap.find(id);
+    if (it == blockUsageMap.end())
+        blockUsageMap[std::string(id)] = increment;
     else
         ++(it->second);
 }
 
-bool BaseFactory::executeCallback(ProgressCallback callback, void* userdata, std::size_t current, std::size_t total)
+bool BaseFactory::invokeProgressCallback(ProgressCallback callback, std::size_t current, std::size_t total, void* userdata)
 {
     if (callback)
     {
@@ -43,6 +43,16 @@ bool BaseFactory::executeCallback(ProgressCallback callback, void* userdata, std
         return stop;
     }
     return false;
+}
+
+void BaseFactory::updateBlockUsageMap(std::string_view id, std::size_t increment)
+{
+    updateBlockUsageMap(blockUsageMap_, id, increment);
+}
+
+bool BaseFactory::invokeProgressCallback(std::size_t current, std::size_t total)
+{
+    return invokeProgressCallback(callback_, current, total, userdata_);
 }
 
 bool BaseFactory::ensureDirectoryExists(const std::string& dirPath, const char* logPrefix)
@@ -73,9 +83,9 @@ bool BaseFactory::isConfigured() const
     return !blocks_.empty() && colorKdTree_->isBuilt();
 }
 
-void BaseFactory::reset()
+void BaseFactory::reinitializeState()
 {
-    blockUsageCount_.clear();
+    blockUsageMap_.clear();
 }
 
 BlockDataPair BaseFactory::retrieveAppropriateBlock(const cv::Vec4b& color)
@@ -133,14 +143,4 @@ std::array<int, 3> BaseFactory::computePosition(int x, int y, int z, int xs, int
             throw std::invalid_argument("BaseFactory::computePosition(): invalid surface direction");
     }
     return ret;
-}
-
-void BaseFactory::updateBlockUsageCount(std::string_view id, std::size_t increment)
-{
-    updateBlockUsageCount(blockUsageCount_, id, increment);
-}
-
-bool BaseFactory::executeCallback(std::size_t current, std::size_t total)
-{
-    return executeCallback(callback_, userdata_, current, total);
 }

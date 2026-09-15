@@ -30,16 +30,18 @@ public:
     long long frameCount() const override;
     long long frameIndex() const override;
 
+    /** 获取视频的帧数。 */
     int fps()    const;
+    /** 获取视频的编码格式。 */
     int fourcc() const;
 
 protected:
-    cv::Mat  readNextFrame() override;
+    cv::Mat  readNextFrame()       override;
     cv::Size readFrameSize() const override;
 
 private:
     bool      isEnd_    = false;
-    long long maxn_     = INVALID_INDEX;
-    long long frameIdx_ = INVALID_INDEX;
+    long long maxn_     = INVALID_VALUE;
+    long long frameIdx_ = INVALID_VALUE;
     cv::VideoCapture capture_;
 };

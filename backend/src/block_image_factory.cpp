@@ -21,13 +21,13 @@ BlockImageFactory::BlockImageFactory(
 
 cv::Mat BlockImageFactory::generateBlockImage(ImageFramesOStream& stream)
 {
-    reset();
-    return generateBlockImageHelper(stream, callback_, userdata_, blockUsageCount_, texturesCache_, false);
+    reinitializeState();
+    return generateBlockImageHelper(stream, callback_, userdata_, blockUsageMap_, texturesCache_, false);
 }
 
 bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std::string& outFilePath, int numThreads)
 {
-    reset();
+    reinitializeState();
 
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
     {
@@ -128,7 +128,7 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
         },
         [this, numFrames](std::size_t current)
         {
-            return executeCallback(current, numFrames);
+            return invokeProgressCallback(current, numFrames);
         },
         [this, &writer](TaskResult&& result)
         {
@@ -140,7 +140,7 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
             }
 
             for (auto& [id, count] : localUsageCount)
-                updateBlockUsageCount(id, count);
+                updateBlockUsageMap(id, count);
 
             cv::Mat image;
             cv::cvtColor(blockImage, image, cv::COLOR_BGRA2BGR);
@@ -154,7 +154,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
     FramesOStream&   stream,
     ProgressCallback callback,
     void*            userdata,
-    BlockUsageMap&   blockUsageCount,
+    BlockUsageMap&   blockUsageMap,
     BlockTextureMap& texturesCache,
     bool             callbackPerFrame)
 {
@@ -217,13 +217,13 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
                 }
 
                 // 更新方块用量信息
-                updateBlockUsageCount(blockUsageCount, id, 1);
+                updateBlockUsageMap(blockUsageMap, id, 1);
             }
 
             if (!callbackPerFrame)
             {
                 ++current;
-                if (executeCallback(callback, userdata, current, total))
+                if (invokeProgressCallback(callback, current, total, userdata))
                     return cv::Mat();
             }
         }
@@ -231,7 +231,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
 
     if (callbackPerFrame)
     {
-        if (executeCallback(callback, userdata, 1, 1))
+        if (invokeProgressCallback(callback, 1, 1, userdata))
             return cv::Mat();
     }
 

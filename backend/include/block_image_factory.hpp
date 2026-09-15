@@ -38,7 +38,7 @@ private:
         FramesOStream&   stream,
         ProgressCallback callback,
         void*            userdata,
-        BlockUsageMap&   blockUsageCount,
+        BlockUsageMap&   blockUsageMap,
         BlockTextureMap& texturesCache,
         bool             callbackPerFrame);
 

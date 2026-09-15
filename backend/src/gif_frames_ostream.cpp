@@ -27,7 +27,7 @@ GifFramesOStream::~GifFramesOStream()
 long long GifFramesOStream::frameCount() const
 {
     if (!isOpened())
-        return INVALID_INDEX;
+        return INVALID_VALUE;
 
     if (maxn_ < 0) return totalFrameCount_;
     return totalFrameCount_ < maxn_ ? totalFrameCount_ : maxn_;
@@ -41,14 +41,14 @@ long long GifFramesOStream::frameIndex() const
 int GifFramesOStream::delay() const
 {
     if (!isOpened())
-        return static_cast<int>(INVALID_INDEX);
+        return static_cast<int>(INVALID_VALUE);
     return gif_->gce.delay;
 }
 
 int GifFramesOStream::loopCount() const
 {
     if (!isOpened())
-        return static_cast<int>(INVALID_INDEX);
+        return static_cast<int>(INVALID_VALUE);
     return gif_->loop_count;
 }
 

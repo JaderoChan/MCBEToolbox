@@ -1,9 +1,9 @@
 #pragma once
 
-#include <atomic> // std::atomic
-#include <string> // std::string
+#include <atomic>  // std::atomic
+#include <string>  // std::string
 #include <utility> // std::pair
-#include <vector> // std::vector
+#include <vector>  // std::vector
 
 #include <opencv2/core/mat.hpp> // cv::Mat
 #include <mcnbt/mcnbt.hpp>      // nbt::Tag
@@ -35,7 +35,7 @@ private:
         FramesOStream&   stream,
         ProgressCallback callback,
         void*            userdata,
-        BlockUsageMap&   blockUsageCount,
+        BlockUsageMap&   blockUsageMap,
         bool             callbackPerFrame);
 
     std::pair<nbt::Tag, BlockUsageMap> processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop);

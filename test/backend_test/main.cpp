@@ -170,7 +170,7 @@ void generateImageStructureTriggered()
 
     // 生成 MC Structure
     std::cout << "Start generate MC Structure" << std::endl;
-    const nbt::Tag mcstructure = factory.generateSingleMCStructure(stream);
+    const nbt::Tag mcstructure = factory.generateSingleMCStructure(stream, false);
     if (mcstructure.type() == nbt::TT_END)
     {
         std::cerr << "Failed to generate the MC Structure" << std::endl;
@@ -235,7 +235,7 @@ void generateVideoStructureTriggered()
     }
     else
     {
-        const nbt::Tag mcstructure = factory.generateSingleMCStructure(stream);
+        const nbt::Tag mcstructure = factory.generateSingleMCStructure(stream, true);
         if (mcstructure.type() == nbt::TT_END)
         {
             std::cerr << "Failed to generate the MC Structure" << std::endl;
@@ -273,7 +273,7 @@ void generateImageFunctionTriggered()
 
     // 生成 MC Function
     std::cout << "Start generate MC Function" << std::endl;
-    const auto mcfunction = factory.generateSingleMCFunction(stream);
+    const auto mcfunction = factory.generateSingleMCFunction(stream, false);
     if (mcfunction.empty())
     {
         std::cerr << "Failed to generate the MC Function" << std::endl;
@@ -346,7 +346,7 @@ void generateVideoFunctionTriggered()
     }
     else
     {
-        const auto mcfunction = factory.generateSingleMCFunction(stream);
+        const auto mcfunction = factory.generateSingleMCFunction(stream, true);
         if (mcfunction.empty())
         {
             std::cerr << "Failed to generate the MC Function" << std::endl;

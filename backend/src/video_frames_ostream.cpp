@@ -11,10 +11,10 @@ VideoFramesOStream::VideoFramesOStream(cv::VideoCapture capture, long long maxn,
 long long VideoFramesOStream::frameCount() const
 {
     if (!isOpened())
-        return INVALID_INDEX;
+        return INVALID_VALUE;
 
     const double count = capture_.get(cv::CAP_PROP_FRAME_COUNT);
-    const long long rawCount = count > 0 ? static_cast<long long>(count) : INVALID_INDEX;
+    const long long rawCount = count > 0 ? static_cast<long long>(count) : INVALID_VALUE;
 
     if (maxn_ < 0) return rawCount;
     return rawCount < maxn_ ? rawCount : maxn_;
@@ -28,14 +28,14 @@ long long VideoFramesOStream::frameIndex() const
 int VideoFramesOStream::fps() const
 {
     if (!isOpened())
-        return INVALID_INDEX;
+        return INVALID_VALUE;
     return static_cast<int>(capture_.get(cv::CAP_PROP_FPS));
 }
 
 int VideoFramesOStream::fourcc() const
 {
     if (!isOpened())
-        return INVALID_INDEX;
+        return INVALID_VALUE;
     return static_cast<int>(capture_.get(cv::CAP_PROP_FOURCC));
 }
 

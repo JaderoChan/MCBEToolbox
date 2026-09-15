@@ -13,11 +13,11 @@ public:
 
     bool      isOpened()   const override { return !image_.empty();                }
     bool      isEnd()      const override { return consumed_ || image_.empty();    }
-    long long frameCount() const override { return isOpened() ? 1 : INVALID_INDEX; }
-    long long frameIndex() const override { return consumed_  ? 0 : INVALID_INDEX; }
+    long long frameCount() const override { return isOpened() ? 1 : INVALID_VALUE; }
+    long long frameIndex() const override { return consumed_  ? 0 : INVALID_VALUE; }
 
 protected:
-    cv::Mat  readNextFrame() override;
+    cv::Mat  readNextFrame()       override;
     cv::Size readFrameSize() const override;
 
 private:

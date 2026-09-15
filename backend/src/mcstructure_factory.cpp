@@ -20,13 +20,13 @@ MCStructureFactory::MCStructureFactory(
 
 nbt::Tag MCStructureFactory::generateSingleMCStructure(FramesOStream& stream, bool callbackPerFrame)
 {
-    reset();
-    return generateSingleMCStructureHelper(stream, callback_, userdata_, blockUsageCount_, callbackPerFrame);
+    reinitializeState();
+    return generateSingleMCStructureHelper(stream, callback_, userdata_, blockUsageMap_, callbackPerFrame);
 }
 
 std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, int numThreads)
 {
-    reset();
+    reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
     {
         if (!stream.isOpened())
@@ -52,7 +52,7 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
         TASK_WINDOW_SIZE_FACTOR,
         "MCStructureFactory::generateDetachMCStructure()",
         [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
-        [this, numFrames](std::size_t current) { return executeCallback(current, numFrames); },
+        [this, numFrames](std::size_t current) { return invokeProgressCallback(current, numFrames); },
         [this, &ret](std::pair<nbt::Tag, BlockUsageMap>&& result)
         {
             auto& [mcstructure, localUsageCount] = result;
@@ -63,7 +63,7 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
             }
 
             for (auto& [id, count] : localUsageCount)
-                updateBlockUsageCount(id, count);
+                updateBlockUsageMap(id, count);
 
             ret.push_back(std::move(mcstructure));
             return true;
@@ -75,7 +75,7 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
 
 bool MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, const std::string& outDirPath, int numThreads)
 {
-    reset();
+    reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
     {
         if (!stream.isOpened())
@@ -101,7 +101,7 @@ bool MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, const 
         TASK_WINDOW_SIZE_FACTOR,
         "MCStructureFactory::generateDetachMCStructure()",
         [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
-        [this, numFrames](std::size_t current) { return executeCallback(current, numFrames); },
+        [this, numFrames](std::size_t current) { return invokeProgressCallback(current, numFrames); },
         [this, &outDirPath, &frameIdx](std::pair<nbt::Tag, BlockUsageMap>&& result)
         {
             auto& [mcstructure, localUsageCount] = result;
@@ -115,7 +115,7 @@ bool MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, const 
             }
 
             for (auto& [id, count] : localUsageCount)
-                updateBlockUsageCount(id, count);
+                updateBlockUsageMap(id, count);
 
             mcstructure.dump(outDirPath + "/" + std::to_string(frameIdx) + ".mcstructure", false);
             ++frameIdx;
@@ -141,7 +141,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
     FramesOStream&   stream,
     ProgressCallback callback,
     void*            userdata,
-    BlockUsageMap&   blockUsageCount,
+    BlockUsageMap&   blockUsageMap,
     bool             callbackPerFrame)
 {
     if (!stream.isOpened() || stream.isEnd() || stream.frameCount() > INT_MAX || !isConfigured())
@@ -262,12 +262,12 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
                 indices[indicesIdx] = nbt::Tag(paletteIdx);
 
                 // 更新方块用量信息
-                if (block) updateBlockUsageCount(blockUsageCount, id, 1);
+                if (block) updateBlockUsageMap(blockUsageMap, id, 1);
 
                 if (!callbackPerFrame)
                 {
                     ++current;
-                    if (executeCallback(callback, userdata, current, total))
+                    if (invokeProgressCallback(callback, current, total, userdata))
                         return nbt::Tag();
                 }
             }
@@ -275,7 +275,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
 
         if (callbackPerFrame)
         {
-            if (executeCallback(callback, userdata, num + 1, n))
+            if (invokeProgressCallback(callback, num + 1, n, userdata))
                 return nbt::Tag();
         }
     }

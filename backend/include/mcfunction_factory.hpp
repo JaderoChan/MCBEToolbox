@@ -27,7 +27,7 @@ private:
         FramesOStream&   stream,
         ProgressCallback callback,
         void*            userdata,
-        BlockUsageMap&   blockUsageCount,
+        BlockUsageMap&   blockUsageMap,
         bool             callbackPerFrame);
 
     std::pair<MCFunction, BlockUsageMap> processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop);

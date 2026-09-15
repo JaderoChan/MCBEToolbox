@@ -20,19 +20,19 @@ public:
     long long frameCount() const override;
     long long frameIndex() const override;
 
-    /** 获取当前帧的播放延迟（单位为 0.01 秒） */
-    int delay() const;
-    /** 获取 GIF 循环播放次数（0 表示无限循环） */
+    /** 获取当前帧的播放延迟（单位为 0.01 秒）。 */
+    int delay()     const;
+    /** 获取 GIF 循环播放次数（0 表示无限循环）。 */
     int loopCount() const;
 
 protected:
-    cv::Mat  readNextFrame() override;
+    cv::Mat  readNextFrame()       override;
     cv::Size readFrameSize() const override;
 
 private:
     bool      isEnd_           = false;
-    long long maxn_            = INVALID_INDEX;
-    long long frameIdx_        = INVALID_INDEX;
-    long long totalFrameCount_ = INVALID_INDEX;
+    long long maxn_            = INVALID_VALUE;
+    long long frameIdx_        = INVALID_VALUE;
+    long long totalFrameCount_ = INVALID_VALUE;
     gd_GIF*   gif_             = nullptr;
 };

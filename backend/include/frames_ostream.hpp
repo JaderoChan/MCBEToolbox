@@ -13,8 +13,8 @@
 class FramesOStream
 {
 public:
-    // 帧数/帧索引的无效值，用于标识实时流（总帧数未知）或尚未读取任何帧。
-    static constexpr long long INVALID_INDEX = -1;
+    // 无效值
+    static constexpr long long INVALID_VALUE = -1;
 
     /**
      * @param maxw 输出帧宽度上限，-1 表示不限制
