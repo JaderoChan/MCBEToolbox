@@ -18,8 +18,7 @@ public:
 
     MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirection desiredSurface);
 
-    MCFunction generateSingleMCFunction(ImageFramesOStream& stream);
-    MCFunction generateSingleMCFunction(VideoFramesOStream& stream);
+    MCFunction generateSingleMCFunction(FramesOStream& stream, bool callbackPerFrame);
     std::vector<MCFunction> generateDetachMCFunction(FramesOStream& stream, int numThreads = 4);
     bool generateDetachMCFunction(FramesOStream& stream, const std::string& outDirPath, int numThreads = 4);
 
@@ -29,7 +28,7 @@ private:
         ProgressCallback callback,
         void*            userdata,
         BlockUsageMap&   blockUsageCount,
-        bool             useFrameIndexCallback);
+        bool             callbackPerFrame);
 
     std::pair<MCFunction, BlockUsageMap> processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop);
 };

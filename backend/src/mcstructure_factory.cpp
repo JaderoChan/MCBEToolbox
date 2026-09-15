@@ -18,16 +18,10 @@ MCStructureFactory::MCStructureFactory(
     : BaseFactory(blocks, desiredSurface), blockFormatVersion_(blockFormatVersion)
 {}
 
-nbt::Tag MCStructureFactory::generateSingleMCStructure(ImageFramesOStream& stream)
+nbt::Tag MCStructureFactory::generateSingleMCStructure(FramesOStream& stream, bool callbackPerFrame)
 {
     reset();
-    return generateSingleMCStructureHelper(stream, callback_, userdata_, blockUsageCount_, false);
-}
-
-nbt::Tag MCStructureFactory::generateSingleMCStructure(VideoFramesOStream& stream)
-{
-    reset();
-    return generateSingleMCStructureHelper(stream, callback_, userdata_, blockUsageCount_, true);
+    return generateSingleMCStructureHelper(stream, callback_, userdata_, blockUsageCount_, callbackPerFrame);
 }
 
 std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, int numThreads)
@@ -148,7 +142,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageCount,
-    bool             useFrameIndexCallback)
+    bool             callbackPerFrame)
 {
     if (!stream.isOpened() || stream.isEnd() || stream.frameCount() > INT_MAX || !isConfigured())
     {
@@ -270,7 +264,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
                 // 更新方块用量信息
                 if (block) updateBlockUsageCount(blockUsageCount, id, 1);
 
-                if (!useFrameIndexCallback)
+                if (!callbackPerFrame)
                 {
                     ++current;
                     if (executeCallback(callback, userdata, current, total))
@@ -279,7 +273,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
             }
         }
 
-        if (useFrameIndexCallback)
+        if (callbackPerFrame)
         {
             if (executeCallback(callback, userdata, num + 1, n))
                 return nbt::Tag();

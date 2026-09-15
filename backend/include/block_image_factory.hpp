@@ -40,7 +40,7 @@ private:
         void*            userdata,
         BlockUsageMap&   blockUsageCount,
         BlockTextureMap& texturesCache,
-        bool             useFrameIndexCallback);
+        bool             callbackPerFrame);
 
     std::string     texturesDirPath_;
     BlockTextureMap texturesCache_;

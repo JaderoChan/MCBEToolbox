@@ -26,8 +26,7 @@ public:
     void setBlockFormatVersion(const Version& blockFormatVersion) { blockFormatVersion_ = blockFormatVersion; }
     Version getBlockFormatVersion() const                         { return blockFormatVersion_;               }
 
-    nbt::Tag generateSingleMCStructure(ImageFramesOStream& stream);
-    nbt::Tag generateSingleMCStructure(VideoFramesOStream& stream);
+    nbt::Tag generateSingleMCStructure(FramesOStream& stream, bool callbackPerFrame);
     std::vector<nbt::Tag> generateDetachMCStructure(FramesOStream& stream, int numThreads = 4);
     bool generateDetachMCStructure(FramesOStream& stream, const std::string& outDirPath, int numThreads = 4);
 
@@ -37,7 +36,7 @@ private:
         ProgressCallback callback,
         void*            userdata,
         BlockUsageMap&   blockUsageCount,
-        bool             useFrameIndexCallback);
+        bool             callbackPerFrame);
 
     std::pair<nbt::Tag, BlockUsageMap> processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop);
 

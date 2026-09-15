@@ -156,7 +156,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
     void*            userdata,
     BlockUsageMap&   blockUsageCount,
     BlockTextureMap& texturesCache,
-    bool             useFrameIndexCallback)
+    bool             callbackPerFrame)
 {
     if (!stream.isOpened() || stream.isEnd() || !isConfigured())
     {
@@ -220,7 +220,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
                 updateBlockUsageCount(blockUsageCount, id, 1);
             }
 
-            if (!useFrameIndexCallback)
+            if (!callbackPerFrame)
             {
                 ++current;
                 if (executeCallback(callback, userdata, current, total))
@@ -229,7 +229,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
         }
     }
 
-    if (useFrameIndexCallback)
+    if (callbackPerFrame)
     {
         if (executeCallback(callback, userdata, 1, 1))
             return cv::Mat();

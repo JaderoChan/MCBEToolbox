@@ -14,16 +14,10 @@ MCFunctionFactory::MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirectio
     : BaseFactory(blocks, desiredSurface)
 {}
 
-MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(ImageFramesOStream& stream)
+MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(FramesOStream& stream, bool callbackPerFrame)
 {
     reset();
-    return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageCount_, false);
-}
-
-MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(VideoFramesOStream& stream)
-{
-    reset();
-    return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageCount_, true);
+    return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageCount_, callbackPerFrame);
 }
 
 std::vector<MCFunctionFactory::MCFunction>
@@ -144,7 +138,7 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageCount,
-    bool             useFrameIndexCallback)
+    bool             callbackPerFrame)
 {
     if (!stream.isOpened() || stream.isEnd() || stream.frameCount() > INT_MAX || !isConfigured())
     {
@@ -229,7 +223,7 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
                     lastCol   = col;
                 }
 
-                if (!useFrameIndexCallback)
+                if (!callbackPerFrame)
                 {
                     ++current;
                     if (executeCallback(callback, userdata, current, total))
@@ -255,7 +249,7 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
             }
         }
 
-        if (useFrameIndexCallback)
+        if (callbackPerFrame)
         {
             if (executeCallback(callback, userdata, num + 1, n))
                 return MCFunction();
