@@ -1,7 +1,7 @@
 #include <version.hpp>
 
 #include <stdint.h>  // UINT8_MAX
-#include <string.h>  // snprintf
+#include <stdio.h>   // snprintf
 #include <stdexcept> // std::invalid_argument
 
 Version Version::fromString(std::string_view str)
