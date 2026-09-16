@@ -223,16 +223,15 @@ bool MCPack::pack() const
     iconFile.write(reinterpret_cast<const char*>(DEFAULT_PACK_ICON_PNG), DEFAULT_PACK_ICON_PNG_SIZE);
     iconFile.close();
 
-    const std::filesystem::path functionsNamespacePath   = std::filesystem::path(tempPath_) / "functions"  / namespace_;
-    const std::filesystem::path structuresNamespacePath  = std::filesystem::path(tempPath_) / "structures" / namespace_;
-    const std::filesystem::path structuresRootPath       = std::filesystem::path(tempPath_) / "structures";
+    const std::filesystem::path functionsRootPath       = std::filesystem::path(tempPath_) / "functions";
+    const std::filesystem::path functionsNamespacePath  = functionsRootPath / namespace_;
+    const std::filesystem::path structuresRootPath      = std::filesystem::path(tempPath_) / "structures";
+    const std::filesystem::path structuresNamespacePath = structuresRootPath / namespace_;
 
     std::error_code pruneEc;
     if (isDirectoryEmptyOfFiles(functionsNamespacePath))
-        std::filesystem::remove_all(functionsNamespacePath, pruneEc);
+        std::filesystem::remove_all(functionsRootPath, pruneEc);
     if (isDirectoryEmptyOfFiles(structuresNamespacePath))
-        std::filesystem::remove_all(structuresNamespacePath, pruneEc);
-    if (isDirectoryEmptyOfFiles(structuresRootPath))
         std::filesystem::remove_all(structuresRootPath, pruneEc);
 
     const std::filesystem::path zipPath = filePath_;
