@@ -39,6 +39,8 @@ set(MCNBT_USE_BUILTIN_ZLIB OFF)
 add_subdirectory(${3RDPARTY_DIR}/mcnbt)
 # 配置 GIF 库
 add_subdirectory(${3RDPARTY_DIR}/gifdec)
+# 配置 EUI-NEO GUI 库
+add_subdirectory(${3RDPARTY_DIR}/eui-neo)
 
 # 配置 minizip 库
 set(MZ_COMPAT OFF)
