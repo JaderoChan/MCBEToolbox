@@ -276,17 +276,24 @@ bool MCPack::pack() const
     const std::string zipPathUtf8  = zipPath.u8string();
     const std::string tempPathUtf8 = std::filesystem::path(tempPath_).u8string();
 
-    bool ok = mz_zip_writer_open_file(writer, zipPathUtf8.c_str(), 0, 0) == MZ_OK;
-    if (ok)
-        ok = mz_zip_writer_add_path(writer, tempPathUtf8.c_str(), tempPathUtf8.c_str(), 0, 1) == MZ_OK;
-    ok = (mz_zip_writer_close(writer) == MZ_OK) && ok;
+    int32_t err = mz_zip_writer_open_file(writer, zipPathUtf8.c_str(), 0, 0);
+    if (err != MZ_OK)
+        fprintf(stderr, "MCPack::pack() Failed to open the zip file '%s' (error %d)\n", zipPath.string().c_str(), err);
+
+    if (err == MZ_OK)
+    {
+        err = mz_zip_writer_add_path(writer, tempPathUtf8.c_str(), tempPathUtf8.c_str(), 0, 1);
+        if (err != MZ_OK)
+            fprintf(stderr, "MCPack::pack() Failed to add the pack contents to the zip (error %d)\n", err);
+    }
+
+    const int32_t closeErr = mz_zip_writer_close(writer);
+    if (closeErr != MZ_OK)
+        fprintf(stderr, "MCPack::pack() Failed to close the zip writer (error %d)\n", closeErr);
 
     mz_zip_writer_delete(&writer);
 
-    if (!ok)
-        fprintf(stderr, "MCPack::pack() Failed to compress the pack contents into '%s'\n", zipPath.string().c_str());
-
-    return ok;
+    return err == MZ_OK && closeErr == MZ_OK;
 }
 
 std::string MCPack::generateUuid()
