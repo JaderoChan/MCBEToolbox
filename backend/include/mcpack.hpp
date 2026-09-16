@@ -55,7 +55,7 @@ public:
     /** 临时工作目录是否已就绪）。 */
     bool isOk() const { return isOk_; }
 
-    /** 打包：生成 manifest.json 与 pack_icon.png，将临时目录压缩为 .mcpack 文件，完成后清理临时目录。 */
+    /** 打包：生成 manifest.json 与 pack_icon.png，将临时目录压缩为 #filePath 指定的文件，完成后清理临时目录。 */
     bool pack() const;
 
 private:

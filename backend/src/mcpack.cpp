@@ -32,6 +32,22 @@ bool ensureDirectoryExists(const std::filesystem::path& dirPath)
     return !ec;
 }
 
+// 便利函数：递归判断给定目录下是否不包含任何常规文件。
+bool isDirectoryEmptyOfFiles(const std::filesystem::path& dirPath)
+{
+    std::error_code ec;
+    if (!std::filesystem::is_directory(dirPath, ec))
+        return true;
+
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(
+             dirPath, std::filesystem::directory_options::skip_permission_denied, ec))
+    {
+        if (entry.is_regular_file(ec))
+            return false;
+    }
+    return true;
+}
+
 } // namespace
 
 MCPack::MCPack(
@@ -207,13 +223,27 @@ bool MCPack::pack() const
     iconFile.write(reinterpret_cast<const char*>(DEFAULT_PACK_ICON_PNG), DEFAULT_PACK_ICON_PNG_SIZE);
     iconFile.close();
 
-    if (!ensureDirectoryExists(filePath_))
+    const std::filesystem::path functionsNamespacePath   = std::filesystem::path(tempPath_) / "functions"  / namespace_;
+    const std::filesystem::path structuresNamespacePath  = std::filesystem::path(tempPath_) / "structures" / namespace_;
+    const std::filesystem::path structuresRootPath       = std::filesystem::path(tempPath_) / "structures";
+
+    std::error_code pruneEc;
+    if (isDirectoryEmptyOfFiles(functionsNamespacePath))
+        std::filesystem::remove_all(functionsNamespacePath, pruneEc);
+    if (isDirectoryEmptyOfFiles(structuresNamespacePath))
+        std::filesystem::remove_all(structuresNamespacePath, pruneEc);
+    if (isDirectoryEmptyOfFiles(structuresRootPath))
+        std::filesystem::remove_all(structuresRootPath, pruneEc);
+
+    const std::filesystem::path zipPath = filePath_;
+    const std::filesystem::path zipParentPath =
+        zipPath.has_parent_path() ? zipPath.parent_path() : std::filesystem::current_path();
+    if (!ensureDirectoryExists(zipParentPath))
     {
-        fprintf(stderr, "MCPack::pack() Failed to create the target directory '%s'\n", filePath_.c_str());
+        fprintf(stderr, "MCPack::pack() Failed to create the target directory '%s'\n", zipParentPath.string().c_str());
         return false;
     }
 
-    const std::filesystem::path zipPath = std::filesystem::path(filePath_) / (name_ + ".mcpack");
     std::error_code ec;
     std::filesystem::remove(zipPath, ec);
 
@@ -286,7 +316,7 @@ std::string MCPack::generateTempPath()
         ? anchor.parent_path()
         : std::filesystem::current_path();
 
-    const std::string hiddenName = "." + anchor.filename().string() + "_" + generateUuid() + ".tmp";
+    const std::string hiddenName = "." + anchor.stem().string() + "_" + generateUuid() + ".tmp";
     const std::filesystem::path tempPath = parent / hiddenName;
 
     std::error_code ec;
