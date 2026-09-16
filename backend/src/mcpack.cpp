@@ -6,8 +6,10 @@
 #include <random>       // std::mt19937_64, std::random_device, std::uniform_int_distribution
 #include <system_error> // std::error_code
 
-#include <mz.h>                  // MZ_OK, MZ_COMPRESS_METHOD_DEFLATE, MZ_COMPRESS_LEVEL_DEFAULT
-#include <mz_zip_rw.h>           // mz_zip_writer_*
+#include <mz.h>          // MZ_OK, MZ_COMPRESS_METHOD_DEFLATE, MZ_COMPRESS_LEVEL_DEFAULT
+#include <mz_strm.h>     // mz_stream_read_cb, mz_stream_write_cb
+#include <mz_zip.h>      // mz_zip_file
+#include <mz_zip_rw.h>   // mz_zip_writer_*
 #include <nlohmann/json.hpp>     // nlohmann::json
 #include <opencv2/imgcodecs.hpp> // cv::imwrite
 
