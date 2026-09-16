@@ -94,7 +94,7 @@ bool MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, const 
 
     const auto numFrames = stream.frameCount();
 
-    std::size_t frameIdx = 0;
+    std::size_t frameIdx = 1;
     return runFramePipeline<std::pair<nbt::Tag, BlockUsageMap>>(
         stream,
         numThreads,

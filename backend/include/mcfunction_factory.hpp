@@ -14,6 +14,9 @@
 class MCFunctionFactory : public BaseFactory
 {
 public:
+    // 每个 .mcfunction 文件最多包含 10000 条指令，此处预留 1000 条以支持一定程度的链式调用。
+    static constexpr std::size_t MAX_COMMAND_COUNT_PER_MCFUNCTION = 9000;
+
     using MCFunction = std::vector<std::string>;
 
     MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirection desiredSurface);

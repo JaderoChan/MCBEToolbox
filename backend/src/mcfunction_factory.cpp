@@ -2,8 +2,7 @@
 
 #include <assert.h>    // assert
 #include <limits.h>    // INT_MAX
-#include <stdio.h>     // fprintf
-#include <string.h>    // snprintf
+#include <stdio.h>     // fprintf, snprintf
 #include <array>       // std::array
 #include <fstream>     // std::ofstream
 #include <string_view> // std::string_view
@@ -86,7 +85,7 @@ bool MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, const st
 
     const auto numFrames = stream.frameCount();
 
-    std::size_t frameIdx = 0;
+    std::size_t frameIdx = 1;
     return runFramePipeline<std::pair<MCFunction, BlockUsageMap>>(
         stream,
         numThreads,
@@ -101,18 +100,30 @@ bool MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, const st
             for (auto& [id, count] : localUsageCount)
                 updateBlockUsageMap(id, count);
 
-            std::ofstream file(outDirPath + "/" + std::to_string(frameIdx) + ".mcfunction");
-            if (!file.is_open())
+            std::size_t subIdx = 0;
+            char buf[256];
+            std::ofstream file;
+            for (std::size_t i = 0; i < mcfunction.size(); ++i)
             {
-                fprintf(
-                    stderr,
-                    "MCFunctionFactory::generateDetachMCFunction() Failed to open the out file for frame %zu\n",
-                    frameIdx
-                );
-                return false;
+                if (i % MAX_COMMAND_COUNT_PER_MCFUNCTION == 0)
+                {
+                    ++subIdx;
+                    snprintf(buf, sizeof(buf), "%s/%zu-%zu.mcfunction", outDirPath.c_str(), frameIdx, subIdx);
+                    if (file.is_open()) file.close();
+                    file = std::ofstream(buf);
+                    if (!file.is_open())
+                    {
+                        fprintf(
+                            stderr,
+                            "MCFunctionFactory::generateDetachMCFunction() Failed to open the out file '%s'\n",
+                            buf
+                        );
+                        return false;
+                    }
+                }
+
+                file << mcfunction[i] << '\n';
             }
-            for (const auto& command : mcfunction)
-                file << command << '\n';
 
             ++frameIdx;
             return true;
