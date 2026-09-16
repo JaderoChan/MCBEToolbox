@@ -1,6 +1,6 @@
 #include "mcpack.hpp"
 
-#include <cstdio>       // fprintf
+#include <stdio.h>      // fprintf
 #include <filesystem>   // std::filesystem
 #include <fstream>      // std::ifstream, std::ofstream
 #include <random>       // std::mt19937_64, std::random_device, std::uniform_int_distribution
@@ -10,11 +10,9 @@
 #include <mz_strm.h>     // mz_stream_read_cb, mz_stream_write_cb
 #include <mz_zip.h>      // mz_zip_file
 #include <mz_zip_rw.h>   // mz_zip_writer_*
-#include <nlohmann/json.hpp>     // nlohmann::json
-#include <opencv2/imgcodecs.hpp> // cv::imwrite
+#include <nlohmann/json.hpp> // nlohmann::json
 
-#include <image_utilities.hpp>
-#include "color.hpp"
+#include "pack_icon_data.hpp"
 
 #ifdef _WIN32
     #include <windows.h> // SetFileAttributesW
@@ -32,53 +30,6 @@ bool ensureDirectoryExists(const std::filesystem::path& dirPath)
 
     std::filesystem::create_directories(dirPath, ec);
     return !ec;
-}
-
-// pack_icon.png 默认图像调色板
-constexpr Rgb PACK_ICON_PALETTE[4] = {
-    Rgb(96, 161, 74),  // 草方块 - 亮
-    Rgb(83, 145, 62),  // 草方块 - 暗
-    Rgb(134, 96, 67),  // 泥土   - 亮
-    Rgb(112, 79, 54)   // 泥土   - 暗
-};
-
-constexpr unsigned char PACK_ICON_PIXELS[16][16] = {
-    { 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 },
-    { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 },
-    { 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 },
-    { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 },
-    { 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 },
-    { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 },
-    { 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3 },
-    { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 },
-    { 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3 },
-    { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 },
-    { 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3 },
-    { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 },
-    { 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3 },
-    { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 },
-    { 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3 },
-    { 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2 }
-};
-
-// 基于 PACK_ICON_PALETTE/PACK_ICON_PIXELS 生成默认 pack_icon.png 图像。
-const cv::Mat& defaultPackIconImage()
-{
-    static const cv::Mat icon = []
-    {
-        cv::Mat img(16, 16, CV_8UC3);
-        for (int y = 0; y < 16; ++y)
-        {
-            for (int x = 0; x < 16; ++x)
-            {
-                const Rgb& color = PACK_ICON_PALETTE[PACK_ICON_PIXELS[y][x]];
-                img.at<cv::Vec3b>(y, x) = cv::Vec3b(color.b, color.g, color.r);
-            }
-        }
-
-        return resizeImage(img, cv::Size(256, 256));
-    }();
-    return icon;
 }
 
 } // namespace
@@ -247,11 +198,14 @@ bool MCPack::pack() const
     manifestFile.close();
 
     const std::filesystem::path iconPath = std::filesystem::path(tempPath_) / "pack_icon.png";
-    if (!cv::imwrite(iconPath.string(), defaultPackIconImage()))
+    std::ofstream iconFile(iconPath, std::ios::binary | std::ios::trunc);
+    if (!iconFile)
     {
         fprintf(stderr, "MCPack::pack() Failed to create 'pack_icon.png'\n");
         return false;
     }
+    iconFile.write(reinterpret_cast<const char*>(DEFAULT_PACK_ICON_PNG), DEFAULT_PACK_ICON_PNG_SIZE);
+    iconFile.close();
 
     if (!ensureDirectoryExists(filePath_))
     {

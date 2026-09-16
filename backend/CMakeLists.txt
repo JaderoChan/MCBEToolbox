@@ -21,6 +21,7 @@ set(
     ./src/color_kd_tree.hpp
     ./src/frame_pipeline.hpp
     ./src/nanoflann.hpp
+    ./src/pack_icon_data.hpp
     ./src/thread_pool.hpp
 )
 set(
