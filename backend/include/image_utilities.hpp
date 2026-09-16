@@ -1,6 +1,7 @@
 #pragma once
 
 #include <opencv2/core/mat.hpp> // cv::Mat
+#include <opencv2/imgproc.hpp>  // cv::cvtColor, cv::resize
 
 /**
  * 将 GRAY 或 BGR 格式的图像转换为 BGRA 格式。
@@ -14,7 +15,7 @@ cv::Mat convertColorToBgra(const cv::Mat& image);
  *
  * @return 如果输入图像或尺寸不合法返回空图像。
  */
-cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size);
+cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size, int interpolation = cv::INTER_LINEAR);
 
 /**
  * 等比例缩放给定尺寸，使其满足最大尺寸要求。

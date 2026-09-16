@@ -3,8 +3,6 @@
 #include <stdio.h>   // fprintf
 #include <algorithm> // std::min
 
-#include <opencv2/imgproc.hpp> // cv::cvtColor, cv::resize
-
 cv::Mat convertColorToBgra(const cv::Mat& image)
 {
     cv::Mat ret;
@@ -23,11 +21,11 @@ cv::Mat convertColorToBgra(const cv::Mat& image)
     }
 }
 
-cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size)
+cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size, int interpolation)
 {
     cv::Mat ret;
     if (size.empty()) return ret;
-    cv::resize(image, ret, size);
+    cv::resize(image, ret, size, 0.0, 0.0, interpolation);
     return ret;
 }
 
