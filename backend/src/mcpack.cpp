@@ -228,11 +228,11 @@ bool MCPack::pack() const
     const std::filesystem::path structuresRootPath      = std::filesystem::path(tempPath_) / "structures";
     const std::filesystem::path structuresNamespacePath = structuresRootPath / namespace_;
 
-    std::error_code pruneEc;
+    std::error_code ec;
     if (isDirectoryEmptyOfFiles(functionsNamespacePath))
-        std::filesystem::remove_all(functionsRootPath, pruneEc);
+        std::filesystem::remove_all(functionsRootPath, ec);
     if (isDirectoryEmptyOfFiles(structuresNamespacePath))
-        std::filesystem::remove_all(structuresRootPath, pruneEc);
+        std::filesystem::remove_all(structuresRootPath, ec);
 
     const std::filesystem::path zipPath = filePath_;
     const std::filesystem::path zipParentPath =
@@ -243,7 +243,6 @@ bool MCPack::pack() const
         return false;
     }
 
-    std::error_code ec;
     std::filesystem::remove(zipPath, ec);
 
     void* writer = mz_zip_writer_create();
