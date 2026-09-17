@@ -1,4 +1,4 @@
-project(easy_translate VERSION 1.1.0 LANGUAGES CXX)
+project(easy_translate VERSION 1.2.0 LANGUAGES CXX)
 
 add_library(${PROJECT_NAME} INTERFACE ./include/easy_translate.hpp)
 
