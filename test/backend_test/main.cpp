@@ -87,7 +87,7 @@ void generateBlockImageTriggered()
     std::string filepath;
     std::cout << "Please input the image filepath: " << std::endl;
     std::cin >> filepath;
-    ImageFramesOStream stream(filepath, config.frameMaxSize.width, config.frameMaxSize.height);
+    SingleImageOStream stream(filepath, config.frameMaxSize.width, config.frameMaxSize.height);
     if (!stream.isOpened())
     {
         std::cerr << "Failed open the image: " << filepath << std::endl;
@@ -126,7 +126,7 @@ void generateBlockVideoTriggered()
     std::string filepath;
     std::cout << "Please input the video filepath: " << std::endl;
     std::cin >> filepath;
-    VideoFramesOStream stream(filepath, -1, config.frameMaxSize.width, config.frameMaxSize.height);
+    VideoImageOStream stream(filepath, -1, config.frameMaxSize.width, config.frameMaxSize.height);
     if (!stream.isOpened())
     {
         std::cerr << "Failed open the video: " << filepath << std::endl;
@@ -161,7 +161,7 @@ void generateImageStructureTriggered()
     std::string filepath;
     std::cout << "Please input the image filepath: " << std::endl;
     std::cin >> filepath;
-    ImageFramesOStream stream(filepath, config.frameMaxSize.width, config.frameMaxSize.height);
+    SingleImageOStream stream(filepath, config.frameMaxSize.width, config.frameMaxSize.height);
     if (!stream.isOpened())
     {
         std::cerr << "Failed open the image: " << filepath << std::endl;
@@ -228,7 +228,7 @@ void generateVideoStructureTriggered()
     std::string filepath;
     std::cout << "Please input the video filepath: " << std::endl;
     std::cin >> filepath;
-    VideoFramesOStream stream(filepath, config.frameMaxCount, config.frameMaxSize.width, config.frameMaxSize.height);
+    VideoImageOStream stream(filepath, config.frameMaxCount, config.frameMaxSize.width, config.frameMaxSize.height);
     if (!stream.isOpened())
     {
         std::cerr << "Failed open the video: " << filepath << std::endl;
@@ -292,7 +292,7 @@ void generateImageFunctionTriggered()
     std::string filepath;
     std::cout << "Please input the image filepath: " << std::endl;
     std::cin >> filepath;
-    ImageFramesOStream stream(filepath, config.frameMaxSize.width, config.frameMaxSize.height);
+    SingleImageOStream stream(filepath, config.frameMaxSize.width, config.frameMaxSize.height);
     if (!stream.isOpened())
     {
         std::cerr << "Failed open the image: " << filepath << std::endl;
@@ -352,7 +352,7 @@ void generateVideoFunctionTriggered()
     std::string filepath;
     std::cout << "Please input the video filepath: " << std::endl;
     std::cin >> filepath;
-    VideoFramesOStream stream(filepath, config.frameMaxCount, config.frameMaxSize.width, config.frameMaxSize.height);
+    VideoImageOStream stream(filepath, config.frameMaxCount, config.frameMaxSize.width, config.frameMaxSize.height);
     if (!stream.isOpened())
     {
         std::cerr << "Failed open the video: " << filepath << std::endl;

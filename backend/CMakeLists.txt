@@ -7,16 +7,16 @@ set(
     ./include/block_image_factory.hpp
     ./include/block.hpp
     ./include/color.hpp
-    ./include/frames_ostream.hpp
-    ./include/gif_frames_ostream.hpp
-    ./include/image_frames_ostream.hpp
+    ./include/gif_image_ostream.hpp
+    ./include/image_ostream.hpp
     ./include/image_utilities.hpp
     ./include/mcbe_toolbox_api.hpp
     ./include/mcfunction_factory.hpp
     ./include/mcpack.hpp
     ./include/mcstructure_factory.hpp
+    ./include/single_image_ostream.hpp
     ./include/version.hpp
-    ./include/video_frames_ostream.hpp
+    ./include/video_image_ostream.hpp
 
     ./src/color_kd_tree.hpp
     ./src/frame_pipeline.hpp
@@ -31,17 +31,17 @@ set(
     ./src/block.cpp
     ./src/color_kd_tree.cpp
     ./src/color.cpp
-    ./src/frames_ostream.cpp
-    ./src/gif_frames_ostream.cpp
-    ./src/image_frames_ostream.cpp
+    ./src/gif_image_ostream.cpp
+    ./src/image_ostream.cpp
     ./src/image_utilities.cpp
     ./src/mcbe_toolbox_api.cpp
     ./src/mcfunction_factory.cpp
     ./src/mcpack.cpp
     ./src/mcstructure_factory.cpp
+    ./src/single_image_ostream.cpp
     ./src/thread_pool.cpp
     ./src/version.cpp
-    ./src/video_frames_ostream.cpp
+    ./src/video_image_ostream.cpp
 )
 set(PROJECT_SOURCES ${HEADERS} ${SRCS})
 

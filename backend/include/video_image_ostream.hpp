@@ -4,7 +4,7 @@
 
 #include <opencv2/videoio.hpp> // cv::VideoCapture
 
-#include "frames_ostream.hpp"
+#include "image_ostream.hpp"
 
 #ifdef _WIN32
     #define DEFAULT_VIDEO_BACKEND cv::CAP_MSMF
@@ -15,13 +15,13 @@
 #endif
 
 /** 视频的图像帧数据流。 */
-class VideoFramesOStream : public FramesOStream
+class VideoImageOStream : public ImageOStream
 {
 public:
-    explicit VideoFramesOStream(
+    explicit VideoImageOStream(
         const std::string& videoFilePath,
         long long maxn = -1, int maxw = -1, int maxh = -1) noexcept;
-    explicit VideoFramesOStream(
+    explicit VideoImageOStream(
         cv::VideoCapture capture,
         long long maxn = -1, int maxw = -1, int maxh = -1) noexcept;
 

@@ -3,14 +3,14 @@
 #include <opencv2/core/mat.hpp> // cv::Mat
 
 /**
- * 图像帧数据流接口。
+ * 图像数据流接口。
  *
  * 用于封装单张图像、视频、GIF 等不同来源的多帧图像数据，对外提供一致的按帧读取方式。
  *
  * 支持通过 maxWidth/maxHeight 限制输出帧的尺寸（等比例缩放），
  * 该限制对 #nextFrame() 与 #frameSize() 的返回值均生效，具体缩放规则参见 #limitSize()。
  */
-class FramesOStream
+class ImageOStream
 {
 public:
     // =================================================================================================================
@@ -28,11 +28,11 @@ public:
      * @param maxw 输出帧宽度上限，-1 表示不限制
      * @param maxh 输出帧高度上限，-1 表示不限制
      */
-    explicit FramesOStream(int maxw = -1, int maxh = -1) noexcept : maxw_(maxw), maxh_(maxh) {}
-    virtual  ~FramesOStream() = default;
+    explicit ImageOStream(int maxw = -1, int maxh = -1) noexcept : maxw_(maxw), maxh_(maxh) {}
+    virtual  ~ImageOStream() = default;
 
-    FramesOStream(const FramesOStream&)            = delete;
-    FramesOStream& operator=(const FramesOStream&) = delete;
+    ImageOStream(const ImageOStream&)            = delete;
+    ImageOStream& operator=(const ImageOStream&) = delete;
 
     // =================================================================================================================
     // > Limit frame size

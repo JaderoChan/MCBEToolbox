@@ -2,18 +2,18 @@
 
 #include <string> // std::string
 
-#include "frames_ostream.hpp"
+#include "image_ostream.hpp"
 
 struct gd_GIF;
 
 /** GIF 图像的图像帧数据流。 */
-class GifFramesOStream : public FramesOStream
+class GifImageOStream : public ImageOStream
 {
 public:
-    explicit GifFramesOStream(
+    explicit GifImageOStream(
         const std::string& gifFilePath,
         long long maxn = -1, int maxw = -1, int maxh = -1) noexcept;
-    ~GifFramesOStream() override;
+    ~GifImageOStream() override;
 
     bool      isOpened()   const override { return gif_ != nullptr;       }
     bool      isEnd()      const override { return !isOpened() || isEnd_; }

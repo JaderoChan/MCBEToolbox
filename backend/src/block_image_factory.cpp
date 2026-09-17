@@ -19,13 +19,13 @@ BlockImageFactory::BlockImageFactory(
     : BaseFactory(blocks, desiredSurface), texturesDirPath_(texturesDirPath)
 {}
 
-cv::Mat BlockImageFactory::generateBlockImage(ImageFramesOStream& stream)
+cv::Mat BlockImageFactory::generateBlockImage(SingleImageOStream& stream)
 {
     reinitializeState();
     return generateBlockImageHelper(stream, callback_, userdata_, blockUsageMap_, texturesCache_, false);
 }
 
-bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std::string& outFilePath, int numThreads)
+bool BlockImageFactory::generateBlockVideo(VideoImageOStream& stream, const std::string& outFilePath, int numThreads)
 {
     reinitializeState();
 
@@ -116,7 +116,7 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
         "BlockImageFactory::generateBlockVideo()",
         [this](const cv::Mat& frame, std::atomic<bool>& shouldStop)
         {
-            ImageFramesOStream imageStream(frame);
+            SingleImageOStream imageStream(frame);
             BlockUsageMap   localUsageCount;
             BlockTextureMap localTexturesCache;
             cv::Mat blockImage = generateBlockImageHelper(
@@ -151,7 +151,7 @@ bool BlockImageFactory::generateBlockVideo(VideoFramesOStream& stream, const std
 }
 
 cv::Mat BlockImageFactory::generateBlockImageHelper(
-    FramesOStream&   stream,
+    ImageOStream&   stream,
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageMap,

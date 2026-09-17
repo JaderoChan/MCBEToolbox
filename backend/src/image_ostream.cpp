@@ -1,8 +1,8 @@
-#include <frames_ostream.hpp>
+#include <image_ostream.hpp>
 
 #include <image_utilities.hpp>
 
-cv::Mat FramesOStream::nextFrame()
+cv::Mat ImageOStream::nextFrame()
 {
     cv::Mat frame = readNextFrame();
     if (frame.empty())
@@ -15,7 +15,7 @@ cv::Mat FramesOStream::nextFrame()
     return convertColorToBgra(frame);
 }
 
-cv::Size FramesOStream::frameSize() const
+cv::Size ImageOStream::frameSize() const
 {
     if (cachedSize_.empty())
     {

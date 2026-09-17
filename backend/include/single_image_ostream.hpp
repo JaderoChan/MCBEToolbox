@@ -2,14 +2,14 @@
 
 #include <string> // std::string
 
-#include "frames_ostream.hpp"
+#include "image_ostream.hpp"
 
 /** 单张图像的图像帧数据流（总帧数固定为 1）。 */
-class ImageFramesOStream : public FramesOStream
+class SingleImageOStream : public ImageOStream
 {
 public:
-    explicit ImageFramesOStream(const std::string& imageFilePath, int maxw = -1, int maxh = -1) noexcept;
-    explicit ImageFramesOStream(cv::Mat image,                    int maxw = -1, int maxh = -1) noexcept;
+    explicit SingleImageOStream(const std::string& imageFilePath, int maxw = -1, int maxh = -1) noexcept;
+    explicit SingleImageOStream(cv::Mat image,                    int maxw = -1, int maxh = -1) noexcept;
 
     bool      isOpened()   const override { return !image_.empty();                }
     bool      isEnd()      const override { return consumed_ || image_.empty();    }

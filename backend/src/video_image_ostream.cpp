@@ -1,14 +1,14 @@
-#include <video_frames_ostream.hpp>
+#include <video_image_ostream.hpp>
 
-VideoFramesOStream::VideoFramesOStream(const std::string& videoFilePath, long long maxn, int maxw, int maxh) noexcept
-    : VideoFramesOStream(cv::VideoCapture(videoFilePath, DEFAULT_VIDEO_BACKEND), maxn, maxw, maxh)
+VideoImageOStream::VideoImageOStream(const std::string& videoFilePath, long long maxn, int maxw, int maxh) noexcept
+    : VideoImageOStream(cv::VideoCapture(videoFilePath, DEFAULT_VIDEO_BACKEND), maxn, maxw, maxh)
 {}
 
-VideoFramesOStream::VideoFramesOStream(cv::VideoCapture capture, long long maxn, int maxw, int maxh) noexcept
-    : FramesOStream(maxw, maxh), capture_(capture), maxn_(maxn)
+VideoImageOStream::VideoImageOStream(cv::VideoCapture capture, long long maxn, int maxw, int maxh) noexcept
+    : ImageOStream(maxw, maxh), capture_(capture), maxn_(maxn)
 {}
 
-long long VideoFramesOStream::frameCount() const
+long long VideoImageOStream::frameCount() const
 {
     if (!isOpened())
         return INVALID_VALUE;
@@ -20,26 +20,26 @@ long long VideoFramesOStream::frameCount() const
     return rawCount < maxn_ ? rawCount : maxn_;
 }
 
-long long VideoFramesOStream::frameIndex() const
+long long VideoImageOStream::frameIndex() const
 {
     return frameIdx_;
 }
 
-int VideoFramesOStream::fps() const
+int VideoImageOStream::fps() const
 {
     if (!isOpened())
         return INVALID_VALUE;
     return static_cast<int>(capture_.get(cv::CAP_PROP_FPS));
 }
 
-int VideoFramesOStream::fourcc() const
+int VideoImageOStream::fourcc() const
 {
     if (!isOpened())
         return INVALID_VALUE;
     return static_cast<int>(capture_.get(cv::CAP_PROP_FOURCC));
 }
 
-cv::Mat VideoFramesOStream::readNextFrame()
+cv::Mat VideoImageOStream::readNextFrame()
 {
     if (isEnd())
         return cv::Mat();
@@ -61,7 +61,7 @@ cv::Mat VideoFramesOStream::readNextFrame()
     return frame;
 }
 
-cv::Size VideoFramesOStream::readFrameSize() const
+cv::Size VideoImageOStream::readFrameSize() const
 {
     if (!isOpened())
         return cv::Size();

@@ -13,14 +13,14 @@ MCFunctionFactory::MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirectio
     : BaseFactory(blocks, desiredSurface)
 {}
 
-MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(FramesOStream& stream, bool callbackPerFrame)
+MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(ImageOStream& stream, bool callbackPerFrame)
 {
     reinitializeState();
     return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageMap_, callbackPerFrame);
 }
 
 std::vector<MCFunctionFactory::MCFunction>
-MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThreads)
+MCFunctionFactory::generateDetachMCFunction(ImageOStream& stream, int numThreads)
 {
     reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
@@ -64,7 +64,7 @@ MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, int numThread
     return ok ? std::move(ret) : std::vector<MCFunction>();
 }
 
-bool MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, const std::string& outDirPath, int numThreads)
+bool MCFunctionFactory::generateDetachMCFunction(ImageOStream& stream, const std::string& outDirPath, int numThreads)
 {
     reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
@@ -134,7 +134,7 @@ bool MCFunctionFactory::generateDetachMCFunction(FramesOStream& stream, const st
 std::pair<MCFunctionFactory::MCFunction, BaseFactory::BlockUsageMap>
 MCFunctionFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop)
 {
-    ImageFramesOStream imageStream(frame);
+    SingleImageOStream imageStream(frame);
     BlockUsageMap localUsageCount;
     MCFunction mcfunction = generateSingleMCFunctionHelper(
         imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
@@ -145,7 +145,7 @@ MCFunctionFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& s
 }
 
 MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
-    FramesOStream&   stream,
+    ImageOStream&   stream,
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageMap,

@@ -8,7 +8,7 @@
 
 #include <opencv2/core/mat.hpp> // cv::Mat
 
-#include "frames_ostream.hpp"
+#include "image_ostream.hpp"
 #include "thread_pool.hpp"
 
 /**
@@ -26,7 +26,7 @@
  */
 template<typename Product, typename ProcessFrame, typename ReportProgress, typename ConsumeResult>
 bool runFramePipeline(
-    FramesOStream&   stream,
+    ImageOStream&    stream,
     int              numThreads,
     std::size_t      windowSizeFactor,
     const char*      logPrefix,

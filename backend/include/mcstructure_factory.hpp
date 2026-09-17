@@ -9,9 +9,9 @@
 #include <mcnbt/mcnbt.hpp>      // nbt::Tag
 
 #include "base_factory.hpp"
-#include "image_frames_ostream.hpp"
+#include "single_image_ostream.hpp"
 #include "version.hpp"
-#include "video_frames_ostream.hpp"
+#include "video_image_ostream.hpp"
 
 class MCStructureFactory : public BaseFactory
 {
@@ -26,13 +26,13 @@ public:
     void setBlockFormatVersion(const Version& blockFormatVersion) { blockFormatVersion_ = blockFormatVersion; }
     Version getBlockFormatVersion() const                         { return blockFormatVersion_;               }
 
-    nbt::Tag generateSingleMCStructure(FramesOStream& stream, bool callbackPerFrame);
-    std::vector<nbt::Tag> generateDetachMCStructure(FramesOStream& stream, int numThreads = 4);
-    bool generateDetachMCStructure(FramesOStream& stream, const std::string& outDirPath, int numThreads = 4);
+    nbt::Tag generateSingleMCStructure(ImageOStream& stream, bool callbackPerFrame);
+    std::vector<nbt::Tag> generateDetachMCStructure(ImageOStream& stream, int numThreads = 4);
+    bool generateDetachMCStructure(ImageOStream& stream, const std::string& outDirPath, int numThreads = 4);
 
 private:
     nbt::Tag generateSingleMCStructureHelper(
-        FramesOStream&   stream,
+        ImageOStream&    stream,
         ProgressCallback callback,
         void*            userdata,
         BlockUsageMap&   blockUsageMap,

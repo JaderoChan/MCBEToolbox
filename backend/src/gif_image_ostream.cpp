@@ -1,11 +1,11 @@
-#include <gif_frames_ostream.hpp>
+#include <gif_image_ostream.hpp>
 
 #include <gifdec.h>
 
 #include <image_utilities.hpp>
 
-GifFramesOStream::GifFramesOStream(const std::string& gifFilePath, long long maxn, int maxw, int maxh) noexcept
-    : FramesOStream(maxw, maxh), maxn_(maxn), gif_(gd_open_gif(gifFilePath.c_str()))
+GifImageOStream::GifImageOStream(const std::string& gifFilePath, long long maxn, int maxw, int maxh) noexcept
+    : ImageOStream(maxw, maxh), maxn_(maxn), gif_(gd_open_gif(gifFilePath.c_str()))
 {
     if (!gif_)
         return;
@@ -18,13 +18,13 @@ GifFramesOStream::GifFramesOStream(const std::string& gifFilePath, long long max
     totalFrameCount_ = count;
 }
 
-GifFramesOStream::~GifFramesOStream()
+GifImageOStream::~GifImageOStream()
 {
     if (gif_)
         gd_close_gif(gif_);
 }
 
-long long GifFramesOStream::frameCount() const
+long long GifImageOStream::frameCount() const
 {
     if (!isOpened())
         return INVALID_VALUE;
@@ -33,26 +33,26 @@ long long GifFramesOStream::frameCount() const
     return totalFrameCount_ < maxn_ ? totalFrameCount_ : maxn_;
 }
 
-long long GifFramesOStream::frameIndex() const
+long long GifImageOStream::frameIndex() const
 {
     return frameIdx_;
 }
 
-int GifFramesOStream::delay() const
+int GifImageOStream::delay() const
 {
     if (!isOpened())
         return static_cast<int>(INVALID_VALUE);
     return gif_->gce.delay;
 }
 
-int GifFramesOStream::loopCount() const
+int GifImageOStream::loopCount() const
 {
     if (!isOpened())
         return static_cast<int>(INVALID_VALUE);
     return gif_->loop_count;
 }
 
-cv::Mat GifFramesOStream::readNextFrame()
+cv::Mat GifImageOStream::readNextFrame()
 {
     if (isEnd())
         return cv::Mat();
@@ -98,7 +98,7 @@ cv::Mat GifFramesOStream::readNextFrame()
     return image;
 }
 
-cv::Size GifFramesOStream::readFrameSize() const
+cv::Size GifImageOStream::readFrameSize() const
 {
     if (!isOpened())
         return cv::Size();

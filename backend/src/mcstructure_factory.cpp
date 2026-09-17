@@ -18,13 +18,13 @@ MCStructureFactory::MCStructureFactory(
     : BaseFactory(blocks, desiredSurface), blockFormatVersion_(blockFormatVersion)
 {}
 
-nbt::Tag MCStructureFactory::generateSingleMCStructure(FramesOStream& stream, bool callbackPerFrame)
+nbt::Tag MCStructureFactory::generateSingleMCStructure(ImageOStream& stream, bool callbackPerFrame)
 {
     reinitializeState();
     return generateSingleMCStructureHelper(stream, callback_, userdata_, blockUsageMap_, callbackPerFrame);
 }
 
-std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, int numThreads)
+std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(ImageOStream& stream, int numThreads)
 {
     reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
@@ -73,7 +73,7 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(FramesOStrea
     return ok ? std::move(ret) : std::vector<nbt::Tag>();
 }
 
-bool MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, const std::string& outDirPath, int numThreads)
+bool MCStructureFactory::generateDetachMCStructure(ImageOStream& stream, const std::string& outDirPath, int numThreads)
 {
     reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
@@ -127,7 +127,7 @@ bool MCStructureFactory::generateDetachMCStructure(FramesOStream& stream, const 
 std::pair<nbt::Tag, BaseFactory::BlockUsageMap>
 MCStructureFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop)
 {
-    ImageFramesOStream imageStream(frame);
+    SingleImageOStream imageStream(frame);
     BlockUsageMap localUsageCount;
     nbt::Tag mcstructure = generateSingleMCStructureHelper(
         imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
@@ -138,7 +138,7 @@ MCStructureFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& 
 }
 
 nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
-    FramesOStream&   stream,
+    ImageOStream&   stream,
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageMap,

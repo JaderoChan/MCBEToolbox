@@ -8,8 +8,8 @@
 #include <opencv2/core/mat.hpp> // cv::Mat
 
 #include "base_factory.hpp"
-#include "image_frames_ostream.hpp"
-#include "video_frames_ostream.hpp"
+#include "single_image_ostream.hpp"
+#include "video_image_ostream.hpp"
 
 class MCFunctionFactory : public BaseFactory
 {
@@ -21,13 +21,13 @@ public:
 
     MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirection desiredSurface);
 
-    MCFunction generateSingleMCFunction(FramesOStream& stream, bool callbackPerFrame);
-    std::vector<MCFunction> generateDetachMCFunction(FramesOStream& stream, int numThreads = 4);
-    bool generateDetachMCFunction(FramesOStream& stream, const std::string& outDirPath, int numThreads = 4);
+    MCFunction generateSingleMCFunction(ImageOStream& stream, bool callbackPerFrame);
+    std::vector<MCFunction> generateDetachMCFunction(ImageOStream& stream, int numThreads = 4);
+    bool generateDetachMCFunction(ImageOStream& stream, const std::string& outDirPath, int numThreads = 4);
 
 private:
     MCFunction generateSingleMCFunctionHelper(
-        FramesOStream&   stream,
+        ImageOStream&    stream,
         ProgressCallback callback,
         void*            userdata,
         BlockUsageMap&   blockUsageMap,
