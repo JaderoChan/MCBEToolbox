@@ -35,7 +35,7 @@ private:
     std::string createTexturePath(const std::string& path) { return texturesDirPath_ + "/" + path; }
 
     cv::Mat generateBlockImageHelper(
-        ImageOStream&   stream,
+        ImageOStream&    stream,
         ProgressCallback callback,
         void*            userdata,
         BlockUsageMap&   blockUsageMap,
