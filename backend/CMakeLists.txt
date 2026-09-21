@@ -57,6 +57,6 @@ target_link_libraries(
     mcnbt::mcnbt
     PRIVATE
     gifdec
-    json
+    nlohmann_json::nlohmann_json
     MINIZIP::minizip
 )
