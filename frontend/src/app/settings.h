@@ -1,12 +1,12 @@
 #pragma once
 
-#include <qstring.h>
-
-#include "language.h"
+#include "color_scheme_manager.h"
+#include "language_manager.h"
 
 struct Settings
 {
-    Language language;
+    ColorSchemeManager::ColorScheme colorScheme;
+    LanguageManager::Language       language;
 };
 
 Settings loadSettings();

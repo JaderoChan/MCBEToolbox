@@ -11,7 +11,7 @@ endif()
 
 # 查找 Qt 库
 find_package(QT NAMES Qt5 Qt6 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} 6.5.0 REQUIRED COMPONENTS Widgets)
 
 ###############
 # 设置程序信息 #

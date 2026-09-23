@@ -4,10 +4,13 @@
 
 Settings loadSettings()
 {
-    Settings settings;
+    Settings  settings;
     QSettings qsettings;
 
-    settings.language = qsettings.value("Language", getCurrentSystemLang()).value<Language>();
+    settings.colorScheme = qsettings.value("ColorScheme", ColorSchemeManager::COLOR_SCHEME_AUTO)
+        .value<ColorSchemeManager::ColorScheme>();
+    settings.language    = qsettings.value("Language",    LanguageManager::LANGUAGE_AUTO)
+        .value<LanguageManager::Language>();
 
     return settings;
 }
@@ -16,5 +19,6 @@ void saveSettings(const Settings& settings)
 {
     QSettings qsettings;
 
-    qsettings.setValue("Language", settings.language);
+    qsettings.setValue("ColorScheme", settings.colorScheme);
+    qsettings.setValue("Language",    settings.language);
 }

@@ -12,12 +12,11 @@ configure_file(
 # 头文件（可用于在 Visual Studio 等 IDE 的项目文件树中显示头文件）
 set(HEADERS
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
-    ./app/language.h
+    ./app/color_scheme_manager.h
+    ./app/language_manager.h
     ./app/logo_icon.h
     ./app/settings.h
-    ./trwidgets/trdialog.h
-    ./trwidgets/trmainwindow.h
-    ./trwidgets/trwidget.h
+    ./app/trwidget.h
     ./utils/debug_output.h
     ./utils/file_io.h
     ./utils/format_string.h
@@ -25,13 +24,12 @@ set(HEADERS
 
 # 源文件
 set(SRCS
-    ./app/language.cpp
+    ./app/color_scheme_manager.cpp
+    ./app/language_manager.cpp
     ./app/logo_icon.cpp
     ./app/main.cpp
     ./app/settings.cpp
-    ./trwidgets/trdialog.cpp
-    ./trwidgets/trmainwindow.cpp
-    ./trwidgets/trwidget.cpp
+    ./app/trwidget.cpp
 )
 
 # UI 文件
@@ -215,7 +213,7 @@ if(WIN32 OR LINUX)
 endif()
 
 # Qt 部署（需要保证 *deployqt 可见）
-option(DEPLOYQT_AFTER_BUILD "Execute *deployqt program to install Qt dependencies after build." OFF)
+option(DEPLOYQT_AFTER_BUILD "Execute *deployqt program to install Qt dependencies after build." ON)
 if(DEPLOYQT_AFTER_BUILD)
     if(WIN32)
         add_custom_command(

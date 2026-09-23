@@ -1,12 +1,13 @@
 #pragma once
 
+#include <type_traits> // forward
+
 #include <qdebug.h>
-#include <qstring.h>
+
+#include "format_string.h"
 
 template <typename ...Args>
-void debugOut(QDebug io, const char* formatStr, Args&& ...args)
+void debugOut(QDebug io, const char* format, Args&& ...args)
 {
-    QString str(formatStr);
-    ((str = str.arg(std::forward<Args>(args))), ...);
-    io.noquote() << str;
+    io.noquote() << formatString(format, std::forward<Args>(args)...);
 }

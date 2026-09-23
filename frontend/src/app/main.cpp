@@ -8,7 +8,8 @@
 
 int main(int argc, char* argv[])
 {
-    qRegisterMetaType<Language>("Language");
+    qRegisterMetaType<LanguageManager::Language>("Language");
+    qRegisterMetaType<ColorSchemeManager::ColorScheme>("ColorScheme");
 
     // 设置程序全局属性
     QApplication a(argc, argv);
@@ -23,7 +24,7 @@ int main(int argc, char* argv[])
     // 设置语言
     {
         Settings settings = loadSettings();
-        setLanguage(settings.language);
+        LanguageManager::getInstance().setLanguage(settings.language);
     }
 
     int ret = a.exec();
