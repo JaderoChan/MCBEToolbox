@@ -17,6 +17,7 @@ set(HEADERS
     ./app/logo_icon.h
     ./app/settings.h
     ./app/trwidget.h
+    ./components/sidebar_widget.h
     ./utils/debug_output.h
     ./utils/file_io.h
     ./utils/format_string.h
@@ -30,6 +31,7 @@ set(SRCS
     ./app/main.cpp
     ./app/settings.cpp
     ./app/trwidget.cpp
+    ./components/sidebar_widget.cpp
 )
 
 # UI 文件
