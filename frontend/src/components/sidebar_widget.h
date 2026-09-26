@@ -1,12 +1,12 @@
 #pragma once
 
-#include <qevent.h>
 #include <qicon.h>
 #include <qstring.h>
 #include <qvariant.h>
 #include <qvector.h>
 #include <qwidget.h>
 
+class QEvent;
 class QVBoxLayout;
 class QVariantAnimation;
 class SidebarEntryWidget;

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include <qevent.h>
 #include <qlayout.h>
 #include <qpainter.h>
 #include <qvariantanimation.h>
