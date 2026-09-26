@@ -40,6 +40,8 @@ set(CMAKE_TEMPLATES_DIR         "${CMAKE_DIR}/templates")
 set(SCRIPTS_DIR                 "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 # 语言文件夹路径
 set(LANGUAGES_DIR               "${CMAKE_CURRENT_SOURCE_DIR}/languages")
+# 数据文件夹路径
+set(DATA_DIR                    "${CMAKE_SOURCE_DIR}/data")
 # 资源文件夹路径
 set(RESOURCES_DIR               "${CMAKE_CURRENT_SOURCE_DIR}/resources")
 # 应用图标文件夹路径

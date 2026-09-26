@@ -12,6 +12,7 @@ configure_file(
 # 头文件（可用于在 Visual Studio 等 IDE 的项目文件树中显示头文件）
 set(HEADERS
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
+    ./app/block_table_widget.h
     ./app/color_scheme_manager.h
     ./app/language_manager.h
     ./app/logo_icon.h
@@ -26,6 +27,7 @@ set(HEADERS
 
 # 源文件
 set(SRCS
+    ./app/block_table_widget.cpp
     ./app/color_scheme_manager.cpp
     ./app/language_manager.cpp
     ./app/logo_icon.cpp
@@ -75,6 +77,7 @@ target_link_libraries(
     ${PROJECT_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     easy_translate::easy_translate
+    MCBEToolboxBackend
 )
 
 ###############
@@ -186,6 +189,25 @@ elseif(APPLE)
         MACOSX_PACKAGE_LOCATION "Resources/languages"
     )
     target_sources(${PROJECT_NAME} PRIVATE ${LANG_FILES})
+
+    # 数据文件
+    file(GLOB_RECURSE DATA_FILES CONFIGURE_DEPENDS "${DATA_DIR}/*")
+    foreach(DATA_FILE IN LISTS DATA_FILES)
+        file(RELATIVE_PATH DATA_FILE_REL_PATH "${DATA_DIR}" "${DATA_FILE}")
+        get_filename_component(DATA_FILE_REL_DIR "${DATA_FILE_REL_PATH}" DIRECTORY)
+        if(DATA_FILE_REL_DIR)
+            set_source_files_properties(
+                "${DATA_FILE}" PROPERTIES
+                MACOSX_PACKAGE_LOCATION "Resources/data/${DATA_FILE_REL_DIR}"
+            )
+        else()
+            set_source_files_properties(
+                "${DATA_FILE}" PROPERTIES
+                MACOSX_PACKAGE_LOCATION "Resources/data"
+            )
+        endif()
+        target_sources(${PROJECT_NAME} PRIVATE "${DATA_FILE}")
+    endforeach()
 elseif(LINUX)
     # TODO
 else()
@@ -213,6 +235,15 @@ if(WIN32 OR LINUX)
         TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
         "${LANGUAGES_DIR}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/languages"
+    )
+endif()
+
+# 复制数据文件至目标目录。
+if(WIN32 OR LINUX)
+    add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+        "${DATA_DIR}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data"
     )
 endif()
 
