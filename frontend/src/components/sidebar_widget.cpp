@@ -12,8 +12,8 @@ namespace
 constexpr int ENTRY_HEIGHT        = 42;
 constexpr int ENTRY_ICON_SIZE     = 24;
 constexpr int ENTRY_ICON_TEXT_GAP = 12;
-constexpr int ENTRY_SELECT_ALPHA  = 128;
-constexpr int ENTRY_HOVER_ALPHA   = 64;
+constexpr int ENTRY_SELECT_ALPHA  = 144;
+constexpr int ENTRY_HOVER_ALPHA   = 72;
 constexpr int ANIM_DURATION_MS    = 200;
 
 constexpr const unsigned char MENU_PNG_DARK[] =
@@ -768,7 +768,10 @@ void SidebarWidget::expand()
 {
     if (expanded_)
         return;
+
     expanded_ = true;
+    for (auto* entry : entries_)
+        entry->setExpanded(expanded_);
     animateWidthTo(expandedWidth_);
     emit expandedChanged(true);
 }
