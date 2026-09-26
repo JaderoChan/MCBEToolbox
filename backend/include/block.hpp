@@ -155,6 +155,9 @@ struct BlockEntry
     std::map<Version, BlockData>       versionedBlocks;   ///< 不同版本对应的方块数据
 };
 
+/** 方块条目对 {程序用方块 ID : 方块条目} */
+using BlockEntryPair = std::pair<std::string_view, const BlockEntry*>;
+
 /** 方块条目映射 {程序用方块ID : 方块条目} */
 using BlockEntryMap = std::map<std::string, BlockEntry>;
 

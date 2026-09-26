@@ -513,7 +513,8 @@ protected:
         {
             icon_.paint(
                 &painter, iconRect, Qt::AlignCenter,
-                isEnabled() ? QIcon::Normal : QIcon::Disabled, selected_ ? QIcon::On : QIcon::Off
+                isEnabled() ? QIcon::Normal : QIcon::Disabled,
+                selected_   ? QIcon::On     : QIcon::Off
             );
         }
 
