@@ -15,6 +15,7 @@ set(HEADERS
     ./app/color_scheme_manager.h
     ./app/language_manager.h
     ./app/logo_icon.h
+    ./app/mainwidget.h
     ./app/settings.h
     ./app/trwidget.h
     ./components/sidebar_widget.h
@@ -29,6 +30,7 @@ set(SRCS
     ./app/language_manager.cpp
     ./app/logo_icon.cpp
     ./app/main.cpp
+    ./app/mainwidget.cpp
     ./app/settings.cpp
     ./app/trwidget.cpp
     ./components/sidebar_widget.cpp
