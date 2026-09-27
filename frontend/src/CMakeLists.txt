@@ -21,6 +21,7 @@ set(HEADERS
     ./app/trwidget.h
     ./components/sidebar_widget.h
     ./utils/debug_output.h
+    ./utils/directory_scope.h
     ./utils/file_io.h
     ./utils/format_string.h
 )

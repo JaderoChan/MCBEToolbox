@@ -1,36 +1,13 @@
 #include "language_manager.h"
 
 #include <qapplication.h>
-#include <qdir.h>
 #include <qlocale.h>
 
 #include <easy_translate.hpp>
 
 #include <config.h>
 #include <utils/debug_output.h>
-
-namespace
-{
-
-class DirectoryScope
-{
-public:
-    explicit DirectoryScope(const QString& path)
-    {
-        originDir_ = QDir::currentPath();
-        QDir::setCurrent(path);
-    }
-
-    ~DirectoryScope()
-    {
-        QDir::setCurrent(originDir_);
-    }
-
-private:
-    QString originDir_;
-};
-
-} // namespace
+#include <utils/directory_scope.h>
 
 LanguageManager& LanguageManager::getInstance()
 {
