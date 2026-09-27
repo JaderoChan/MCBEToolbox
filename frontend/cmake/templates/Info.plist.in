@@ -16,13 +16,16 @@
     <string>app.icns</string>
 
     <key>CFBundleIdentifier</key>
-    <string>@APP_ORGANIZATION_DOMAIN@.@APP_TITLE@</string>
+    <string>@APP_ORGANIZATION_DOMAIN@.@PROJECT_NAME@</string>
 
     <key>CFBundleName</key>
     <string>@APP_TITLE@</string>
 
-    <key>CFBundleExecutable</key>
+    <key>CFBundleDisplayName</key>
     <string>@APP_TITLE@</string>
+
+    <key>CFBundleExecutable</key>
+    <string>@PROJECT_NAME@</string>
 
     <key>CFBundleVersion</key>
     <string>@APP_VERSION@</string>
