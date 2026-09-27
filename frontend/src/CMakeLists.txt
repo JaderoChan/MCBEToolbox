@@ -254,14 +254,13 @@ if(DEPLOYQT_AFTER_BUILD)
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND windeployqt
-            $<$<CONFIG:Debug>:--debug>$<$<NOT:$<CONFIG:Debug>>:--release>
             "$<TARGET_FILE:${PROJECT_NAME}>"
+            $<$<CONFIG:Debug>:--debug>$<$<NOT:$<CONFIG:Debug>>:--release>
         )
     elseif(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND macdeployqt
-            $<$<CONFIG:Debug>:--debug>$<$<NOT:$<CONFIG:Debug>>:--release>
             "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}>"
             -codesign=-
         )
