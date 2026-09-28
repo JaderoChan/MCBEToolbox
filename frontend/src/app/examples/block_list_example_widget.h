@@ -8,10 +8,10 @@
 #include "../block_list_widget.h"
 #include "../trwidget.h"
 
-class TestBlockListWidget : public TrWidget
+class BlockListExampleWidget : public TrWidget
 {
 public:
-    explicit TestBlockListWidget(QWidget* parent = nullptr)
+    explicit BlockListExampleWidget(QWidget* parent = nullptr)
         : TrWidget(parent)
     {
         DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
@@ -21,8 +21,6 @@ public:
         auto* layout = new QVBoxLayout(this);
         layout->setContentsMargins(4, 4, 4, 4);
         layout->addWidget(widget_);
-
-        resize(800, 600);
     }
 
 private:

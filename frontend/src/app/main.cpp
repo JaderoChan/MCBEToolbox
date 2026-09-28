@@ -4,9 +4,8 @@
 
 #include <config.h>
 #include "logo_icon.h"
+#include "mainwidget.h"
 #include "settings.h"
-
-#include "./test/test_block_list_widget.h"
 
 int main(int argc, char* argv[])
 {
@@ -29,7 +28,7 @@ int main(int argc, char* argv[])
         LanguageManager::getInstance().setLanguage(settings.language);
     }
 
-    TestBlockListWidget w;
+    MainWidget w;
     w.show();
 
     int ret = a.exec();
