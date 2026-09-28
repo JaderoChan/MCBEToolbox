@@ -37,6 +37,11 @@ static inline constexpr bool operator==(const Rgb& lhs, const Rgb& rhs)
     return (lhs.r == rhs.r) && (lhs.g == rhs.g) && (lhs.b == rhs.b);
 }
 
+static inline constexpr bool operator!=(const Rgb& lhs, const Rgb& rhs)
+{
+    return (lhs.r != rhs.r) || (lhs.g != rhs.g) || (lhs.b != rhs.b);
+}
+
 namespace std
 {
 

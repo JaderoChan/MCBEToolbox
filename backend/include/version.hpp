@@ -42,6 +42,9 @@ static_assert(sizeof(Version) == 4, "sizeof(Version) != 4");
 static inline constexpr bool operator==(const Version& lhs, const Version& rhs)
 { return lhs.toUInt32() == rhs.toUInt32(); }
 
+static inline constexpr bool operator!=(const Version& lhs, const Version& rhs)
+{ return lhs.toUInt32() != rhs.toUInt32(); }
+
 static inline constexpr bool operator<(const Version& lhs, const Version& rhs)
 { return lhs.toUInt32() < rhs.toUInt32(); }
 
