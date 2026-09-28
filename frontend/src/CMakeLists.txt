@@ -12,13 +12,14 @@ configure_file(
 # 头文件（可用于在 Visual Studio 等 IDE 的项目文件树中显示头文件）
 set(HEADERS
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
-    ./app/block_table_widget.h
+    ./app/block_list_widget.h
     ./app/color_scheme_manager.h
     ./app/language_manager.h
     ./app/logo_icon.h
     ./app/mainwidget.h
     ./app/settings.h
     ./app/trwidget.h
+    ./components/flow_grid_layout.h
     ./components/sidebar_widget.h
     ./utils/debug_output.h
     ./utils/directory_scope.h
@@ -28,7 +29,7 @@ set(HEADERS
 
 # 源文件
 set(SRCS
-    ./app/block_table_widget.cpp
+    ./app/block_list_widget.cpp
     ./app/color_scheme_manager.cpp
     ./app/language_manager.cpp
     ./app/logo_icon.cpp
@@ -36,6 +37,7 @@ set(SRCS
     ./app/mainwidget.cpp
     ./app/settings.cpp
     ./app/trwidget.cpp
+    ./components/flow_grid_layout.cpp
     ./components/sidebar_widget.cpp
 )
 
@@ -259,11 +261,24 @@ if(DEPLOYQT_AFTER_BUILD)
             $<$<CONFIG:Debug>:--debug>$<$<NOT:$<CONFIG:Debug>>:--release>
         )
     elseif(APPLE AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        # 通过 qmake 定位与当前链接的 Qt 版本一致的 macdeployqt，避免系统 PATH 中存在其他
+        # 版本的 Qt（如 Homebrew 安装的 Qt）时，macdeployqt 拷贝了版本不匹配的插件，
+        # 导致运行时报 "Plugin uses incompatible Qt library"。
+        get_target_property(QT_QMAKE_EXECUTABLE Qt${QT_VERSION_MAJOR}::qmake IMPORTED_LOCATION)
+        get_filename_component(QT_BIN_DIR "${QT_QMAKE_EXECUTABLE}" DIRECTORY)
+
         add_custom_command(
             TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND macdeployqt
             "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}>"
             -codesign=-
+        )
+        # 清理构建期自动附加的第三方库目录 RPATH（如 Homebrew 的 /opt/homebrew/lib），
+        # 只保留 bundle 内部路径，避免运行时同一个库（如 libomp）从两个位置被重复加载。
+        add_custom_command(
+            TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND python3 "${SCRIPTS_DIR}/fix_macos_rpath.py"
+            "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}>"
         )
     elseif(LINUX)
         # TODO
