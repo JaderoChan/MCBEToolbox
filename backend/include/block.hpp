@@ -182,10 +182,10 @@ BlockEntryMap parseBlockEntries(std::string_view json);
 BlockEntryMap parseBlockEntriesFromFile(const std::string& filepath);
 
 /** 从 #BlockEntryMap 中解析由基础方块数据组成的 #BlockDataMap。 */
-BlockDataMap resolveBlockEntries(const BlockEntryMap& blockEntries);
+BlockDataMap resolveBlockEntries(const BlockEntryMap& entries);
 
 /** 从 #BlockEntryMap 中解析符合目标版本的 #BlockDataMap。 */
-BlockDataMap resolveBlockEntries(const BlockEntryMap& blockEntries, Version targetVersion);
+BlockDataMap resolveBlockEntries(const BlockEntryMap& entries, Version targetVersion);
 
 /** 根据给定方块属性与匹配模式从 #BlockDataMap 中筛选出符合规则的子集。 */
 BlockDataMap filterBlocks(const BlockDataMap& blocks, BlockAttributeFilterMode filterMode, BlockAttributes attributes);

@@ -180,7 +180,7 @@ void parseBlockData(const nlohmann::json& obj, const char* objName, BlockData& b
     }
 }
 
-void parseBlockEntriesHelper(std::string_view json, BlockEntryMap& blockEntries)
+void parseBlockEntriesHelper(std::string_view json, BlockEntryMap& entries)
 {
     const nlohmann::json j = nlohmann::json::parse(json, nullptr, true, true);
     if (j.is_discarded() || !j.is_object())
@@ -252,7 +252,7 @@ void parseBlockEntriesHelper(std::string_view json, BlockEntryMap& blockEntries)
             }
         }
 
-        blockEntries[id] = entry;
+        entries[id] = entry;
     }
 }
 
@@ -294,18 +294,18 @@ BlockEntryMap parseBlockEntriesFromFile(const std::string& filepath)
     return parseBlockEntries(json);
 }
 
-BlockDataMap resolveBlockEntries(const BlockEntryMap& blockEntries)
+BlockDataMap resolveBlockEntries(const BlockEntryMap& entries)
 {
     BlockDataMap ret;
-    for (const auto& [id, entry] : blockEntries)
+    for (const auto& [id, entry] : entries)
         ret[id] = &entry.baseBlock;
     return ret;
 }
 
-BlockDataMap resolveBlockEntries(const BlockEntryMap& blockEntries, Version targetVersion)
+BlockDataMap resolveBlockEntries(const BlockEntryMap& entries, Version targetVersion)
 {
     BlockDataMap ret;
-    for (const auto& [id, entry] : blockEntries)
+    for (const auto& [id, entry] : entries)
     {
         // 如果加入版本比目标版本更新，说明在目标版本中此方块还未被加入，直接跳过。
         if (entry.minVersion > targetVersion)
