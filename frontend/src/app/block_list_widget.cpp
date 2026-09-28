@@ -22,6 +22,46 @@ constexpr int ITEM_TEXT_HEIGHT     = 16;
 constexpr int ITEM_PRIMARY_ALPHA   = 192;
 constexpr int ITEM_SECONDARY_ALPHA = 96;
 
+inline const char* blockAttributeString(BlockAttribute attribute)
+{
+    switch (attribute)
+    {
+        case BLOCK_ATTRI_IS_INCOMPLETE:     return "Incomplete Block";
+        case BLOCK_ATTRI_IS_TRANSPARENT:    return "Transparent Block";
+        case BLOCK_ATTRI_IS_LUMINOUS:       return "Luminous Block";
+        case BLOCK_ATTRI_IS_UNSTABLE:       return "Unstable Block";
+        case BLOCK_ATTRI_IS_CREATIVE:       return "Creative Block";
+        case BLOCK_ATTRI_HAS_GRAVITY:       return "Has Gravity";
+        case BLOCK_ATTRI_HAS_PATTERN:       return "Has Pattern";
+        case BLOCK_ATTRI_FLAMMABLE:         return "Flammable";
+        case BLOCK_ATTRI_ENDERMAN_PICKABLE: return "Enderman Pickable";
+        default:                            return "Unknown Block Attribute";
+    }
+}
+
+QString getBlockAttributesText(BlockAttributes attributes)
+{
+#define APPEND_ATTRIBUTE_TEXT(attribute)                                        \
+    if (HAS_BLOCK_ATTRIS(attributes, attribute)) text =                         \
+        text +                                                                  \
+        (text.isEmpty() ? "" : "; ") +                                          \
+        EASYTR(blockAttributeString(attribute))
+
+    QString text;
+    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_INCOMPLETE);
+    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_TRANSPARENT);
+    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_LUMINOUS);
+    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_UNSTABLE);
+    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_CREATIVE);
+    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_HAS_GRAVITY);
+    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_HAS_PATTERN);
+    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_FLAMMABLE);
+    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_ENDERMAN_PICKABLE);
+    return text.isEmpty() ? EASYTR("None Block Attributes") : text;
+
+#undef APPEND_ATTRIBUTE_TEXT
+}
+
 } // namespace
 
 class BlockListItemWidget : public TrWidget
@@ -196,9 +236,12 @@ protected:
             else
                 name_ = QString::fromStdString(entry_.second->name);
 
-            const QString tooltipText = QString("%1: %2\n%3: %4\n%5: %6")
+            QString attributesText = getBlockAttributesText(entry_.second->baseBlock.attributes);
+            attributesText = QFontMetrics(font()).elidedText(attributesText, Qt::ElideRight, 480);
+            const QString tooltipText = QString("%1: %2\n%3: %4\n%5: %6\n%7: %8")
                 .arg(EASYTR("Block Name")).arg(name_)
                 .arg(EASYTR("Block ID")).arg(entry_.second->baseBlock.id)
+                .arg(EASYTR("Block Attributes")).arg(attributesText)
                 .arg(EASYTR("Minimum Version")).arg(QString::fromStdString(entry_.second->minVersion.toString())
             );
             setToolTip(tooltipText);

@@ -6,6 +6,8 @@
 #include "logo_icon.h"
 #include "settings.h"
 
+#include "./test/test_block_list_widget.h"
+
 int main(int argc, char* argv[])
 {
     qRegisterMetaType<LanguageManager::Language>("Language");
@@ -26,6 +28,9 @@ int main(int argc, char* argv[])
         Settings settings = loadSettings();
         LanguageManager::getInstance().setLanguage(settings.language);
     }
+
+    TestBlockListWidget w;
+    w.show();
 
     int ret = a.exec();
 
