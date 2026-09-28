@@ -2,7 +2,6 @@
 
 #include <qalgorithms.h>
 #include <qboxlayout.h>
-#include <qevent.h>
 #include <qpainter.h>
 #include <qpixmap.h>
 #include <qscrollarea.h>
@@ -123,6 +122,14 @@ protected:
             borderColor.setAlpha(selected_ ? 255 : ITEM_PRIMARY_ALPHA);
             fillColor.setAlpha(selected_ ? ITEM_PRIMARY_ALPHA : ITEM_SECONDARY_ALPHA);
             painter.setPen(borderColor);
+            painter.setBrush(fillColor);
+            painter.drawRoundedRect(cardRect, 6, 6);
+        }
+        else
+        {
+            QColor fillColor = palette().color(QPalette::Base);
+            fillColor.setAlpha(ITEM_PRIMARY_ALPHA);
+            painter.setPen(Qt::NoPen);
             painter.setBrush(fillColor);
             painter.drawRoundedRect(cardRect, 6, 6);
         }
@@ -252,8 +259,44 @@ void BlockListWidget::unselect(const QList<QString>& blockIds)
         setItemSelected(blockId, false);
 }
 
+void BlockListWidget::selectRange(int begin, int end)
+{
+    if (begin > end || begin < 0 || end >= static_cast<int>(items_.size()))
+        return;
+
+    if (!multiSelectEnabled_)
+        return;
+
+    auto it = items_.begin();
+    for (; begin <= end; ++begin)
+    {
+        const std::string id = std::next(it, begin).key().toStdString();
+        std::next(it, begin).value()->setSelected(true);
+        if (selecteds_.find(std::string_view(id)) == selecteds_.end())
+            selecteds_[std::string_view(id)] = blocks_[std::string_view(id)];
+    }
+}
+
+void BlockListWidget::unselectRange(int begin, int end)
+{
+    if (begin > end || begin < 0 || end >= static_cast<int>(items_.size()))
+        return;
+
+    auto it = items_.begin();
+    for (; begin <= end; ++begin)
+    {
+        const std::string id = std::next(it, begin).key().toStdString();
+        std::next(it, begin).value()->setSelected(false);
+        if (selecteds_.find(std::string_view(id)) != selecteds_.end())
+            selecteds_.erase(std::string_view(id));
+    }
+}
+
 void BlockListWidget::selectAll()
 {
+    if (!multiSelectEnabled_)
+        return;
+
     selecteds_ = blocks_;
     for (auto* item : items_)
         item->setSelected(true);
@@ -309,6 +352,24 @@ void BlockListWidget::selectByAttribute(BlockAttributeFilterMode mode, const Blo
     }
 }
 
+void BlockListWidget::keyPressEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Shift)
+        shiftPressed_ = true;
+    TrWidget::keyPressEvent(e);
+}
+
+void BlockListWidget::keyReleaseEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Shift)
+    {
+        rangeSelectBegin_ = -1;
+        rangeSelectEnd_   = -1;
+        shiftPressed_     = false;
+    }
+    TrWidget::keyReleaseEvent(e);
+}
+
 void BlockListWidget::rebuildBlocks()
 {
     blocks_    = resolveBlockEntries(entries_, minimumVersion_);
@@ -321,6 +382,7 @@ void BlockListWidget::rebuildItems()
     qDeleteAll(items_);
     items_.clear();
 
+    int index = 0;
     for (const auto& [id, block] : blocks_)
     {
         const std::string sid = std::string(id);
@@ -332,11 +394,32 @@ void BlockListWidget::rebuildItems()
         auto* item = new BlockListItemWidget(BlockEntryPair(id, entry), gridContainer_);
         item->setSelected(selecteds_.count(id) > 0);
 
-        connect(item, &BlockListItemWidget::clicked, this, [this, qid, item]()
-        { setItemSelected(qid, !item->isSelected()); });
+        connect(item, &BlockListItemWidget::clicked, this, [this, qid, item, index]()
+        {
+            if (shiftPressed_ && multiSelectEnabled_)
+            {
+                if (rangeSelectBegin_ < 0)
+                {
+                    rangeSelectBegin_ = index;
+                    beginSelected_    = item->isSelected();
+                    setItemSelected(qid, !item->isSelected());
+                }
+                else
+                {
+                    rangeSelectEnd_ = index;
+                    if (beginSelected_) unselectRange(rangeSelectBegin_, rangeSelectEnd_);
+                    else                selectRange(rangeSelectBegin_,   rangeSelectEnd_);
+                }
+            }
+            else
+            {
+                setItemSelected(qid, !item->isSelected());
+            }
+        });
 
         gridLayout_->addWidget(item);
         items_.insert(qid, item);
+        ++index;
     }
 }
 

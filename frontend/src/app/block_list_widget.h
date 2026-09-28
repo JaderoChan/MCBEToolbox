@@ -1,5 +1,6 @@
 #pragma once
 
+#include <qevent.h>
 #include <qmap.h>
 #include <qstring.h>
 #include <qlist.h>
@@ -20,6 +21,8 @@ public:
     void select(const QList<QString>& blockIds);
     void unselect(const QString& blockId);
     void unselect(const QList<QString>& blockIds);
+    void selectRange(int begin, int end);
+    void unselectRange(int begin, int end);
     void selectAll();
     void unselectAll();
 
@@ -30,6 +33,10 @@ public:
     void setMultiSelectEnabled(bool enabled);
 
     void selectByAttribute(BlockAttributeFilterMode mode, const BlockAttributes& attributes);
+
+protected:
+    void keyPressEvent(QKeyEvent* e) override;
+    void keyReleaseEvent(QKeyEvent* e) override;
 
 private:
     void rebuildBlocks();
@@ -47,4 +54,9 @@ private:
     QLayout*     gridLayout_    = nullptr;
 
     QMap<QString, BlockListItemWidget*> items_;
+
+    int  rangeSelectBegin_ = -1;
+    int  rangeSelectEnd_   = -1;
+    bool shiftPressed_     = false;
+    bool beginSelected_    = false;
 };
