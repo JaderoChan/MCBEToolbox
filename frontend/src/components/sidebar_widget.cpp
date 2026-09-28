@@ -10,12 +10,12 @@
 namespace
 {
 
-constexpr int ENTRY_HEIGHT        = 42;
-constexpr int ENTRY_ICON_SIZE     = 24;
-constexpr int ENTRY_ICON_TEXT_GAP = 12;
-constexpr int ENTRY_SELECT_ALPHA  = 144;
-constexpr int ENTRY_HOVER_ALPHA   = 72;
-constexpr int ANIM_DURATION_MS    = 200;
+constexpr int ENTRY_HEIGHT          = 42;
+constexpr int ENTRY_ICON_SIZE       = 24;
+constexpr int ENTRY_ICON_TEXT_GAP   = 12;
+constexpr int ENTRY_PRIMARY_ALPHA   = 144;
+constexpr int ENTRY_SECONDARY_ALPHA = 72;
+constexpr int ANIM_DURATION_MS      = 200;
 
 constexpr const unsigned char MENU_PNG_DARK[] =
 {
@@ -493,7 +493,7 @@ protected:
         if (selected_ || hovered_)
         {
             QColor fill = highlight;
-            fill.setAlpha(selected_ ? ENTRY_SELECT_ALPHA : ENTRY_HOVER_ALPHA);
+            fill.setAlpha(selected_ ? ENTRY_PRIMARY_ALPHA : ENTRY_SECONDARY_ALPHA);
             const QRect bgRect = rect().adjusted(3, 3, -3, -3);
             painter.setPen(Qt::NoPen);
             painter.setBrush(fill);
