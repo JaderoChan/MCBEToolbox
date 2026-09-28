@@ -21,6 +21,8 @@ public:
         auto* layout = new QVBoxLayout(this);
         layout->setContentsMargins(4, 4, 4, 4);
         layout->addWidget(widget_);
+
+        resize(800, 600);
     }
 
 private:

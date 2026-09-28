@@ -7,6 +7,8 @@
 #include "mainwidget.h"
 #include "settings.h"
 
+#include "./examples/block_list_example_widget.h"
+
 int main(int argc, char* argv[])
 {
     qRegisterMetaType<LanguageManager::Language>("Language");
@@ -28,7 +30,7 @@ int main(int argc, char* argv[])
         LanguageManager::getInstance().setLanguage(settings.language);
     }
 
-    MainWidget w;
+    BlockListExampleWidget w;
     w.show();
 
     int ret = a.exec();
