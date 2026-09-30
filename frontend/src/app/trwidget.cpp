@@ -6,9 +6,9 @@ void TrWidget::updateText() {}
 
 void TrWidget::changeEvent(QEvent* event)
 {
+    QWidget::changeEvent(event);
     if (event->type() == QEvent::LanguageChange)
         updateText();
-    QWidget::changeEvent(event);
 }
 
 TrMainWindow::TrMainWindow(QWidget* parent) : QMainWindow(parent) { updateText(); }
@@ -17,9 +17,9 @@ void TrMainWindow::updateText(){}
 
 void TrMainWindow::changeEvent(QEvent* event)
 {
+    QMainWindow::changeEvent(event);
     if (event->type() == QEvent::LanguageChange)
         updateText();
-    QMainWindow::changeEvent(event);
 }
 
 TrDialog::TrDialog(QWidget* parent) : QDialog(parent) { updateText(); }
@@ -28,7 +28,7 @@ void TrDialog::updateText() {}
 
 void TrDialog::changeEvent(QEvent* event)
 {
+    QDialog::changeEvent(event);
     if (event->type() == QEvent::LanguageChange)
         updateText();
-    QDialog::changeEvent(event);
 }
