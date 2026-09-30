@@ -18,8 +18,8 @@ inline T readFileContent(const QString& filePath)
     if (!file.open(mode))
         throw std::runtime_error("Failed to open file: " + filePath.toStdString());
 
-    if constexpr (asText)   return QString::fromUtf8(file.readAll());
-    else                    return file.readAll();
+    if constexpr (asText) return QString::fromUtf8(file.readAll());
+    else                  return file.readAll();
 }
 
 /// @brief 将内容写入文件。
@@ -34,6 +34,6 @@ inline void writeFileContent(const QString& filePath, const T& content, bool isA
     if (!file.open(mode))
         throw std::runtime_error("Failed to open file: " + filePath.toStdString());
 
-    if constexpr (asText)   file.write(content.toUtf8());
-    else                    file.write(content);
+    if constexpr (asText) file.write(content.toUtf8());
+    else                  file.write(content);
 }

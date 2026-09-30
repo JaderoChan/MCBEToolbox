@@ -83,9 +83,9 @@ QString LanguageManager::getLanguageId(Language language)
 {
     switch (language)
     {
-        case LANGUAGE_EN: return "EN";
-        case LANGUAGE_ZH: return "ZH";
-        default:          return "";
+        case LANGUAGE_EN: return QStringLiteral("EN");
+        case LANGUAGE_ZH: return QStringLiteral("ZH");
+        default:          return QStringLiteral("");
     }
 }
 

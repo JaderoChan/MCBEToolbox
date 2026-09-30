@@ -4,13 +4,13 @@ static QIcon createLogoIcon()
 {
     QIcon icon;
 
-    icon.addFile(":/icons/app/16.png");
-    icon.addFile(":/icons/app/32.png");
-    icon.addFile(":/icons/app/64.png");
-    icon.addFile(":/icons/app/128.png");
-    icon.addFile(":/icons/app/256.png");
-    icon.addFile(":/icons/app/512.png");
-    icon.addFile(":/icons/app/1024.png");
+    icon.addFile(QStringLiteral(":/icons/app/app_16.png"));
+    icon.addFile(QStringLiteral(":/icons/app/app_32.png"));
+    icon.addFile(QStringLiteral(":/icons/app/app_64.png"));
+    icon.addFile(QStringLiteral(":/icons/app/app_128.png"));
+    icon.addFile(QStringLiteral(":/icons/app/app_256.png"));
+    icon.addFile(QStringLiteral(":/icons/app/app_512.png"));
+    icon.addFile(QStringLiteral(":/icons/app/app_1024.png"));
 
     return icon;
 }
