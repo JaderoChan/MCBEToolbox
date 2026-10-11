@@ -10,43 +10,67 @@ configure_file(
 )
 
 # 头文件（可用于在 Visual Studio 等 IDE 的项目文件树中显示头文件）
-set(HEADERS
+set(
+    HEADERS
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
     ./app/block_list_widget.h
-    ./app/color_scheme_manager.h
-    ./app/language_manager.h
     ./app/logo_icon.h
     ./app/mainwidget.h
     ./app/settings.h
-    ./app/trwidget.h
+    ./components/color_scheme_manager.h
     ./components/flow_grid_layout.h
+    ./components/language_manager.h
     ./components/sidebar_widget.h
+    ./components/trwidget.h
+    ./nbt_editor/nbt_editor_widget.h
+    ./nbt_editor/nbt_row_editor.h
+    ./nbt_editor/nbt_tree_item_delegate.h
+    ./nbt_editor/nbt_tree_view.h
+    ./nbt_editor/nbt_value_utils.h
     ./utils/debug_output.h
     ./utils/directory_scope.h
     ./utils/file_io.h
     ./utils/format_string.h
 )
 
+if(MCBE_TOOLBOX_DEV)
+    list(
+        APPEND HEADERS
+        ./test/block_list_example_widget.h
+        ./test/nbt_tree_example_widget.h
+    )
+endif()
+
 # 源文件
-set(SRCS
+set(
+    SRCS
     ./app/block_list_widget.cpp
-    ./app/color_scheme_manager.cpp
-    ./app/language_manager.cpp
     ./app/logo_icon.cpp
-    ./app/main.cpp
     ./app/mainwidget.cpp
     ./app/settings.cpp
-    ./app/trwidget.cpp
+    ./components/color_scheme_manager.cpp
     ./components/flow_grid_layout.cpp
+    ./components/language_manager.cpp
     ./components/sidebar_widget.cpp
+    ./components/trwidget.cpp
+    ./nbt_editor/nbt_editor_widget.cpp
+    ./nbt_editor/nbt_row_editor.cpp
+    ./nbt_editor/nbt_tree_item_delegate.cpp
+    ./nbt_editor/nbt_tree_view.cpp
+    ./nbt_editor/nbt_value_utils.cpp
 )
+
+if(MCBE_TOOLBOX_DEV)
+    list(APPEND SRCS ./app/main_test.cpp)
+else()
+    list(APPEND SRCS ./app/main.cpp)
+endif()
 
 # UI 文件
-set(UIS
-)
+set(UIS)
 
 # QRC 文件
-set(QRC "${RESOURCES_DIR}/app.qrc")
+set(QRC "${RESOURCES_DIR}/app.qrc" "${RESOURCES_DIR}/nbt_editor.qrc")
 
 set(PROJECT_SOURCES ${HEADERS} ${SRCS} ${UIS} "${QRC}")
 
@@ -56,6 +80,7 @@ set(PROJECT_SOURCES ${HEADERS} ${SRCS} ${UIS} "${QRC}")
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     qt_standard_project_setup()
+    set(CMAKE_AUTORCC ON)
     qt_add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 else()
     set(CMAKE_AUTOMOC ON)

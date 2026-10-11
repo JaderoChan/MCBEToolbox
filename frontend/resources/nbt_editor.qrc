@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/nbt_editor/byte.svg</file>
+        <file>icons/nbt_editor/short.svg</file>
+        <file>icons/nbt_editor/int.svg</file>
+        <file>icons/nbt_editor/long.svg</file>
+        <file>icons/nbt_editor/float.svg</file>
+        <file>icons/nbt_editor/double.svg</file>
+        <file>icons/nbt_editor/byte_array.svg</file>
+        <file>icons/nbt_editor/int_array.svg</file>
+        <file>icons/nbt_editor/long_array.svg</file>
+        <file>icons/nbt_editor/string.svg</file>
+        <file>icons/nbt_editor/list.svg</file>
+        <file>icons/nbt_editor/compound.svg</file>
+        <file>icons/nbt_editor/checkmark.png</file>
+        <file>icons/nbt_editor/cross.png</file>
+    </qresource>
+</RCC>
