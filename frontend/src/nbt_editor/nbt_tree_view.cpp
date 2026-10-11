@@ -500,8 +500,6 @@ void NbtTreeView::showContextMenu(const QPoint& position)
 
 void NbtTreeView::rebuild()
 {
-    rebuilding_ = true;
-
     QSet<QString> expandedPaths;
     collectExpandedPaths(rootItem(), expandedPaths);
 
@@ -515,8 +513,6 @@ void NbtTreeView::rebuild()
         restoreExpandedPaths(root, expandedPaths);
         setExpanded(root->index(), true);
     }
-
-    rebuilding_ = false;
 }
 
 QStandardItem* NbtTreeView::buildItem(
@@ -750,7 +746,7 @@ QString NbtTreeView::arrayElementText(const nbt::Tag& array, nbt::Tag::size_type
 
 void NbtTreeView::commitValueEdit(QStandardItem* item, const QString& text)
 {
-    if (!item || rebuilding_)
+    if (!item)
         return;
 
     const QStringList path       = item->data(PathRole).toStringList();
@@ -778,7 +774,7 @@ void NbtTreeView::commitValueEdit(QStandardItem* item, const QString& text)
 
 void NbtTreeView::commitKeyEdit(QStandardItem* item, const QString& text)
 {
-    if (!item || rebuilding_)
+    if (!item)
         return;
 
     const QStringList path    = item->data(PathRole).toStringList();

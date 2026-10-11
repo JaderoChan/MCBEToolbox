@@ -117,7 +117,6 @@ private:
 
     nbt::Tag    tag_;
     QString     rootName_;
-    bool        rebuilding_ = false;
     QStringList pendingNewEntryPath_;
     QStringList pendingNewElementContainer_;
     int         pendingNewElementIndex_ = -1;
