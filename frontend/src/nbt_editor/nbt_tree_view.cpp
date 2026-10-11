@@ -510,8 +510,7 @@ void NbtTreeView::rebuild()
 
     if (tag_.type() != nbt::TT_END)
     {
-        const QString name = rootName_.isEmpty() ? QString(EASYTR("Root")) : rootName_;
-        QStandardItem* root = buildItem(nullptr, name, tag_, QStringList());
+        QStandardItem* root = buildItem(nullptr, rootName_, tag_, QStringList());
         model_->appendRow(root);
         restoreExpandedPaths(root, expandedPaths);
         setExpanded(root->index(), true);
@@ -577,8 +576,7 @@ void NbtTreeView::retranslateItem(QStandardItem* item)
     {
         if (nbt::Tag* self = resolveTag(path))
         {
-            const QString key =
-                path.isEmpty() ? (rootName_.isEmpty() ? QString(EASYTR("Root")) : rootName_) : path.last();
+            const QString key = path.isEmpty() ? rootName_ : path.last();
             updateItemText(item, key, *self);
         }
     }

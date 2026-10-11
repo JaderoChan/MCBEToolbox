@@ -12,8 +12,8 @@
 NbtRowEditor::NbtRowEditor(QWidget* parent)
     : TrWidget(parent)
 {
-    constexpr int kEditMinWidth = 60;
-    constexpr int kEditMaxWidth = 160;
+    constexpr int kEditMinWidth = 80;
+    constexpr int kEditMaxWidth = 480;
 
     nameEdit_      = new QLineEdit(this);
     valueEdit_     = new QLineEdit(this);
@@ -48,7 +48,7 @@ NbtRowEditor::NbtRowEditor(QWidget* parent)
     layout->addWidget(valueEdit_);
     layout->addWidget(confirmButton_);
     layout->addWidget(cancelButton_);
-    layout->addStretch(1); // 三列内容左对齐，剩余空间留空，不把编辑框拉伸满整行。
+    layout->addStretch(0);
 
     updateIcons();
     updateText();
