@@ -6,7 +6,7 @@
 #include <qlist.h>
 
 #include <block.hpp>
-#include "trwidget.h"
+#include <components/trwidget.h>
 
 class QScrollArea;
 class QLayout;

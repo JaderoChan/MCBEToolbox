@@ -3,7 +3,7 @@
 #include <qstackedwidget.h>
 
 #include <components/sidebar_widget.h>
-#include "trwidget.h"
+#include <components/trwidget.h>
 
 class MainWidget : public TrWidget
 {

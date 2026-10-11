@@ -564,7 +564,7 @@ menu.setTopText(CREATE_MENU_TOP_TEXT)
 #undef CREATE_MENU_TOP_TEXT
 }
 
-int main(int argc, char* argv)
+int main(int argc, char* argv[])
 {
     if (!loadBlockEntries())
         return -1;

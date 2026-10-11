@@ -1,7 +1,7 @@
 #pragma once
 
-#include "color_scheme_manager.h"
-#include "language_manager.h"
+#include <components/color_scheme_manager.h>
+#include <components/language_manager.h>
 
 struct Settings
 {
