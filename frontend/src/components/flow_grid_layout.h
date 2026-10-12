@@ -13,10 +13,10 @@ public:
         QWidget* parent = nullptr);
     ~FlowGridLayout();
 
-    int  minItemSize() const       { return minItemSize_;  }
-    int  maxItemSize() const       { return maxItemSize_;  }
     void setMinItemSize(int width) { minItemSize_ = width; invalidate(); }
     void setMaxItemSize(int width) { maxItemSize_ = width; invalidate(); }
+    int  minItemSize() const       { return minItemSize_;  }
+    int  maxItemSize() const       { return maxItemSize_;  }
 
     void             invalidate()                         override;
     void             addItem(QLayoutItem* item)           override;

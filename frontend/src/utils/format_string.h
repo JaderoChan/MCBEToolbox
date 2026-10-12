@@ -7,7 +7,7 @@
 /// @brief 保证数字具有两位，使用 `0` 进行左补位。
 inline QString getPreferredNumberString(int num)
 {
-    return QString("%1").arg(num, 2, 10, QChar('0'));
+    return QStringLiteral("%1").arg(num, 2, 10, QChar('0'));
 }
 
 template <typename ...Args>

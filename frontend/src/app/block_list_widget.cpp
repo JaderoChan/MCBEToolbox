@@ -76,7 +76,7 @@ public:
         {
             DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
             const auto& baseBlock = entry_.second->baseBlock;
-            const QString texturePath = QString("%1/%2")
+            const QString texturePath = QStringLiteral("%1/%2")
                 .arg(APP_BLOCK_TEXTURES_DIRPATH)
                 .arg(QString::fromStdString(baseBlock.surfaceData.side.first));
             textureRaw_ = QPixmap(texturePath);
@@ -95,11 +95,6 @@ public:
         return entry_;
     }
 
-    bool isSelected() const
-    {
-        return selected_;
-    }
-
     void setSelected(bool selected)
     {
         if (selected_ != selected)
@@ -107,6 +102,11 @@ public:
             selected_ = selected;
             update();
         }
+    }
+
+    bool isSelected() const
+    {
+        return selected_;
     }
 
     QSize sizeHint() const override
@@ -238,7 +238,7 @@ protected:
 
             QString attributesText = getBlockAttributesText(entry_.second->baseBlock.attributes);
             attributesText = QFontMetrics(font()).elidedText(attributesText, Qt::ElideRight, 480);
-            const QString tooltipText = QString("%1: %2\n%3: %4\n%5: %6\n%7: %8")
+            const QString tooltipText = QStringLiteral("%1: %2\n%3: %4\n%5: %6\n%7: %8")
                 .arg(EASYTR("Block Name")).arg(name_)
                 .arg(EASYTR("Block ID")).arg(entry_.second->baseBlock.id)
                 .arg(EASYTR("Block Attributes")).arg(attributesText)
@@ -352,11 +352,6 @@ void BlockListWidget::unselectAll()
         item->setSelected(false);
 }
 
-Version BlockListWidget::minimumVersion() const
-{
-    return minimumVersion_;
-}
-
 void BlockListWidget::setMinimumVersion(const Version& version)
 {
     if (minimumVersion_ != version)
@@ -366,9 +361,9 @@ void BlockListWidget::setMinimumVersion(const Version& version)
     }
 }
 
-bool BlockListWidget::isMultiSelectEnabled() const
+Version BlockListWidget::minimumVersion() const
 {
-    return multiSelectEnabled_;
+    return minimumVersion_;
 }
 
 void BlockListWidget::setMultiSelectEnabled(bool enabled)
@@ -378,6 +373,11 @@ void BlockListWidget::setMultiSelectEnabled(bool enabled)
 
     if (!multiSelectEnabled_ && selecteds_.size() > 1)
         unselectAll();
+}
+
+bool BlockListWidget::isMultiSelectEnabled() const
+{
+    return multiSelectEnabled_;
 }
 
 void BlockListWidget::selectByAttribute(BlockAttributeFilterMode mode, const BlockAttributes& attributes)

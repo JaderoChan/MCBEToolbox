@@ -26,11 +26,11 @@ public:
     void selectAll();
     void unselectAll();
 
-    Version minimumVersion() const;
     void    setMinimumVersion(const Version& version);
+    Version minimumVersion() const;
 
-    bool isMultiSelectEnabled() const;
     void setMultiSelectEnabled(bool enabled);
+    bool isMultiSelectEnabled() const;
 
     void selectByAttribute(BlockAttributeFilterMode mode, const BlockAttributes& attributes);
 

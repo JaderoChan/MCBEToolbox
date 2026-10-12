@@ -30,17 +30,17 @@ public:
     /** 获取条目数量。 */
     int  entryCount() const;
 
-    QIcon    entryIcon(int index) const;
-    QString  entryText(int index) const;
-    QVariant entryData(int index) const;
     void     setEntryIcon(int index, const QIcon&    icon);
     void     setEntryText(int index, const QString&  text);
     void     setEntryData(int index, const QVariant& data);
+    QIcon    entryIcon(int index) const;
+    QString  entryText(int index) const;
+    QVariant entryData(int index) const;
 
-    /** 获取条目之间的间距。 */
-    int  entrySpacing() const;
     /** 设置条目之间的间距。 */
     void setEntrySpacing(int spacing);
+    /** 获取条目之间的间距。 */
+    int  entrySpacing() const;
 
     /** 添加固定高度的间距占位。 */
     void addSpacing(int size);
@@ -52,15 +52,15 @@ public:
     /** 是否处于折叠状态。 */
     bool isCollapsed() const;
 
-    /** 展开/折叠按钮是否可用。 */
-    bool isToggleVisible() const;
     /** 设置是否显示展开/折叠按钮。 */
     void setToggleVisible(bool visible);
+    /** 展开/折叠按钮是否可用。 */
+    bool isToggleVisible() const;
 
-    int  expandedWidth()  const;
-    int  collapsedWidth() const;
     void setExpandedWidth(int width);
     void setCollapsedWidth(int width);
+    int  expandedWidth()  const;
+    int  collapsedWidth() const;
 
     /** 获取当前选中的条目索引，未选中时为 -1。 */
     int currentIndex() const;

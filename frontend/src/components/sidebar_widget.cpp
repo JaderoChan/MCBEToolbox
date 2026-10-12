@@ -408,10 +408,6 @@ public:
         setCursor(Qt::PointingHandCursor);
     }
 
-    QIcon    icon() const { return icon_; }
-    QString  text() const { return text_; }
-    QVariant data() const { return data_; }
-
     void setIcon(const QIcon& icon)
     {
         icon_ = icon;
@@ -428,6 +424,10 @@ public:
     {
         data_ = data;
     }
+
+    QIcon    icon() const { return icon_; }
+    QString  text() const { return text_; }
+    QVariant data() const { return data_; }
 
     void setSelected(bool selected)
     {
@@ -645,27 +645,6 @@ int SidebarWidget::entryCount() const
     return static_cast<int>(entries_.size());
 }
 
-QIcon SidebarWidget::entryIcon(int index) const
-{
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
-        return QIcon();
-    return entries_[index]->icon();
-}
-
-QString SidebarWidget::entryText(int index) const
-{
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
-        return QString();
-    return entries_[index]->text();
-}
-
-QVariant SidebarWidget::entryData(int index) const
-{
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
-        return QVariant();
-    return entries_[index]->data();
-}
-
 void SidebarWidget::setEntryIcon(int index, const QIcon& icon)
 {
     if (index < 0 || index >= static_cast<int>(entries_.size()))
@@ -687,9 +666,25 @@ void SidebarWidget::setEntryData(int index, const QVariant& data)
     entries_[index]->setData(data);
 }
 
-int SidebarWidget::entrySpacing() const
+QIcon SidebarWidget::entryIcon(int index) const
 {
-    return entrySpacing_;
+    if (index < 0 || index >= static_cast<int>(entries_.size()))
+        return QIcon();
+    return entries_[index]->icon();
+}
+
+QString SidebarWidget::entryText(int index) const
+{
+    if (index < 0 || index >= static_cast<int>(entries_.size()))
+        return QString();
+    return entries_[index]->text();
+}
+
+QVariant SidebarWidget::entryData(int index) const
+{
+    if (index < 0 || index >= static_cast<int>(entries_.size()))
+        return QVariant();
+    return entries_[index]->data();
 }
 
 void SidebarWidget::setEntrySpacing(int spacing)
@@ -698,6 +693,11 @@ void SidebarWidget::setEntrySpacing(int spacing)
         return;
     entrySpacing_ = spacing;
     layout_->setSpacing(entrySpacing_);
+}
+
+int SidebarWidget::entrySpacing() const
+{
+    return entrySpacing_;
 }
 
 void SidebarWidget::addSpacing(int size)
@@ -720,11 +720,6 @@ bool SidebarWidget::isCollapsed() const
     return !expanded_;
 }
 
-bool SidebarWidget::isToggleVisible() const
-{
-    return toggleVisible_;
-}
-
 void SidebarWidget::setToggleVisible(bool visible)
 {
     if (toggleVisible_ == visible)
@@ -733,14 +728,9 @@ void SidebarWidget::setToggleVisible(bool visible)
     toggleEntry_->setVisible(toggleVisible_);
 }
 
-int SidebarWidget::expandedWidth() const
+bool SidebarWidget::isToggleVisible() const
 {
-    return expandedWidth_;
-}
-
-int SidebarWidget::collapsedWidth() const
-{
-    return collapsedWidth_;
+    return toggleVisible_;
 }
 
 void SidebarWidget::setExpandedWidth(int width)
@@ -759,6 +749,16 @@ void SidebarWidget::setCollapsedWidth(int width)
     collapsedWidth_ = width;
     if (!expanded_)
         animateWidthTo(collapsedWidth_);
+}
+
+int SidebarWidget::expandedWidth() const
+{
+    return expandedWidth_;
+}
+
+int SidebarWidget::collapsedWidth() const
+{
+    return collapsedWidth_;
 }
 
 int SidebarWidget::currentIndex() const
