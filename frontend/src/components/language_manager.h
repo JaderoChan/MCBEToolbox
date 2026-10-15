@@ -38,7 +38,7 @@ signals:
     void loadedLanguageChanged(Language);
 
 protected:
-    bool eventFilter(QObject* obj, QEvent* event) override;
+    bool eventFilter(QObject* obj, QEvent* e) override;
 
 private:
     LanguageManager();

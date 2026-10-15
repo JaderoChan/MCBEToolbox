@@ -45,11 +45,11 @@ ColorSchemeManager::ColorScheme ColorSchemeManager::getLoadedColorScheme() const
     return loadedColorScheme_;
 }
 
-bool ColorSchemeManager::eventFilter(QObject* obj, QEvent* event)
+bool ColorSchemeManager::eventFilter(QObject* obj, QEvent* e)
 {
     if (obj == qApp)
     {
-        if (event->type() == QEvent::ThemeChange)
+        if (e->type() == QEvent::ThemeChange)
         {
             const ColorScheme loadedColorScheme = getSystemColorScheme();
             if (loadedColorScheme_ != loadedColorScheme)
@@ -82,6 +82,6 @@ void ColorSchemeManager::loadColorScheme()
         default:                 return;
     }
 
-    QEvent event(QEvent::StyleChange);
-    qApp->sendEvent(qApp, &event);
+    QEvent e(QEvent::StyleChange);
+    qApp->sendEvent(qApp, &e);
 }

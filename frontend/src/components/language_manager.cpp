@@ -51,11 +51,11 @@ LanguageManager::Language LanguageManager::getLoadedLanguage() const
     return loadedLanguage_;
 }
 
-bool LanguageManager::eventFilter(QObject* obj, QEvent* event)
+bool LanguageManager::eventFilter(QObject* obj, QEvent* e)
 {
     if (obj == qApp)
     {
-        if (event->type() == QEvent::LocaleChange && language_ == LANGUAGE_AUTO)
+        if (e->type() == QEvent::LocaleChange && language_ == LANGUAGE_AUTO)
         {
             const Language loadedLanguage = getSystemLanguage();
             if (loadedLanguage_ != loadedLanguage)
@@ -113,6 +113,6 @@ void LanguageManager::loadLanguage()
         return;
     }
 
-    QEvent event(QEvent::LanguageChange);
-    qApp->sendEvent(qApp, &event);
+    QEvent e(QEvent::LanguageChange);
+    qApp->sendEvent(qApp, &e);
 }

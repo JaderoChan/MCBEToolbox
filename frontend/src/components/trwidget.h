@@ -16,7 +16,7 @@ public:
     virtual void updateText();
 
 protected:
-    void changeEvent(QEvent* event) override;
+    void changeEvent(QEvent* e) override;
 };
 
 class TrMainWindow : public QMainWindow
@@ -28,7 +28,7 @@ public:
     virtual void updateText();
 
 protected:
-    void changeEvent(QEvent* event) override;
+    void changeEvent(QEvent* e) override;
 };
 
 class TrDialog : public QDialog
@@ -40,5 +40,5 @@ public:
     virtual void updateText();
 
 protected:
-    void changeEvent(QEvent* event) override;
+    void changeEvent(QEvent* e) override;
 };
