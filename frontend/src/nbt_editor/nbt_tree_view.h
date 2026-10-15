@@ -1,10 +1,8 @@
 #pragma once
 
-#include <qevent.h>
-#include <qtreeview.h>
+#include <qicon.h>
 #include <qstring.h>
-#include <qstringlist.h>
-#include <qset.h>
+#include <qtreeview.h>
 
 #include <mcnbt/mcnbt.hpp>
 
@@ -21,16 +19,50 @@ class NbtTreeView : public QTreeView
 public:
     explicit NbtTreeView(QWidget* parent = nullptr);
 
-    const nbt::Tag& tag() const { return tag_; }
-    void setTag(const nbt::Tag& tag, const QString& rootName = QString());
+    void setRootName(QString rootName);
+    QString rootName() const;
 
-    QString rootName() const { return rootName_; }
-    void setRootName(const QString& name);
+    // 设置根 Tag 值，如果给定 Tag 不是 nbt::TT_COMPOUND 则不做任何事。
+    void setRootTag(nbt::Tag rootTag);
+    // 获取根 Tag 值。
+    const nbt::Tag& rootTag() const;
 
+    // 判断给定项的 Tag 是否是 Array 元素。
+    bool isArrayElement(const QStandardItem* item) const;
+    // 判断给定项的 Tag 是否是具名 Tag。
+    bool isNamingTag(const QStandardItem* item)    const;
+
+    // 获取给定项的 Tag 名，如果给定项不是具名 Tag 返回无效值。
+    QVariant        itemTagKey(const QStandardItem* item)    const;
+    // 获取给定项在 Array 或 List（不具名 Tag）中的索引，如果给定项是具名 Tag 返回无效值。
+    QVariant        itemTagIndex(const QStandardItem* item)  const;
+    // 获取给定项的父 Tag 值，如果给定项无父项返回 nullptr。
+    const nbt::Tag* itemParentTag(const QStandardItem* item) const;
+    // 获取给定项的 Tag 值，如果给定项为 Array 元素则返回 nullptr。
+    const nbt::Tag* itemTag(const QStandardItem* item)       const;
+
+    // 添加子项至给定项。
+    // 如果给定项不支持添加元素、给定子项不符合父项类型、给定名称已存在均返回 false。
+    // 对于给定项是 Array 类型，则子项仅保留标量值。
+    // 对于给定项是 Array 或 List 类型，则参数 key 是无效的。
+    bool addItem(QStandardItem* parentItem, nbt::Tag value, const QString& key = QString());
+    // 删除给定项。
     bool removeItem(QStandardItem* item);
-    bool renameKey(QStandardItem* item, const QString& newKey);
+
+    // 更改给定项名，如果给定项非具名 Tag，返回 false。
+    bool changeItemKey(QStandardItem* item, const QString& newKey);
+    // 更改给定项值，如果给定值不符合父项类型返回 false。
+    bool changeItemValue(QStandardItem* item, nbt::Tag newValue);
+
+    // 在给定项上唤起 GUI 式元素添加，如果给定类型不符合给定项的元素类型返回 false。
+    bool invokeAddItem(QStandardItem* parentItem, nbt::TagType type);
+    // 在给定项上唤起 GUI 式元素编辑，如果给定项不可编辑返回 false。
+    bool invokeEditItem(QStandardItem* item);
+    // 在给定项上唤起 GUI 式元素重命名，如果给定项不可重命名返回 false。
+    bool invokeRenameItem(QStandardItem* item);
 
 signals:
+    void rootNameChanged();
     void tagChanged();
 
 protected:
@@ -38,92 +70,63 @@ protected:
     void keyPressEvent(QKeyEvent* event) override;
     bool edit(const QModelIndex& index, EditTrigger trigger, QEvent* event) override;
 
-private slots:
-    void showContextMenu(const QPoint& position);
-    void handleFocusChanged(QWidget* oldWidget, QWidget* nowWidget);
-
 private:
     friend class NbtTreeItemDelegate;
 
-    enum EditTarget
-    {
-        EditValue, EditKey
-    };
-
     enum DataRole
     {
-        PathRole = Qt::UserRole + 1,
-        ArrayIndexRole,
-        ValueStartRole,
-        SummaryStyleRole
+        IsNamingTagRole = Qt::UserRole + 1,
+        TagKeyRole,
+        TagIndexRole,
+        IsCompoundSummaryRole,
+        SummaryValueRole
     };
 
-    struct EditCapability
-    {
-        bool keyEditable   = false;
-        bool valueEditable = false;
-    };
-
-    enum class PendingKind
+    enum class PendingRowEdit
     {
         None,
-        CompoundEntry,
-        Element
+        AddArrayElement,
+        AddListElement,
+        AddCompoundEntry,
+        EditRow
     };
 
-    QStandardItem* rootItem() const;
+    static QIcon        iconForTagType(nbt::TagType type);
+    static QString      valueTextForTag(const nbt::Tag& tag);
+    static QString      valueTextForArrayElement(const nbt::Tag& arrayTag, qulonglong index);
+    static nbt::TagType arrayElementTagType(nbt::TagType arrayType);
+
+    nbt::Tag* itemParentTag(const QStandardItem* item);
+    nbt::Tag* itemTag(const QStandardItem* item);
+
+    void updateSummaryValue(QStandardItem* item, const nbt::Tag& tag);
+
+    static QString  defaultValueText(nbt::TagType type);
+    static nbt::Tag parseScalarTag(nbt::TagType type, const QString& text, bool* ok);
 
     void rebuild();
-    QStandardItem* buildItem(QStandardItem* parent, const QString& key, nbt::Tag& value, const QStringList& path);
-    void updateItemText(QStandardItem* item, const QString& key, const nbt::Tag& value) const;
-    void updateArrayElementText(QStandardItem* item, const nbt::Tag& array, nbt::Tag::size_type index) const;
-    void retranslateItem(QStandardItem* item);
+    QStandardItem* createArrayItem(nbt::Tag* parentArrayTag, qulonglong index);
+    QStandardItem* createItem(bool isNamingTag, const QString& key, qulonglong index, const nbt::Tag& value);
+    QStandardItem* buildItem(
+        QStandardItem* parentItem, bool isNamingTag, const QString& key, qulonglong index, nbt::Tag& value);
 
-    nbt::Tag* resolveTag(const QStringList& path);
-    QStandardItem* findItemByPath(QStandardItem* item, const QStringList& path) const;
-    QStandardItem* findItemFor(const QStringList& path, int arrayIndex) const;
-    void collectExpandedPaths(QStandardItem* item, QSet<QString>& out) const;
-    void restoreExpandedPaths(QStandardItem* item, const QSet<QString>& paths);
-    QString pathKey(const QStringList& path) const;
+    void finishActiveRowEdit(bool commit, bool restoreFocus = true);
+    void beginRowEdit(
+        QStandardItem* parentItem, QStandardItem* editItem, nbt::TagType type, bool isNamingTag,
+        const QString& initialKeyText, const QString& initialValueText, bool focusKey, PendingRowEdit pending);
+    void rowEditFinished(NbtRowEditor* editor, bool confirm, bool restoreFocus = true);
+    void handleFocusChanged(QWidget* oldWidget, QWidget* nowWidget);
 
-    EditTarget editTargetForClick(QStandardItem* item, const QModelIndex& index, EditTrigger trigger, QEvent* event);
-    EditCapability editCapabilityFor(QStandardItem* item);
-    PendingKind pendingKindFor(const QStringList& path, int arrayIndex) const;
+    void showContextMenu(const QPoint& position);
 
-    QIcon iconForType(nbt::TagType type) const;
-    QString summaryText(const nbt::Tag& value) const;
-    QString valueText(const nbt::Tag& value) const;
-    QString arrayElementText(const nbt::Tag& array, nbt::Tag::size_type index) const;
-
-    void commitValueEdit(QStandardItem* item, const QString& text);
-    void commitKeyEdit(QStandardItem* item, const QString& text);
-    bool setScalarValue(nbt::Tag& target, const QString& text);
-    bool setArrayElementValue(nbt::Tag& array, nbt::Tag::size_type index, const QString& text);
-    bool renameCompoundKey(nbt::Tag& container, const QString& oldKey, const QString& newKey);
-    qlonglong parseIntegerLiteral(const QString& text, bool* ok) const;
-
-    void appendAddTypeActions(QMenu* menu, QStandardItem* containerItem);
-
-    void beginRowEdit(QStandardItem* item, EditTarget focusTarget);
-    void closeRowEdit(bool commit);
-
-    void beginAddCompoundEntry(QStandardItem* containerItem, nbt::TagType type);
-    void finalizePendingNewEntry(const QString& key, const QString& value);
-
-    void beginAddListElement(QStandardItem* containerItem, nbt::Tag value);
-    void beginAddArrayElement(QStandardItem* containerItem);
-    void finalizePendingNewElement(const QString& value);
-    void cancelPendingEntry();
-
-    nbt::Tag    tag_;
-    QString     rootName_;
-    QStringList pendingNewEntryPath_;
-    QStringList pendingNewElementContainer_;
-    int         pendingNewElementIndex_ = -1;
-
-    NbtRowEditor*  activeEditor_   = nullptr;
-    QStandardItem* activeEditItem_ = nullptr;
+    QString  rootName_;
+    nbt::Tag rootTag_;
 
     QStandardItemModel*  model_    = nullptr;
     NbtTreeItemDelegate* delegate_ = nullptr;
+
+    QStandardItem* activeEditItem_    = nullptr;
+    QStandardItem* pendingParentItem_ = nullptr;
+    nbt::TagType   pendingTagType_    = nbt::TT_END;
+    PendingRowEdit pendingRowEdit_    = PendingRowEdit::None;
 };

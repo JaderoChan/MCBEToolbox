@@ -26,7 +26,6 @@ set(
     ./nbt_editor/nbt_row_editor.h
     ./nbt_editor/nbt_tree_item_delegate.h
     ./nbt_editor/nbt_tree_view.h
-    ./nbt_editor/nbt_value_utils.h
     ./utils/debug_output.h
     ./utils/directory_scope.h
     ./utils/file_io.h
@@ -57,7 +56,6 @@ set(
     ./nbt_editor/nbt_row_editor.cpp
     ./nbt_editor/nbt_tree_item_delegate.cpp
     ./nbt_editor/nbt_tree_view.cpp
-    ./nbt_editor/nbt_value_utils.cpp
 )
 
 if(MCBE_TOOLBOX_DEV)

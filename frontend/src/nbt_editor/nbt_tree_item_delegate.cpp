@@ -1,84 +1,56 @@
 #include "nbt_tree_item_delegate.h"
 
+#include <qapplication.h>
 #include <qfontmetrics.h>
 #include <qpainter.h>
 #include <qstyle.h>
 
+#include <easy_translate.hpp>
+
 #include "nbt_tree_view.h"
 
-NbtTreeItemDelegate::NbtTreeItemDelegate(NbtTreeView* view)
-    : QStyledItemDelegate(view), view_(view)
+NbtTreeItemDelegate::NbtTreeItemDelegate(QObject* parent)
+    : QStyledItemDelegate(parent)
 {}
 
-void NbtTreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+void NbtTreeItemDelegate::paint(
+    QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+    QStyledItemDelegate::paint(painter, option, index);
+
+    const auto& isCompoundSummary = index.data(NbtTreeView::IsCompoundSummaryRole);
+    const auto& summaryValue      = index.data(NbtTreeView::SummaryValueRole);
+    if (!isCompoundSummary.isValid() || !summaryValue.isValid())
+        return;
+
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    const SplitLayout layout = computeSplit(opt, index);
+    const QStyle* s = opt.widget ? opt.widget->style() : qApp->style();
+    const QRect textRect = s->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
+    const int textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, opt.widget) + 1;
 
-    opt.text.clear();
-    QStyle* s = opt.widget ? opt.widget->style() : view_->style();
-    s->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+    const QString summary = QStringLiteral("%1 %2")
+        .arg(summaryValue.toULongLong())
+        .arg(isCompoundSummary.toBool() ? EASYTR("entries") : EASYTR("elements"));
 
-    const bool summaryStyle = index.data(NbtTreeView::SummaryStyleRole).toBool();
-    const QColor normalColor = opt.palette.color(
-        (opt.state & QStyle::State_Selected) ? QPalette::HighlightedText : QPalette::Text);
+    const int textWidth = QFontMetrics(opt.font).horizontalAdvance(opt.text);
+    QRect summaryRect = textRect;
+    summaryRect.setLeft(textRect.left() + textMargin + textWidth);
+
+    QFont summaryFont = opt.font;
+    summaryFont.setItalic(true);
+    const QColor summaryColor = opt.palette.color(QPalette::Disabled, QPalette::Text);
 
     painter->save();
-    painter->setFont(opt.font);
-    painter->setPen(normalColor);
-    painter->drawText(layout.textRect, Qt::AlignVCenter | Qt::AlignLeft, layout.keyPart);
-
-    if (!layout.valuePart.isEmpty())
-    {
-        QRect valueRect = layout.textRect;
-        valueRect.setLeft(layout.boundaryX);
-
-        QFont valueFont = opt.font;
-        QColor valueColor = normalColor;
-        if (summaryStyle)
-        {
-            valueFont.setItalic(true);
-            valueColor = opt.palette.color(QPalette::Disabled, QPalette::Text);
-        }
-        painter->setFont(valueFont);
-        painter->setPen(valueColor);
-        painter->drawText(valueRect, Qt::AlignVCenter | Qt::AlignLeft, layout.valuePart);
-    }
+    painter->setFont(summaryFont);
+    painter->setPen(summaryColor);
+    painter->drawText(summaryRect, Qt::AlignVCenter | Qt::AlignLeft, summary);
     painter->restore();
 }
 
-int NbtTreeItemDelegate::keyBoundaryX(const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    QStyleOptionViewItem opt = option;
-    initStyleOption(&opt, index);
-    return computeSplit(opt, index).boundaryX;
-}
-
-int NbtTreeItemDelegate::textLeftX(const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-    QStyleOptionViewItem opt = option;
-    initStyleOption(&opt, index);
-    return computeSplit(opt, index).textRect.left();
-}
-
-QWidget* NbtTreeItemDelegate::createEditor(QWidget*, const QStyleOptionViewItem&, const QModelIndex&) const
+QWidget* NbtTreeItemDelegate::createEditor(
+    QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     return nullptr;
-}
-
-NbtTreeItemDelegate::SplitLayout NbtTreeItemDelegate::computeSplit(
-    const QStyleOptionViewItem& opt, const QModelIndex& index) const
-{
-    SplitLayout layout;
-    QStyle* s = opt.widget ? opt.widget->style() : view_->style();
-    layout.textRect = s->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
-    layout.textRect.adjust(2, 0, -2, 0);
-
-    const int valueStart = index.data(NbtTreeView::ValueStartRole).toInt();
-    layout.keyPart   = valueStart >= 0 ? opt.text.left(valueStart) : opt.text;
-    layout.valuePart = valueStart >= 0 ? opt.text.mid(valueStart)  : QString();
-    layout.boundaryX = layout.textRect.left() + QFontMetrics(opt.font).horizontalAdvance(layout.keyPart);
-    return layout;
 }
