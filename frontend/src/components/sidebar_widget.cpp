@@ -819,8 +819,7 @@ void SidebarWidget::setCurrentIndex(int index)
 
 void SidebarWidget::updateToggleIcon()
 {
-    const bool dark =
-        ColorSchemeManager::getInstance().getLoadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
+    const bool dark = ColorSchemeManager::getInstance().getLoadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
     QPixmap toggleIcon;
     if (toggleIcon.loadFromData(
         dark ? MENU_PNG_LIGHT : MENU_PNG_DARK,

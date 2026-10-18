@@ -115,8 +115,7 @@ void CodeTextEdit::resetColor(ColorRole role)
 
 QColor CodeTextEdit::defaultColor(ColorRole role) const
 {
-    const bool dark =
-        ColorSchemeManager::getInstance().getLoadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
+    const bool dark = ColorSchemeManager::getInstance().getLoadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
     switch (role)
     {
         case LineNumberBackground:     return dark ? QColor(45, 45, 45)    : QColor(240, 240, 240);
