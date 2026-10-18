@@ -76,9 +76,6 @@ signals:
     void currentIndexChanged(int index);
     void expandedChanged(bool expanded);
 
-protected:
-    bool event(QEvent* e) override;
-
 private:
     void updateToggleIcon();
     void animateWidthTo(int targetWidth);

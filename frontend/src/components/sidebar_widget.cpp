@@ -7,6 +7,8 @@
 #include <qpainter.h>
 #include <qvariantanimation.h>
 
+#include "color_scheme_manager.h"
+
 namespace
 {
 
@@ -567,6 +569,11 @@ SidebarWidget::SidebarWidget(QWidget* parent)
     layout_->addWidget(toggleEntry_);
     connect(toggleEntry_, &SidebarEntryWidget::clicked, this, &SidebarWidget::toggle);
 
+    connect(
+        &ColorSchemeManager::getInstance(), &ColorSchemeManager::loadedColorSchemeChanged,
+        this, SidebarWidget::updateToggleIcon
+    );
+
     setFixedWidth(expandedWidth_);
 }
 
@@ -810,20 +817,14 @@ void SidebarWidget::setCurrentIndex(int index)
     emit currentIndexChanged(currentIndex_);
 }
 
-bool SidebarWidget::event(QEvent* e)
-{
-    if (e->type() == QEvent::ThemeChange || e->type() == QEvent::StyleChange || e->type() == QEvent::PaletteChange)
-        updateToggleIcon();
-    return QWidget::event(e);
-}
-
 void SidebarWidget::updateToggleIcon()
 {
-    const bool isDarkTheme = palette().color(QPalette::Window).lightness() < 128;
+    const bool dark =
+        ColorSchemeManager::getInstance().getLoadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
     QPixmap toggleIcon;
     if (toggleIcon.loadFromData(
-        isDarkTheme ? MENU_PNG_LIGHT : MENU_PNG_DARK,
-        isDarkTheme ? sizeof(MENU_PNG_LIGHT) : sizeof(MENU_PNG_DARK)))
+        dark ? MENU_PNG_LIGHT : MENU_PNG_DARK,
+        dark ? sizeof(MENU_PNG_LIGHT) : sizeof(MENU_PNG_DARK)))
     {
         toggleEntry_->setIcon(toggleIcon);
     }
