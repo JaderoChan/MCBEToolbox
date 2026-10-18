@@ -56,10 +56,10 @@ public:
 
     // 在给定项上唤起 GUI 式元素添加，如果给定类型不符合给定项的元素类型返回 false。
     bool invokeAddItem(QStandardItem* parentItem, nbt::TagType type);
-    // 在给定项上唤起 GUI 式元素编辑，如果给定项不可编辑返回 false。
-    bool invokeEditItem(QStandardItem* item);
-    // 在给定项上唤起 GUI 式元素重命名，如果给定项不可重命名返回 false。
-    bool invokeRenameItem(QStandardItem* item);
+    // 在给定项上唤起 GUI 式元素值编辑，如果给定项值不可编辑返回 false。
+    bool invokeEditItemValue(QStandardItem* item);
+    // 在给定项上唤起 GUI 式元素键编辑，如果给定项名不可编辑返回 false。
+    bool invokeEditItemKey(QStandardItem* item);
 
 signals:
     void rootNameChanged();
@@ -67,8 +67,8 @@ signals:
 
 protected:
     void changeEvent(QEvent* e) override;
-    void keyPressEvent(QKeyEvent* event) override;
-    bool edit(const QModelIndex& index, EditTrigger trigger, QEvent* event) override;
+    void keyPressEvent(QKeyEvent* e) override;
+    bool edit(const QModelIndex& index, EditTrigger trigger, QEvent* e) override;
 
 private:
     friend class NbtTreeItemDelegate;
@@ -82,13 +82,11 @@ private:
         SummaryValueRole
     };
 
-    enum class PendingRowEdit
+    enum class RowEditType
     {
         None,
-        AddArrayElement,
-        AddListElement,
-        AddCompoundEntry,
-        EditRow
+        Append,
+        Modify
     };
 
     static QIcon        iconForTagType(nbt::TagType type);
@@ -96,13 +94,11 @@ private:
     static QString      valueTextForArrayElement(const nbt::Tag& arrayTag, qulonglong index);
     static nbt::TagType arrayElementTagType(nbt::TagType arrayType);
 
+    static QString      defaultValueText(nbt::TagType type);
+    static nbt::Tag     parseValueText(nbt::TagType type, const QString& text, bool* ok);
+
     nbt::Tag* itemParentTag(const QStandardItem* item);
     nbt::Tag* itemTag(const QStandardItem* item);
-
-    void updateSummaryValue(QStandardItem* item, const nbt::Tag& tag);
-
-    static QString  defaultValueText(nbt::TagType type);
-    static nbt::Tag parseScalarTag(nbt::TagType type, const QString& text, bool* ok);
 
     void rebuild();
     QStandardItem* createArrayItem(nbt::Tag* parentArrayTag, qulonglong index);
@@ -110,12 +106,12 @@ private:
     QStandardItem* buildItem(
         QStandardItem* parentItem, bool isNamingTag, const QString& key, qulonglong index, nbt::Tag& value);
 
-    void finishActiveRowEdit(bool commit, bool restoreFocus = true);
+    void updateSummaryValue(QStandardItem* item, const nbt::Tag& tag);
+
     void beginRowEdit(
-        QStandardItem* parentItem, QStandardItem* editItem, nbt::TagType type, bool isNamingTag,
-        const QString& initialKeyText, const QString& initialValueText, bool focusKey, PendingRowEdit pending);
-    void rowEditFinished(NbtRowEditor* editor, bool confirm, bool restoreFocus = true);
-    void handleFocusChanged(QWidget* oldWidget, QWidget* nowWidget);
+        QStandardItem* item, nbt::TagType type, bool isNamingTag,
+        const QString& keyText, const QString& valueText, bool focusKey, RowEditType editType);
+    void endRowEdit(bool confirm);
 
     void showContextMenu(const QPoint& position);
 
@@ -125,8 +121,7 @@ private:
     QStandardItemModel*  model_    = nullptr;
     NbtTreeItemDelegate* delegate_ = nullptr;
 
-    QStandardItem* activeEditItem_    = nullptr;
-    QStandardItem* pendingParentItem_ = nullptr;
-    nbt::TagType   pendingTagType_    = nbt::TT_END;
-    PendingRowEdit pendingRowEdit_    = PendingRowEdit::None;
+    RowEditType    editType_  = RowEditType::None;
+    QStandardItem* editItem_  = nullptr;
+    NbtRowEditor*  editor_    = nullptr;
 };

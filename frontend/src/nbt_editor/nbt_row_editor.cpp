@@ -2,6 +2,7 @@
 
 #include <limits>
 
+#include <qapplication.h>
 #include <qevent.h>
 #include <qlayout.h>
 #include <qlineedit.h>
@@ -107,6 +108,7 @@ NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
         button->setToolButtonStyle(Qt::ToolButtonIconOnly);
         button->setIconSize(QSize(16, 16));
         button->setStyleSheet("border: none; background: transparent; padding: 0px;");
+        button->setFocusPolicy(Qt::ClickFocus);
     }
 
     confirmButton_->setIcon(QIcon(":/icons/nbt_editor/checkmark.png"));
@@ -245,6 +247,12 @@ bool NbtRowEditor::eventFilter(QObject* obj, QEvent* e)
             emit confirmed();
             return true;
         }
+    }
+    else if (e->type() == QEvent::FocusOut)
+    {
+        QWidget* focusWidget = QApplication::focusWidget();
+        if (focusWidget != this && !isAncestorOf(focusWidget))
+            emit focusLost();
     }
 
     return QWidget::eventFilter(obj, e);

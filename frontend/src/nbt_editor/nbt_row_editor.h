@@ -42,6 +42,7 @@ public:
 signals:
     void confirmed();
     void cancelled();
+    void focusLost();
 
 protected:
     bool eventFilter(QObject* obj, QEvent* e) override;
