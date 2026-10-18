@@ -46,20 +46,20 @@ public:
     // 对于给定项是 Array 类型，则子项仅保留标量值。
     // 对于给定项是 Array 或 List 类型，则参数 key 是无效的。
     bool addItem(QStandardItem* parentItem, nbt::Tag value, const QString& key = QString());
-    // 删除给定项。
+    // 删除给定项，如果给定项是根项返回 false。
     bool removeItem(QStandardItem* item);
 
     // 更改给定项名，如果给定项非具名 Tag，返回 false。
     bool changeItemKey(QStandardItem* item, const QString& newKey);
-    // 更改给定项值，如果给定值不符合父项类型返回 false。
+    // 更改给定项值，如果给定项是根项或给定值不符合父项类型返回 false。
     bool changeItemValue(QStandardItem* item, nbt::Tag newValue);
 
     // 在给定项上唤起 GUI 式元素添加，如果给定类型不符合给定项的元素类型返回 false。
     bool invokeAddItem(QStandardItem* parentItem, nbt::TagType type);
-    // 在给定项上唤起 GUI 式元素值编辑，如果给定项值不可编辑返回 false。
-    bool invokeEditItemValue(QStandardItem* item);
     // 在给定项上唤起 GUI 式元素键编辑，如果给定项名不可编辑返回 false。
     bool invokeEditItemKey(QStandardItem* item);
+    // 在给定项上唤起 GUI 式元素值编辑，如果给定项值不可编辑返回 false。
+    bool invokeEditItemValue(QStandardItem* item);
 
 signals:
     void rootNameChanged();

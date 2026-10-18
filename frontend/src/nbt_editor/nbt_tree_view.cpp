@@ -186,50 +186,48 @@ bool NbtTreeView::removeItem(QStandardItem* item)
     auto* parentTag = itemParentTag(item);
     if (!parentTag)
     {
-        rootTag_ = nbt::Tag();
-        rebuild();
+        // 不允许直接删除根项。
+        return false;
+    }
+
+    if (isNamingTag(item))
+    {
+        auto* parentItem = item->parent();
+        parentTag->erase(itemTagKey(item).toString().toStdString());
+        model_->removeRow(item->row(), item->index().parent());
+        updateSummaryValue(parentItem, *parentTag);
     }
     else
     {
-        if (isNamingTag(item))
+        parentTag->erase(static_cast<std::size_t>(itemTagIndex(item).toULongLong()));
+        auto* parentItem = item->parent();
+        for (qulonglong row = item->row() + 1; row < static_cast<qulonglong>(parentItem->rowCount()); ++row)
         {
-            auto* parentItem = item->parent();
-            parentTag->erase(itemTagKey(item).toString().toStdString());
-            model_->removeRow(item->row(), item->index().parent());
-            updateSummaryValue(parentItem, *parentTag);
-        }
-        else
-        {
-            parentTag->erase(static_cast<std::size_t>(itemTagIndex(item).toULongLong()));
-            auto* parentItem = item->parent();
-            for (qulonglong row = item->row() + 1; row < static_cast<qulonglong>(parentItem->rowCount()); ++row)
+            auto* child = parentItem->child(static_cast<int>(row));
+            const qulonglong index = row - 1;
+            QString valueText;
+            switch (parentTag->type())
             {
-                auto* child = parentItem->child(static_cast<int>(row));
-                const qulonglong index = row - 1;
-                QString valueText;
-                switch (parentTag->type())
-                {
-                    case nbt::TT_BYTE_ARRAY:
-                    case nbt::TT_INT_ARRAY:
-                    case nbt::TT_LONG_ARRAY:
-                        valueText = valueTextForArrayElement(*parentTag, index);
-                        break;
-                    case nbt::TT_LIST:
-                        valueText = valueTextForTag(parentTag->at(static_cast<std::size_t>(index)));
-                        break;
-                    default:
-                        break;
-                }
-                const QString text = "[" + QString::number(index) + "]: " + valueText;
-                child->setText(text);
-                child->setData(index, TagIndexRole);
+                case nbt::TT_BYTE_ARRAY:
+                case nbt::TT_INT_ARRAY:
+                case nbt::TT_LONG_ARRAY:
+                    valueText = valueTextForArrayElement(*parentTag, index);
+                    break;
+                case nbt::TT_LIST:
+                    valueText = valueTextForTag(parentTag->at(static_cast<std::size_t>(index)));
+                    break;
+                default:
+                    break;
             }
-            // 如果删除元素后，列表为空，则将其置为初始状态以使其能够接受不同的 Tag Type 进行重新初始化。
-            if (parentTag->isList() && parentTag->empty())
-                *parentTag = nbt::Tag::list();
-            model_->removeRow(item->row(), item->index().parent());
-            updateSummaryValue(parentItem, *parentTag);
+            const QString text = "[" + QString::number(index) + "]: " + valueText;
+            child->setText(text);
+            child->setData(index, TagIndexRole);
         }
+        // 如果删除元素后，列表为空，则将其置为初始状态以使其能够接受不同的 Tag Type 进行重新初始化。
+        if (parentTag->isList() && parentTag->empty())
+            *parentTag = nbt::Tag::list();
+        model_->removeRow(item->row(), item->index().parent());
+        updateSummaryValue(parentItem, *parentTag);
     }
 
     emit tagChanged();
@@ -283,8 +281,8 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
     auto* parentTag = itemParentTag(item);
     if (!parentTag)
     {
-        setRootTag(newValue);
-        return true;
+        // 不允许直接更改根项值。
+        return false;
     }
 
     if (parentTag->isArray())
@@ -394,6 +392,22 @@ bool NbtTreeView::invokeAddItem(QStandardItem* parentItem, nbt::TagType type)
     }
 }
 
+bool NbtTreeView::invokeEditItemKey(QStandardItem* item)
+{
+    if (!item || !isNamingTag(item))
+        return false;
+
+    auto* tag = itemTag(item);
+    if (!tag)
+        return false;
+
+    const QString keyText   = itemTagKey(item).toString();
+    const QString valueText = valueTextForTag(*tag);
+
+    beginRowEdit(item, tag->type(), true, keyText, valueText, true, RowEditType::Modify);
+    return true;
+}
+
 bool NbtTreeView::invokeEditItemValue(QStandardItem* item)
 {
     if (!item)
@@ -421,22 +435,6 @@ bool NbtTreeView::invokeEditItemValue(QStandardItem* item)
 
     const QString keyText = isNamingTag(item) ? itemTagKey(item).toString() : QString();
     beginRowEdit(item, type, isNamingTag(item), keyText, valueText, false, RowEditType::Modify);
-    return true;
-}
-
-bool NbtTreeView::invokeEditItemKey(QStandardItem* item)
-{
-    if (!item || !isNamingTag(item))
-        return false;
-
-    auto* tag = itemTag(item);
-    if (!tag)
-        return false;
-
-    const QString keyText   = itemTagKey(item).toString();
-    const QString valueText = valueTextForTag(*tag);
-
-    beginRowEdit(item, tag->type(), true, keyText, valueText, true, RowEditType::Modify);
     return true;
 }
 
