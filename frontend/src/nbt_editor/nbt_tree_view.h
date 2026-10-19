@@ -22,48 +22,58 @@ public:
     void setRootName(QString rootName);
     QString rootName() const;
 
-    // 设置根 Tag 值，如果给定 Tag 不是 nbt::TT_COMPOUND 则不做任何事。
+    // 设置根 Tag；如果给定项不是 TT_COMPOUND 类型则不做任何事。
     void setRootTag(nbt::Tag rootTag);
-    // 获取根 Tag 值。
+    // 获取根 Tag。
     const nbt::Tag& rootTag() const;
 
-    // 判断给定项的 Tag 是否是 Array 元素。
+    // 判断给定项的 Tag 是否为 Array 子元素。
     bool isArrayElement(const QStandardItem* item) const;
-    // 判断给定项的 Tag 是否是具名 Tag。
+    // 判断给定项的 Tag 是否为具名 Tag。
     bool isNamingTag(const QStandardItem* item)    const;
 
-    // 获取给定项的 Tag 名，如果给定项不是具名 Tag 返回无效值。
+    // 获取给定项的 Tag 名；如果给定项不是具名 Tag 返回无效值。
     QVariant        itemTagKey(const QStandardItem* item)    const;
-    // 获取给定项在 Array 或 List（不具名 Tag）中的索引，如果给定项是具名 Tag 返回无效值。
+    // 获取给定项在 Array 或 List 容器中的索引；如果给定项是具名 Tag 返回无效值。
     QVariant        itemTagIndex(const QStandardItem* item)  const;
-    // 获取给定项的父 Tag 值，如果给定项无父项返回 nullptr。
+    // 获取给定项的父 Tag；如果给定项无父项返回 nullptr。
     const nbt::Tag* itemParentTag(const QStandardItem* item) const;
-    // 获取给定项的 Tag 值，如果给定项为 Array 元素则返回 nullptr。
+    // 获取给定项的 Tag 值，如果给定项为 Array 子元素则返回 nullptr。
     const nbt::Tag* itemTag(const QStandardItem* item)       const;
 
     // 添加子项至给定项。
     // 如果给定项不支持添加元素、给定子项不符合父项类型、给定名称已存在均返回 false。
-    // 对于给定项是 Array 类型，则子项仅保留标量值。
+    // 对于给定项是 Array 类型，则子项仅保留数值。
     // 对于给定项是 Array 或 List 类型，则参数 key 是无效的。
     bool addItem(QStandardItem* parentItem, nbt::Tag value, const QString& key = QString());
-    // 删除给定项，如果给定项是根项返回 false。
+    // 删除给定项；如果给定项是根项返回 false。
     bool removeItem(QStandardItem* item);
 
-    // 更改给定项名，如果给定项非具名 Tag，返回 false。
+    // 更改给定项名；如果给定项不是具名 Tag，返回 false。
     bool changeItemKey(QStandardItem* item, const QString& newKey);
     // 更改给定项值，如果给定项是根项或给定值不符合父项类型返回 false。
     bool changeItemValue(QStandardItem* item, nbt::Tag newValue);
 
-    // 在给定项上唤起 GUI 式元素添加，如果给定类型不符合给定项的元素类型返回 false。
+    // 在给定项上唤起 GUI 式元素添加；如果给定类型不符合给定项的元素类型返回 false。
     bool invokeAddItem(QStandardItem* parentItem, nbt::TagType type);
-    // 在给定项上唤起 GUI 式元素键编辑，如果给定项名不可编辑返回 false。
+    // 在给定项上唤起 GUI 式元素键编辑；如果给定项名不可编辑返回 false。
     bool invokeEditItemKey(QStandardItem* item);
-    // 在给定项上唤起 GUI 式元素值编辑，如果给定项值不可编辑返回 false。
+    // 在给定项上唤起 GUI 式元素值编辑；如果给定项值不可编辑返回 false。
     bool invokeEditItemValue(QStandardItem* item);
+
+    const QStandardItem* rootItem() const;
+    QStandardItem*       rootItem();
+
+    // 获取当前选中项，返回值可能为 nullptr。
+    const QStandardItem* selectedItem() const;
+    QStandardItem*       selectedItem();
 
 signals:
     void rootNameChanged();
     void tagChanged();
+
+    // 选中项发生更改时发出，item 可能为 nullptr。
+    void selectedItemChanged(QStandardItem* item);
 
 protected:
     void changeEvent(QEvent* e) override;
@@ -89,13 +99,7 @@ private:
         Modify
     };
 
-    static QIcon        iconForTagType(nbt::TagType type);
-    static QString      valueTextForTag(const nbt::Tag& tag);
-    static QString      valueTextForArrayElement(const nbt::Tag& arrayTag, qulonglong index);
-    static nbt::TagType arrayElementTagType(nbt::TagType arrayType);
-
-    static QString      defaultValueText(nbt::TagType type);
-    static nbt::Tag     parseValueText(nbt::TagType type, const QString& text, bool* ok);
+    static QString defaultValueText(nbt::TagType type);
 
     nbt::Tag* itemParentTag(const QStandardItem* item);
     nbt::Tag* itemTag(const QStandardItem* item);

@@ -5,7 +5,7 @@
 #include <mcnbt/mcnbt.hpp>
 
 #include <components/trwidget.h>
-#include <nbt_editor/nbt_tree_view.h>
+#include <nbt_editor/nbt_tree_widget.h>
 
 class NbtTreeExampleWidget : public TrWidget
 {
@@ -13,14 +13,14 @@ public:
     explicit NbtTreeExampleWidget(QWidget* parent = nullptr)
         : TrWidget(parent)
     {
-        tree_ = new NbtTreeView();
+        widget_ = new NbtTreeWidget();
         auto tag = generateExampleNBT();
-        tree_->setRootName("Sample");
-        tree_->setRootTag(tag);
+        widget_->nbtTreeView()->setRootName("Sample");
+        widget_->nbtTreeView()->setRootTag(tag);
 
         auto* layout = new QVBoxLayout(this);
         layout->setContentsMargins(4, 4, 4, 4);
-        layout->addWidget(tree_);
+        layout->addWidget(widget_);
 
         setWindowTitle("NBT Tree Example");
         resize(800, 600);
@@ -78,5 +78,5 @@ private:
         return root;
     }
 
-    NbtTreeView* tree_ = nullptr;
+    NbtTreeWidget* widget_ = nullptr;
 };

@@ -17,11 +17,6 @@ class NbtRowEditor : public TrWidget
 public:
     explicit NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent = nullptr);
 
-    static bool keyEditable(nbt::TagType type, bool isNamingTag);
-    static bool valueEditable(nbt::TagType type, bool isNamingTag);
-    // 判断给定类型的 Tag 是否是可编辑类型，等同于 keyEditable() || valueEditable()。
-    static bool editable(nbt::TagType type, bool isNamingTag);
-
     nbt::TagType type()  const;
     bool isNamingTag()   const;
     bool keyEditable()   const;

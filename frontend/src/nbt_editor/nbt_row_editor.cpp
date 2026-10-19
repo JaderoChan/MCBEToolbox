@@ -12,6 +12,8 @@
 
 #include <easy_translate.hpp>
 
+#include "nbt_utils.h"
+
 namespace
 {
 
@@ -45,7 +47,8 @@ private:
     qlonglong max_ = 0;
 };
 
-QValidator* validatorForTagType(nbt::TagType type, QObject* parent)
+// 构建与指定类型对应的数值验证器。
+QValidator* tagTypeValidator(nbt::TagType type, QObject* parent = nullptr)
 {
     switch (type)
     {
@@ -107,7 +110,7 @@ NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
     {
         button->setToolButtonStyle(Qt::ToolButtonIconOnly);
         button->setIconSize(QSize(16, 16));
-        button->setStyleSheet("border: none; background: transparent; padding: 0px;");
+        button->setStyleSheet(QStringLiteral("border: none; background: transparent; padding: 0px;"));
         button->setFocusPolicy(Qt::ClickFocus);
     }
 
@@ -129,29 +132,10 @@ NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
     if (!keyEditable())   keyEdit_->hide();
     if (!valueEditable()) valueEdit_->hide();
 
-    validator_ = validatorForTagType(type_, this);
+    validator_ = tagTypeValidator(type_, this);
     if (validator_) valueEdit_->setValidator(validator_);
 
     updateText();
-}
-
-bool NbtRowEditor::keyEditable(nbt::TagType type, bool isNamingTag)
-{
-    return isNamingTag && type != nbt::TT_END;
-}
-
-bool NbtRowEditor::valueEditable(nbt::TagType type, bool isNamingTag)
-{
-    (void)isNamingTag;
-    return
-        type == nbt::TT_BYTE || type == nbt::TT_SHORT || type == nbt::TT_INT    ||
-        type == nbt::TT_LONG || type == nbt::TT_FLOAT || type == nbt::TT_DOUBLE ||
-        type == nbt::TT_STRING;
-}
-
-bool NbtRowEditor::editable(nbt::TagType type, bool isNamingTag)
-{
-    return keyEditable(type, isNamingTag) || valueEditable(type, isNamingTag);
 }
 
 nbt::TagType NbtRowEditor::type() const
@@ -166,17 +150,17 @@ bool NbtRowEditor::isNamingTag() const
 
 bool NbtRowEditor::keyEditable() const
 {
-    return keyEditable(type_, isNamingTag_);
+    return nbt_utils::tagKeyEditable(type_, isNamingTag_);
 }
 
 bool NbtRowEditor::valueEditable() const
 {
-    return valueEditable(type_, isNamingTag_);
+    return nbt_utils::tagValueEditable(type_, isNamingTag_);
 }
 
 bool NbtRowEditor::editable() const
 {
-    return editable(type_, isNamingTag_);
+    return nbt_utils::tagEditable(type_, isNamingTag_);
 }
 
 void NbtRowEditor::setKeyText(const QString& text)
