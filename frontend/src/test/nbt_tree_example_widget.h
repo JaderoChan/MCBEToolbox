@@ -15,8 +15,8 @@ public:
     {
         widget_ = new NbtTreeWidget();
         auto tag = generateExampleNBT();
-        widget_->nbtTreeView()->setRootName("Sample");
-        widget_->nbtTreeView()->setRootTag(tag);
+        widget_->view()->setRootName("Sample");
+        widget_->view()->setRootTag(tag);
 
         auto* layout = new QVBoxLayout(this);
         layout->setContentsMargins(4, 4, 4, 4);

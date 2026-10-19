@@ -15,8 +15,8 @@ class NbtTreeWidget : public TrWidget
 public:
     explicit NbtTreeWidget(QWidget* parent = nullptr);
 
-    const NbtTreeView* nbtTreeView() const { return view_; }
-    NbtTreeView*       nbtTreeView()       { return view_; }
+    const NbtTreeView* view() const { return view_; }
+    NbtTreeView*       view()       { return view_; }
 
 protected:
     void updateText() override;
