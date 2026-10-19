@@ -571,7 +571,7 @@ SidebarWidget::SidebarWidget(QWidget* parent)
 
     connect(
         &ColorSchemeManager::getInstance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, SidebarWidget::updateToggleIcon
+        this, &SidebarWidget::updateToggleIcon
     );
 
     setFixedWidth(expandedWidth_);
