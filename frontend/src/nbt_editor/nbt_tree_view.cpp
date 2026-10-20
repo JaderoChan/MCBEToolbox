@@ -409,22 +409,12 @@ bool NbtTreeView::invokeEditItemValue(QStandardItem* item)
     return true;
 }
 
-const QStandardItem* NbtTreeView::rootItem() const
-{
-    return const_cast<NbtTreeView*>(this)->rootItem();
-}
-
-QStandardItem* NbtTreeView::rootItem()
+QStandardItem* NbtTreeView::rootItem() const
 {
     return model_->item(0);
 }
 
-const QStandardItem* NbtTreeView::selectedItem() const
-{
-    return const_cast<NbtTreeView*>(this)->selectedItem();
-}
-
-QStandardItem* NbtTreeView::selectedItem()
+QStandardItem* NbtTreeView::selectedItem() const
 {
     const auto& indexes = selectionModel()->selectedIndexes();
     if (indexes.isEmpty())

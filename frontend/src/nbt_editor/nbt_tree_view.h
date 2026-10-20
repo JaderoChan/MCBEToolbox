@@ -61,12 +61,10 @@ public:
     // 在给定项上唤起 GUI 式元素值编辑；如果给定项值不可编辑返回 false。
     bool invokeEditItemValue(QStandardItem* item);
 
-    const QStandardItem* rootItem() const;
-    QStandardItem*       rootItem();
-
-    // 获取当前选中项，返回值可能为 nullptr。
-    const QStandardItem* selectedItem() const;
-    QStandardItem*       selectedItem();
+    // 获取根项；返回值可能为 nullptr。
+    QStandardItem* rootItem()     const;
+    // 获取当前选中项；返回值可能为 nullptr。
+    QStandardItem* selectedItem() const;
 
 signals:
     void rootNameChanged();
