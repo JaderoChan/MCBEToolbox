@@ -310,7 +310,6 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
         return nullptr;
     }
 
-    bool ok = false;
     std::string rootName;
     nbt::Tag    rootTag;
     NbtFileInfo fileInfo;
@@ -318,7 +317,7 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
     fileInfo.filePath = filePath;
 
     std::istringstream iss;
-    // 先判断是否经过压缩。
+    // 判断是否经过压缩。
     {
         std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
         if (nbt::gzip::isCompressed(content))
@@ -330,63 +329,51 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
         ifs.close();
     }
 
-    // 尝试使用大端序。
+    // 猜测字节序
     iss.clear();
     iss.seekg(0, std::ios::beg);
-    try { std::tie(rootName, rootTag) = nbt::Tag::parse(iss, true, 0); ok = true; } catch (...) { ok = false; }
-    if (ok)
+    const int result = nbt::Tag::guessByteOrder(iss);
+    if (result != -1)
     {
         fileInfo.valid     = true;
-        fileInfo.bigEndian = true;
-        return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
-    }
-
-    // 尝试使用小端序，不读取文件头。
-    iss.clear();
-    iss.seekg(0, std::ios::beg);
-    try { std::tie(rootName, rootTag) = nbt::Tag::parse(iss, false, 0); ok = true; } catch (...) { ok = false; }
-    if (ok)
-    {
-        fileInfo.valid     = true;
-        fileInfo.bigEndian = false;
-        return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
-    }
-
-    // 尝试使用小端序，读取 8 字节文件头。
-    iss.clear();
-    iss.seekg(0, std::ios::beg);
-    try
-    {
-        std::tie(rootName, rootTag) = nbt::Tag::parse(iss, false, 8);
-        ok = true;
-
-        // 读取 4 字节文件头。
-        iss.clear();
-        iss.seekg(0, std::ios::beg);
-        char buf[4] = {0};
-        iss.read(buf, sizeof(buf));
-
-        // 保存 4 字节文件头。
-        memcpy(&fileInfo.headerNumber, buf, sizeof(fileInfo.headerNumber));
-    } catch (...) { ok = false; }
-
-    if (ok)
-    {
-        fileInfo.valid     = true;
-        fileInfo.bigEndian = false;
-        fileInfo.hasHeader = true;
+        fileInfo.bigEndian = result == 1;
+        std::tie(rootName, rootTag) = nbt::Tag::parse(iss, fileInfo.bigEndian, 0);
         return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
     }
     else
     {
-        QMessageBox(
-            QMessageBox::Critical,
-            EASYTR("Error"),
-            QStringLiteral("%1: %2").arg(EASYTR("Can't parse the NBT file")).arg(filePath),
-            QMessageBox::Close,
-            parent
-        ).exec();
-        return nullptr;
+        // 尝试使用小端序，读取 8 字节文件头。
+        iss.clear();
+        iss.seekg(0, std::ios::beg);
+        try
+        {
+            std::tie(rootName, rootTag) = nbt::Tag::parse(iss, false, 8);
+
+            // 读取 4 字节文件头。
+            iss.clear();
+            iss.seekg(0, std::ios::beg);
+            char buf[4] = {0};
+            iss.read(buf, sizeof(buf));
+
+            // 保存 4 字节文件头。
+            memcpy(&fileInfo.headerNumber, buf, sizeof(fileInfo.headerNumber));
+
+            fileInfo.valid     = true;
+            fileInfo.bigEndian = false;
+            fileInfo.hasHeader = true;
+            return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
+        }
+        catch (...)
+        {
+            QMessageBox(
+                QMessageBox::Critical,
+                EASYTR("Error"),
+                QStringLiteral("%1: %2").arg(EASYTR("Can't parse the NBT file")).arg(filePath),
+                QMessageBox::Close,
+                parent
+            ).exec();
+            return nullptr;
+        }
     }
 }
 
@@ -603,8 +590,6 @@ void NbtEditorTabPage::saveNbt(const NbtFileInfo& fileInfo)
     // 写入 NBT。
     if (fileInfo.compressed) rootTag.dumpCompressed(ofs, fileInfo.bigEndian, rootName.toStdString());
     else                     rootTag.dump(ofs, fileInfo.bigEndian, rootName.toStdString());
-
-    ofs.close();
 }
 
 #include "nbt_editor_tab_page.moc"
