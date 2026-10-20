@@ -1,6 +1,5 @@
 #pragma once
 
-#include <qevent.h>
 #include <qmetatype.h>
 #include <qobject.h>
 
@@ -35,9 +34,6 @@ signals:
     void colorSchemeChanged(ColorScheme);
     /** 仅当实际颜色模式发生变化时发出（不包含 #COLOR_SCHEME_AUTO）。 */
     void loadedColorSchemeChanged(ColorScheme);
-
-protected:
-    bool eventFilter(QObject* obj, QEvent* e) override;
 
 private:
     ColorSchemeManager();

@@ -1,6 +1,7 @@
 #include "color_scheme_manager.h"
 
 #include <qapplication.h>
+#include <qobject.h>
 #include <qstylehints.h>
 
 ColorSchemeManager& ColorSchemeManager::getInstance()
@@ -11,7 +12,20 @@ ColorSchemeManager& ColorSchemeManager::getInstance()
 
 ColorSchemeManager::ColorScheme ColorSchemeManager::getSystemColorScheme()
 {
-    switch (QApplication::styleHints()->colorScheme())
+    auto* hints = qApp->styleHints();
+    const Qt::ColorScheme overridden = hints->colorScheme();
+
+    // 若当前 styleHints 已被显式覆盖（非跟随系统模式），需暂时恢复为未知以读取真实系统值。
+    Qt::ColorScheme system = overridden;
+    if (overridden != Qt::ColorScheme::Unknown)
+    {
+        const QSignalBlocker blocker(hints);
+        hints->setColorScheme(Qt::ColorScheme::Unknown);
+        system = hints->colorScheme();
+        hints->setColorScheme(overridden);
+    }
+
+    switch (system)
     {
         case Qt::ColorScheme::Light: return COLOR_SCHEME_LIGHT;
         case Qt::ColorScheme::Dark:  return COLOR_SCHEME_DARK;
@@ -45,12 +59,16 @@ ColorSchemeManager::ColorScheme ColorSchemeManager::getLoadedColorScheme() const
     return loadedColorScheme_;
 }
 
-bool ColorSchemeManager::eventFilter(QObject* obj, QEvent* e)
+ColorSchemeManager::ColorSchemeManager()
+    : QObject()
 {
-    if (obj == qApp)
-    {
-        if (e->type() == QEvent::ThemeChange)
+    connect(
+        qApp->styleHints(), &QStyleHints::colorSchemeChanged, this,
+        [this](Qt::ColorScheme)
         {
+            if (colorScheme_ != COLOR_SCHEME_AUTO)
+                return;
+
             const ColorScheme loadedColorScheme = getSystemColorScheme();
             if (loadedColorScheme_ != loadedColorScheme)
             {
@@ -58,16 +76,9 @@ bool ColorSchemeManager::eventFilter(QObject* obj, QEvent* e)
                 loadColorScheme();
                 emit loadedColorSchemeChanged(loadedColorScheme_);
             }
-            return true;
         }
-    }
-    return false;
-}
+    );
 
-ColorSchemeManager::ColorSchemeManager()
-    : QObject()
-{
-    qApp->installEventFilter(this);
     colorScheme_       = COLOR_SCHEME_AUTO;
     loadedColorScheme_ = getSystemColorScheme();
     loadColorScheme();
@@ -75,11 +86,21 @@ ColorSchemeManager::ColorSchemeManager()
 
 void ColorSchemeManager::loadColorScheme()
 {
-    switch (loadedColorScheme_)
+    auto* hints = qApp->styleHints();
+
+    // 跟随系统时必须清除显式覆盖，否则 Qt 会停止追踪系统主题变化。
+    if (colorScheme_ == COLOR_SCHEME_AUTO)
     {
-        case COLOR_SCHEME_LIGHT: qApp->styleHints()->setColorScheme(Qt::ColorScheme::Light); break;
-        case COLOR_SCHEME_DARK:  qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);  break;
-        default:                 return;
+        hints->setColorScheme(Qt::ColorScheme::Unknown);
+    }
+    else
+    {
+        switch (loadedColorScheme_)
+        {
+            case COLOR_SCHEME_LIGHT: hints->setColorScheme(Qt::ColorScheme::Light); break;
+            case COLOR_SCHEME_DARK:  hints->setColorScheme(Qt::ColorScheme::Dark);  break;
+            default:                 return;
+        }
     }
 
     QEvent e(QEvent::StyleChange);
