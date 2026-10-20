@@ -17,6 +17,8 @@ class CodeTextEdit;
 
 class NbtEditorTabPage : public TrWidget
 {
+    Q_OBJECT
+
 public:
     explicit NbtEditorTabPage(QWidget* parent = nullptr);
 
@@ -30,6 +32,10 @@ public:
     void saveNbt();
     // 弹出配置对话框以指定配置保存 NBT。
     void saveNbtAs();
+
+signals:
+    // 关联文件的路径发生变化时发出。
+    void filePathChanged(const QString& filePath);
 
 protected:
     void updateText() override;

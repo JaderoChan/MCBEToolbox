@@ -5,13 +5,12 @@
 #include <string>
 #include <tuple>
 
-#include <qdialogbuttonbox.h>
 #include <qfiledialog.h>
-#include <qformlayout.h>
 #include <qlayout.h>
 #include <qlabel.h>
 #include <qlineedit.h>
 #include <qmessagebox.h>
+#include <qpushbutton.h>
 #include <qradiobutton.h>
 #include <qstackedwidget.h>
 #include <qstandarditemmodel.h>
@@ -35,52 +34,63 @@ public:
     explicit NbtFileInfoDialog(QWidget* parent = nullptr)
         : TrDialog(parent)
     {
+        // Endian
         endianLabel_       = new QLabel(this);
-        bigEndianRadio_    = new QRadioButton(this);
         littleEndianRadio_ = new QRadioButton(this);
-        bigEndianRadio_->setChecked(true);
+        bigEndianRadio_    = new QRadioButton(this);
+        littleEndianRadio_->setChecked(true);
 
+        // Compressed
         compressedLabel_   = new QLabel(this);
-        compressedRadio_   = new QRadioButton(this);
         uncompressedRadio_ = new QRadioButton(this);
+        compressedRadio_   = new QRadioButton(this);
         uncompressedRadio_->setChecked(true);
 
-        filePathLabel_     = new QLabel(this);
-        filePathEdit_      = new QLineEdit(this);
-        browseButton_      = new QToolButton(this);
+        // File path
+        filePathLabel_ = new QLabel(this);
+        filePathEdit_  = new QLineEdit(this);
+        browseButton_  = new QToolButton(this);
         browseButton_->setText(QStringLiteral("..."));
 
         connect(browseButton_, &QToolButton::clicked, this, &NbtFileInfoDialog::browseFilePath);
 
-        auto* endianLayout = new QHBoxLayout();
-        endianLayout->setContentsMargins(0, 0, 0, 0);
-        endianLayout->addWidget(bigEndianRadio_);
-        endianLayout->addWidget(littleEndianRadio_);
-        endianLayout->addStretch(1);
-
-        auto* compressedLayout = new QHBoxLayout();
-        compressedLayout->setContentsMargins(0, 0, 0, 0);
-        compressedLayout->addWidget(compressedRadio_);
-        compressedLayout->addWidget(uncompressedRadio_);
-        compressedLayout->addStretch(1);
-
-        auto* filePathLayout = new QHBoxLayout();
+        auto* filePathWidget = new QWidget(this);
+        auto* filePathLayout = new QHBoxLayout(filePathWidget);
         filePathLayout->setContentsMargins(0, 0, 0, 0);
         filePathLayout->addWidget(filePathEdit_);
         filePathLayout->addWidget(browseButton_);
 
-        auto* formLayout = new QFormLayout();
-        formLayout->addRow(endianLabel_, endianLayout);
-        formLayout->addRow(compressedLabel_, compressedLayout);
-        formLayout->addRow(filePathLabel_, filePathLayout);
+        // Container
+        auto* containerWidget = new QWidget(this);
+        auto* containerLayout = new QGridLayout(containerWidget);
+        containerLayout->addWidget(endianLabel_,       0, 0);
+        containerLayout->addWidget(littleEndianRadio_, 0, 1);
+        containerLayout->addWidget(bigEndianRadio_,    0, 2);
+        containerLayout->addWidget(compressedLabel_,   1, 0);
+        containerLayout->addWidget(uncompressedRadio_, 1, 1);
+        containerLayout->addWidget(compressedRadio_,   1, 2);
+        containerLayout->addWidget(filePathLabel_,     2, 0);
+        containerLayout->addWidget(filePathWidget,     2, 1, 1, 2);
 
-        buttonBox_ = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-        connect(buttonBox_, &QDialogButtonBox::accepted, this, &QDialog::accept);
-        connect(buttonBox_, &QDialogButtonBox::rejected, this, &QDialog::reject);
+        // Button
+        confirmButton_ = new QPushButton(this);
+        cancelButton_  = new QPushButton(this);
+        confirmButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        cancelButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        connect(confirmButton_, &QPushButton::clicked, this, &QDialog::accept);
+        connect(cancelButton_,  &QPushButton::clicked, this, &QDialog::reject);
 
-        auto* layout = new QVBoxLayout(this);
-        layout->addLayout(formLayout);
-        layout->addWidget(buttonBox_);
+        auto* buttonWidget = new QWidget(this);
+        auto* buttonLayout = new QHBoxLayout(buttonWidget);
+        buttonLayout->setContentsMargins(3, 0, 3, 0);
+        buttonLayout->setSpacing(6);
+        buttonLayout->addWidget(confirmButton_);
+        buttonLayout->addWidget(cancelButton_);
+
+        // Main layout
+        auto* mainLayout = new QVBoxLayout(this);
+        mainLayout->addWidget(containerWidget);
+        mainLayout->addWidget(buttonWidget);
 
         updateText();
     }
@@ -121,6 +131,8 @@ protected:
         compressedRadio_->setText(EASYTR("GZip Compressed"));
         uncompressedRadio_->setText(EASYTR("Uncompressed"));
         filePathLabel_->setText(EASYTR("File Path:"));
+        confirmButton_->setText(EASYTR("Confirm"));
+        cancelButton_->setText(EASYTR("Cancel"));
     }
 
 private slots:
@@ -133,18 +145,19 @@ private slots:
 
 private:
     QLabel*       endianLabel_       = nullptr;
-    QRadioButton* bigEndianRadio_    = nullptr;
     QRadioButton* littleEndianRadio_ = nullptr;
+    QRadioButton* bigEndianRadio_    = nullptr;
 
     QLabel*       compressedLabel_   = nullptr;
-    QRadioButton* compressedRadio_   = nullptr;
     QRadioButton* uncompressedRadio_ = nullptr;
+    QRadioButton* compressedRadio_   = nullptr;
 
     QLabel*       filePathLabel_     = nullptr;
     QLineEdit*    filePathEdit_      = nullptr;
     QToolButton*  browseButton_      = nullptr;
 
-    QDialogButtonBox* buttonBox_     = nullptr;
+    QPushButton*  confirmButton_     = nullptr;
+    QPushButton*  cancelButton_      = nullptr;
 };
 
 } // namespace
@@ -370,13 +383,13 @@ void NbtEditorTabPage::saveNbt()
 
     if (!fileInfo_.valid)
     {
-        fileInfo_ = popupDialogForFileInfo(fileInfo_);
-        if (!fileInfo_.valid)
+        NbtFileInfo fileInfo = popupDialogForFileInfo(fileInfo_);
+        if (!fileInfo.valid)
             return;
+        setFileInfo(std::move(fileInfo));
     }
 
     saveNbt(fileInfo_);
-    updateStateBarText();
 }
 
 void NbtEditorTabPage::saveNbtAs()
@@ -526,8 +539,11 @@ void NbtEditorTabPage::updateStateBarText()
 
 void NbtEditorTabPage::setFileInfo(NbtFileInfo fileInfo)
 {
+    const bool pathChanged = fileInfo_.filePath != fileInfo.filePath;
     fileInfo_ = std::move(fileInfo);
     updateStateBarText();
+    if (pathChanged)
+        emit filePathChanged(fileInfo_.filePath);
 }
 
 void NbtEditorTabPage::saveNbt(const NbtFileInfo& fileInfo)
