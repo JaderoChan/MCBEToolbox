@@ -17,7 +17,6 @@ public:
         KeyRole,
         StringRole,
         NumberRole,
-        BooleanRole,
         PunctuationRole
     };
 
@@ -31,16 +30,9 @@ protected:
     void highlightBlock(const QString& text) override;
 
 private:
-    struct Rule
-    {
-        QRegularExpression pattern;
-        TokenRole          role;
-    };
-
     QColor defaultColor(TokenRole role) const;
     void   rebuildFormats();
 
-    QList<Rule>                rules_;
     QMap<int, QColor>          colorOverrides_;
     QMap<int, QTextCharFormat> formats_;
 };

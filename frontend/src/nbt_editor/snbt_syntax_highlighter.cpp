@@ -1,6 +1,7 @@
 #include "snbt_syntax_highlighter.h"
 
 #include <qfont.h>
+#include <qpair.h>
 #include <qtextdocument.h>
 
 #include <components/color_scheme_manager.h>
@@ -8,13 +9,6 @@
 SnbtSyntaxHighlighter::SnbtSyntaxHighlighter(QTextDocument* document)
     : QSyntaxHighlighter(document)
 {
-    rules_.append({QRegularExpression(QStringLiteral(R"(("(?:[^"\\]|\\.)*"|[A-Za-z0-9_\-\.\+]+)(?=\s*:))")), KeyRole});
-    rules_.append({QRegularExpression(QStringLiteral(R"("(?:[^"\\]|\\.)*"(?!\s*:))")), StringRole});
-    rules_.append({QRegularExpression(QStringLiteral(R"('(?:[^'\\]|\\.)*'(?!\s*:))")), StringRole});
-    rules_.append({QRegularExpression(QStringLiteral(R"(\b-?\d+\.\d+[fFdD]?\b|\b-?\d+[bBsSlLfFdD]?\b)")), NumberRole});
-    rules_.append({QRegularExpression(QStringLiteral(R"(\btrue\b|\bfalse\b)")), BooleanRole});
-    rules_.append({QRegularExpression(QStringLiteral(R"([{}\[\]:,])")), PunctuationRole});
-
     rebuildFormats();
 
     connect(
@@ -54,7 +48,6 @@ QColor SnbtSyntaxHighlighter::defaultColor(TokenRole role) const
         case KeyRole:         return dark ? QColor(130, 180, 255) : QColor(0, 80, 180);
         case StringRole:      return dark ? QColor(180, 210, 140) : QColor(0, 120, 0);
         case NumberRole:      return dark ? QColor(220, 160, 100) : QColor(180, 90, 0);
-        case BooleanRole:     return dark ? QColor(200, 140, 220) : QColor(130, 0, 130);
         case PunctuationRole: return dark ? QColor(180, 180, 180) : QColor(90, 90, 90);
     }
     return QColor();
@@ -73,13 +66,82 @@ void SnbtSyntaxHighlighter::rebuildFormats()
 
 void SnbtSyntaxHighlighter::highlightBlock(const QString& text)
 {
-    for (const auto& rule : rules_)
+    QList<QPair<int, int>> claimed;
+    auto overlapsClaimed = [&claimed](int start, int end)
     {
-        auto it = rule.pattern.globalMatch(text);
+        for (const auto& range : claimed)
+            if (start < range.second && end > range.first)
+                return true;
+        return false;
+    };
+
+    static const QRegularExpression arrayPattern(QStringLiteral(R"(\[\s*[BILbil]\s*;[^\[\]]*\])"));
+    {
+        auto it = arrayPattern.globalMatch(text);
         while (it.hasNext())
         {
-            const auto match = it.next();
-            setFormat(match.capturedStart(), match.capturedLength(), formats_.value(static_cast<int>(rule.role)));
+            const auto m     = it.next();
+            const int  start = m.capturedStart();
+            const int  end   = m.capturedEnd();
+            setFormat(start, end - start, formats_.value(static_cast<int>(NumberRole)));
+            claimed.append({start, end});
         }
     }
+
+    static const QRegularExpression quotedPattern(QStringLiteral(R"("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')"));
+    {
+        auto it = quotedPattern.globalMatch(text);
+        while (it.hasNext())
+        {
+            const auto m     = it.next();
+            const int  start = m.capturedStart();
+            const int  end   = m.capturedEnd();
+            if (overlapsClaimed(start, end))
+                continue;
+
+            int next = end;
+            while (next < text.size() && text.at(next).isSpace())
+                ++next;
+            const bool isKey = next < text.size() && text.at(next) == QLatin1Char(':');
+
+            setFormat(start, end - start, formats_.value(static_cast<int>(isKey ? KeyRole : StringRole)));
+
+            claimed.append({start, end});
+        }
+    }
+
+    static const QRegularExpression keyPattern(QStringLiteral(
+        R"([A-Za-z0-9_\-\.\+]+(?::[A-Za-z0-9_\-\.\+]+)?(?:\[[^\[\]]*\])?(?=\s*:))"
+    ));
+    {
+        auto it = keyPattern.globalMatch(text);
+        while (it.hasNext())
+        {
+            const auto m     = it.next();
+            const int  start = m.capturedStart();
+            const int  end   = m.capturedEnd();
+            if (overlapsClaimed(start, end))
+                continue;
+            setFormat(start, end - start, formats_.value(static_cast<int>(KeyRole)));
+            claimed.append({start, end});
+        }
+    }
+
+    static const QRegularExpression numberPattern(QStringLiteral(R"((?<![\w.])-?\d+(?:\.\d+)?[bBsSlLfFdD]?(?![\w.]))"));
+    static const QRegularExpression punctPattern(QStringLiteral(R"([{}\[\]:,])"));
+    auto applyRemaining = [&](const QRegularExpression& pattern, TokenRole role)
+    {
+        auto it = pattern.globalMatch(text);
+        while (it.hasNext())
+        {
+            const auto m     = it.next();
+            const int  start = m.capturedStart();
+            const int  end   = m.capturedEnd();
+            if (overlapsClaimed(start, end))
+                continue;
+            setFormat(start, end - start, formats_.value(static_cast<int>(role)));
+        }
+    };
+    applyRemaining(numberPattern, NumberRole);
+    applyRemaining(punctPattern, PunctuationRole);
 }
