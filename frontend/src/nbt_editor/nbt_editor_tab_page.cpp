@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 
+#include <qbuttongroup.h>
 #include <qfiledialog.h>
 #include <qlayout.h>
 #include <qlabel.h>
@@ -40,11 +41,19 @@ public:
         bigEndianRadio_    = new QRadioButton(this);
         littleEndianRadio_->setChecked(true);
 
+        auto* endianButtonGroup = new QButtonGroup(this);
+        endianButtonGroup->addButton(littleEndianRadio_);
+        endianButtonGroup->addButton(bigEndianRadio_);
+
         // Compressed
         compressedLabel_   = new QLabel(this);
         uncompressedRadio_ = new QRadioButton(this);
         compressedRadio_   = new QRadioButton(this);
         uncompressedRadio_->setChecked(true);
+
+        auto* compressedButtonGroup = new QButtonGroup(this);
+        compressedButtonGroup->addButton(uncompressedRadio_);
+        compressedButtonGroup->addButton(compressedRadio_);
 
         // File path
         filePathLabel_ = new QLabel(this);
@@ -197,7 +206,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
         this, [this]() { nbtView_->invokeEditItemValue(nbtView_->selectedItem()); }
     );
 
-    toolbarLayout->addSpacing(4);
+    toolbarLayout->addSpacing(3);
 
     // Tag 增添按钮。
     for (auto type : nbt_utils::addableTagTypes())
@@ -241,6 +250,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     // SNBT 页面。
     snbtWidget_ = new CodeTextEdit(this);
     snbtWidget_->setReadOnly(true);
+    snbtWidget_->setContextMenuPolicy(Qt::NoContextMenu);
     auto* snbtHighlighter = new SnbtSyntaxHighlighter(snbtWidget_->document());
 
     // 页面容器。
@@ -253,15 +263,19 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     // 构建底部状态栏 UI。
     auto* stateBarWidget = new QWidget(this);
     auto* stateBarLayout = new QHBoxLayout(stateBarWidget);
-    stateBarWidget->setFixedHeight(20);
+    auto font = stateBarWidget->font();
+    font.setPointSize(11);
+    stateBarWidget->setFont(font);
+    stateBarWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     stateBarLayout->setContentsMargins(3, 0, 3, 0);
-    stateBarLayout->setSpacing(20);
+    stateBarLayout->setSpacing(18);
 
     filePathLabel_   = new QLabel(this);
     endianLabel_     = new QLabel(this);
     compressedLabel_ = new QLabel(this);
-
-    filePathLabel_->setMaximumWidth(240);
+    filePathLabel_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    endianLabel_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    compressedLabel_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     stateBarLayout->addWidget(filePathLabel_);
     stateBarLayout->addStretch();
@@ -289,7 +303,7 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
         QMessageBox(
             QMessageBox::Critical,
             EASYTR("Error"),
-            QString("%1 %2").arg(EASYTR("Can't open the file:")).arg(filePath),
+            QStringLiteral("%1: %2").arg(EASYTR("Can't open the file")).arg(filePath),
             QMessageBox::Close,
             parent
         ).exec();
@@ -368,7 +382,7 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
         QMessageBox(
             QMessageBox::Critical,
             EASYTR("Error"),
-            QString("%1 %2").arg(EASYTR("Can't parse the NBT file:")).arg(filePath),
+            QStringLiteral("%1: %2").arg(EASYTR("Can't parse the NBT file")).arg(filePath),
             QMessageBox::Close,
             parent
         ).exec();
@@ -530,7 +544,7 @@ void NbtEditorTabPage::updateStateBarText()
     }
     else
     {
-        filePathLabel_->setText(QString());
+        filePathLabel_->setText(QStringLiteral("*"));
         filePathLabel_->setToolTip(QString());
         endianLabel_->setText(QString());
         compressedLabel_->setText(QString());
@@ -559,7 +573,7 @@ void NbtEditorTabPage::saveNbt(const NbtFileInfo& fileInfo)
         QMessageBox(
             QMessageBox::Critical,
             EASYTR("Error"),
-            QString("%1 %2").arg(EASYTR("Can't open the file:")).arg(fileInfo.filePath),
+            QStringLiteral("%1: %2").arg(EASYTR("Can't open the file")).arg(fileInfo.filePath),
             QMessageBox::Close,
             this
         ).exec();

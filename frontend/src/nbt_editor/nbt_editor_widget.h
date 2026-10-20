@@ -22,6 +22,7 @@ private:
     void parseSnbt();
 
     void addPage(NbtEditorTabPage* page, const QString& title);
+    void removePage(int index);
     void updateButtonState();
 
     NbtEditorTabPage* currentPage() const;

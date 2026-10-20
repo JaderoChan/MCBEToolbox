@@ -1,5 +1,8 @@
 #include "nbt_editor_widget.h"
 
+#include <exception>
+
+#include <qaction.h>
 #include <qfiledialog.h>
 #include <qfileinfo.h>
 #include <qlayout.h>
@@ -15,6 +18,7 @@
 #include <components/code_text_edit.h>
 #include "nbt_editor_tab_page.h"
 #include "nbt_tree_view.h"
+#include "snbt_syntax_highlighter.h"
 
 namespace
 {
@@ -27,6 +31,8 @@ public:
         : TrDialog(parent)
     {
         textEdit_ = new CodeTextEdit(this);
+        textEdit_->setContextMenuPolicy(Qt::NoContextMenu);
+        auto* snbtHighlighter = new SnbtSyntaxHighlighter(textEdit_->document());
 
         confirmButton_ = new QPushButton(this);
         cancelButton_  = new QPushButton(this);
@@ -106,16 +112,8 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     tabWidget_ = new QTabWidget(this);
     tabWidget_->setTabsClosable(true);
     tabWidget_->setMovable(true);
-    connect(
-        tabWidget_, &QTabWidget::tabCloseRequested,
-        this, [this](int index)
-        {
-            auto* page = tabWidget_->widget(index);
-            tabWidget_->removeTab(index);
-            page->deleteLater();
-        }
-    );
-    connect(tabWidget_, &QTabWidget::currentChanged, this, &NbtEditorWidget::updateButtonState);
+    connect(tabWidget_, &QTabWidget::tabCloseRequested, this, &NbtEditorWidget::removePage);
+    connect(tabWidget_, &QTabWidget::currentChanged,    this, &NbtEditorWidget::updateButtonState);
 
     // 主布局。
     auto* mainLayout = new QVBoxLayout(this);
@@ -123,6 +121,27 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     mainLayout->setSpacing(3);
     mainLayout->addWidget(toolbarWidget);
     mainLayout->addWidget(tabWidget_);
+
+    // 快捷 Actions。
+    auto* newAction    = new QAction(this);
+    auto* openAction   = new QAction(this);
+    auto* saveAction   = new QAction(this);
+    auto* saveAsAction = new QAction(this);
+    auto* closeAction  = new QAction(this);
+
+    newAction->setShortcut({QKeyCombination(Qt::CTRL, Qt::Key_N)});
+    openAction->setShortcut({QKeyCombination(Qt::CTRL, Qt::Key_O)});
+    saveAction->setShortcut({QKeyCombination(Qt::CTRL, Qt::Key_S)});
+    saveAsAction->setShortcut({QKeyCombination{Qt::CTRL | Qt::SHIFT, Qt::Key_S}});
+    closeAction->setShortcut({QKeyCombination(Qt::CTRL, Qt::Key_W)});
+
+    connect(newAction,    &QAction::triggered, this, &NbtEditorWidget::newNbt);
+    connect(openAction,   &QAction::triggered, this, &NbtEditorWidget::openNbt);
+    connect(saveAction,   &QAction::triggered, this, &NbtEditorWidget::saveCurrentPage);
+    connect(saveAsAction, &QAction::triggered, this, &NbtEditorWidget::saveCurrentPageAs);
+    connect(closeAction,  &QAction::triggered, this, [this]() { removePage(tabWidget_->currentIndex()); });
+
+    addActions({newAction, openAction, saveAction, saveAsAction, closeAction});
 
     updateButtonState();
     updateText();
@@ -188,12 +207,12 @@ void NbtEditorWidget::parseSnbt()
     {
         tag = nbt::Tag::fromSnbt(dialog.text().toStdString());
     }
-    catch (...)
+    catch (std::exception& e)
     {
         QMessageBox(
             QMessageBox::Critical,
             EASYTR("Error"),
-            EASYTR("Can't parse the SNBT"),
+            QStringLiteral("%1: %2").arg(EASYTR("Can't parse the SNBT")).arg(e.what()),
             QMessageBox::Close,
             this
         ).exec();
@@ -219,6 +238,16 @@ void NbtEditorWidget::addPage(NbtEditorTabPage* page, const QString& title)
         }
     );
     tabWidget_->setCurrentIndex(index);
+}
+
+void NbtEditorWidget::removePage(int index)
+{
+    if (index >= 0 && index < tabWidget_->count())
+    {
+        auto* page = tabWidget_->widget(index);
+        tabWidget_->removeTab(index);
+        page->deleteLater();
+    }
 }
 
 void NbtEditorWidget::updateButtonState()

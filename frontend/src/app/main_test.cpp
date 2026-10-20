@@ -1,4 +1,5 @@
 #include <qapplication.h>
+#include <qsettings.h>
 
 #include <easy_translate.hpp>
 
@@ -23,6 +24,9 @@ int main(int argc, char* argv[])
     a.setApplicationVersion(APP_VERSION);
 #ifndef Q_OS_MAC
     a.setWindowIcon(getLogoIcon());
+#else
+    QSettings(QSettings::NativeFormat, QSettings::UserScope, QStringLiteral(APP_BUNDLE_IDENTIFIER))
+        .setValue(QStringLiteral("ApplePressAndHoldEnabled"), false);
 #endif
 
     // 设置语言

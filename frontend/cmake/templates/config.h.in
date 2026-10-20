@@ -21,6 +21,7 @@
 #define APP_DIRPATH QApplication::applicationDirPath()
 #ifdef Q_OS_MAC
     #define APP_RESOURCES_DIRPATH    (APP_DIRPATH + "/../Resources")
+    #define APP_BUNDLE_IDENTIFIER    "@APP_ORGANIZATION_DOMAIN@.@PROJECT_NAME@"
 #else
     #define APP_RESOURCES_DIRPATH    APP_DIRPATH
 #endif // Q_OS_MAC
