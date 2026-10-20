@@ -138,7 +138,7 @@ protected:
 private slots:
     void browseFilePath()
     {
-        const QString filePath = QFileDialog::getSaveFileName(this, EASYTR("Select File"), filePathEdit_->text());
+        const auto& filePath = QFileDialog::getSaveFileName(this, EASYTR("Select File"), filePathEdit_->text());
         if (!filePath.isEmpty())
             filePathEdit_->setText(filePath);
     }
@@ -166,10 +166,10 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     : TrWidget(parent)
 {
     // 构建顶部工具栏 UI。
-    QWidget*     toolbar       = new QWidget(this);
-    QHBoxLayout* toolbarLayout = new QHBoxLayout(toolbar);
-    toolbarLayout->setContentsMargins(2, 0, 2, 0);
-    toolbarLayout->setSpacing(2);
+    auto* toolbarWidget = new QWidget(this);
+    auto* toolbarLayout = new QHBoxLayout(toolbarWidget);
+    toolbarLayout->setContentsMargins(3, 0, 3, 0);
+    toolbarLayout->setSpacing(3);
 
     // 基础 Tag 操作按钮。
     renameButton_ = new QToolButton(this);
@@ -200,9 +200,9 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     toolbarLayout->addSpacing(4);
 
     // Tag 增添按钮。
-    for (nbt::TagType type : nbt_utils::addableTagTypes())
+    for (auto type : nbt_utils::addableTagTypes())
     {
-        QToolButton* button = new QToolButton(this);
+        auto* button = new QToolButton(this);
         button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         button->setFocusPolicy(Qt::ClickFocus);
         button->setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -221,7 +221,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
 
     toolbarLayout->addStretch();
 
-    // SNBT 按钮
+    // SNBT 按钮。
     snbtButton_ = new QToolButton(this);
     snbtButton_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     snbtButton_->setFocusPolicy(Qt::ClickFocus);
@@ -233,28 +233,28 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
 
     toolbarLayout->addWidget(snbtButton_);
 
-    // NBT Tree 视图
+    // NBT 视图。
     nbtView_ = new NbtTreeView(this);
     connect(nbtView_, &NbtTreeView::selectedItemChanged, this, &NbtEditorTabPage::updateButtonState);
     connect(nbtView_, &NbtTreeView::tagChanged, this, [this]() { needUpdateSnbt_ = true; updateButtonState(); });
 
-    // SNBT 页面
+    // SNBT 页面。
     snbtWidget_ = new CodeTextEdit(this);
     snbtWidget_->setReadOnly(true);
     auto* snbtHighlighter = new SnbtSyntaxHighlighter(snbtWidget_->document());
 
-    // Stacked Widget
+    // 页面容器。
     stackedWidget_ = new QStackedWidget(this);
     stackedWidget_->setContentsMargins(0, 0, 0, 0);
     stackedWidget_->addWidget(nbtView_);
     stackedWidget_->addWidget(snbtWidget_);
     stackedWidget_->setCurrentIndex(0);
 
-    // 底部状态栏
-    QWidget*     stateBar       = new QWidget(this);
-    QHBoxLayout* stateBarLayout = new QHBoxLayout(stateBar);
-    stateBar->setFixedHeight(20);
-    stateBarLayout->setContentsMargins(2, 0, 2, 0);
+    // 构建底部状态栏 UI。
+    auto* stateBarWidget = new QWidget(this);
+    auto* stateBarLayout = new QHBoxLayout(stateBarWidget);
+    stateBarWidget->setFixedHeight(20);
+    stateBarLayout->setContentsMargins(3, 0, 3, 0);
     stateBarLayout->setSpacing(20);
 
     filePathLabel_   = new QLabel(this);
@@ -268,13 +268,13 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     stateBarLayout->addWidget(endianLabel_);
     stateBarLayout->addWidget(compressedLabel_);
 
-    // 主布局
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    // 主布局。
+    auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(2);
-    mainLayout->addWidget(toolbar);
+    mainLayout->setSpacing(3);
+    mainLayout->addWidget(toolbarWidget);
     mainLayout->addWidget(stackedWidget_);
-    mainLayout->addWidget(stateBar);
+    mainLayout->addWidget(stateBarWidget);
 
     updateButtonState();
     updateText();
@@ -383,7 +383,7 @@ void NbtEditorTabPage::saveNbt()
 
     if (!fileInfo_.valid)
     {
-        NbtFileInfo fileInfo = popupDialogForFileInfo(fileInfo_);
+        auto fileInfo = popupDialogForFileInfo(fileInfo_);
         if (!fileInfo.valid)
             return;
         setFileInfo(std::move(fileInfo));
@@ -397,7 +397,7 @@ void NbtEditorTabPage::saveNbtAs()
     if (!hasValidRootTag())
         return;
 
-    NbtFileInfo fileInfo = popupDialogForFileInfo(fileInfo_);
+    auto fileInfo = popupDialogForFileInfo(fileInfo_);
     if (!fileInfo.valid)
         return;
     saveNbt(fileInfo);
@@ -507,7 +507,7 @@ void NbtEditorTabPage::updateButtonState()
             return;
 
         // 根据 Tag 类型决定是否启用重命名与数值编辑按钮。
-        const nbt::TagType type = tag->type();
+        const auto type         = tag->type();
         const bool isNamingTag  = nbtView_->isNamingTag(item);
         if (nbt_utils::tagKeyEditable(type, isNamingTag))   renameButton_->setEnabled(true);
         if (nbt_utils::tagValueEditable(type, isNamingTag)) editButton_->setEnabled(true);
@@ -515,7 +515,7 @@ void NbtEditorTabPage::updateButtonState()
         if (item != nbtView_->rootItem())                   removeButton_->setEnabled(true);
 
         // 根据当前 item 对应的 Tag 启用不同增添按钮。
-        for (nbt::TagType type : nbt_utils::addableTagTypes(tag))
+        for (auto type : nbt_utils::addableTagTypes(tag))
             addButtons_[type]->setEnabled(true);
     }
 }

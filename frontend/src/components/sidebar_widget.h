@@ -80,8 +80,8 @@ private:
     void updateToggleIcon();
     void animateWidthTo(int targetWidth);
 
-    QVBoxLayout*       layout_ = nullptr;
-    QVariantAnimation* anim_   = nullptr;
+    QVBoxLayout*       mainLayout_ = nullptr;
+    QVariantAnimation* anim_       = nullptr;
 
     SidebarEntryWidget*          toggleEntry_ = nullptr;
     QVector<SidebarEntryWidget*> entries_;

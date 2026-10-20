@@ -29,7 +29,7 @@ const QList<nbt::TagType>& addableTagTypes(const nbt::Tag* tag)
         nbt::TT_LIST, nbt::TT_COMPOUND
     };
 
-    static const QMap<nbt::TagType, const QList<nbt::TagType>*> typeMapping
+    static const QMap<nbt::TagType, const RetType*> typeMapping
     {
         {nbt::TT_BYTE,       &byteTypes},
         {nbt::TT_SHORT,      &shortTypes},
@@ -100,7 +100,7 @@ QString tagText(const nbt::Tag& tag)
 
 nbt::Tag parseTextToTag(nbt::TagType type, const QString& text, bool& ok)
 {
-    const QString trimmed = text.trimmed();
+    const auto& trimmed = text.trimmed();
     switch (type)
     {
         case nbt::TT_BYTE:   return nbt::Tag(static_cast<int8_t>(trimmed.toLongLong(&ok)));

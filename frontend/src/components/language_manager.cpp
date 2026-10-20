@@ -30,7 +30,7 @@ void LanguageManager::setLanguage(Language language)
     if (language_ != language)
     {
         language_ = language;
-        const Language loadedLanguage = language_ == LANGUAGE_AUTO ? getSystemLanguage() : language_;
+        const auto& loadedLanguage = language_ == LANGUAGE_AUTO ? getSystemLanguage() : language_;
         if (loadedLanguage_ != loadedLanguage)
         {
             loadedLanguage_ = loadedLanguage;
@@ -57,7 +57,7 @@ bool LanguageManager::eventFilter(QObject* obj, QEvent* e)
     {
         if (e->type() == QEvent::LocaleChange && language_ == LANGUAGE_AUTO)
         {
-            const Language loadedLanguage = getSystemLanguage();
+            const auto& loadedLanguage = getSystemLanguage();
             if (loadedLanguage_ != loadedLanguage)
             {
                 loadedLanguage_ = loadedLanguage;
@@ -100,7 +100,7 @@ void LanguageManager::loadLanguage()
         return;
     }
 
-    const std::string id = getLanguageId(loadedLanguage_).toStdString();
+    const auto& id = getLanguageId(loadedLanguage_).toStdString();
     if (!easytr::hasLanguage(id))
     {
         debugOut(qWarning(), "[LanguageManager] Language %1 is not available.", QString::fromStdString(id));

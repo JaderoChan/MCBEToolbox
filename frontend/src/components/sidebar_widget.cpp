@@ -490,7 +490,7 @@ protected:
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing);
 
-        const QColor highlight = palette().color(QPalette::Highlight);
+        const auto& highlight = palette().color(QPalette::Highlight);
 
         if (selected_ || hovered_)
         {
@@ -527,7 +527,7 @@ protected:
             if (textRect.width() > 0)
             {
                 painter.setPen(palette().color(QPalette::WindowText));
-                const QString elided = fontMetrics().elidedText(text_, Qt::ElideRight, textRect.width());
+                const auto& elided = fontMetrics().elidedText(text_, Qt::ElideRight, textRect.width());
                 painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, elided);
             }
         }
@@ -549,9 +549,9 @@ private:
 SidebarWidget::SidebarWidget(QWidget* parent)
     : QWidget(parent)
 {
-    layout_ = new QVBoxLayout(this);
-    layout_->setContentsMargins(3, 3, 3, 3);
-    layout_->setSpacing(entrySpacing_);
+    mainLayout_ = new QVBoxLayout(this);
+    mainLayout_->setContentsMargins(3, 3, 3, 3);
+    mainLayout_->setSpacing(entrySpacing_);
 
     anim_ = new QVariantAnimation(this);
     anim_->setDuration(ANIM_DURATION_MS);
@@ -566,7 +566,7 @@ SidebarWidget::SidebarWidget(QWidget* parent)
 
     toggleEntry_ = new SidebarEntryWidget(true, this);
     updateToggleIcon();
-    layout_->addWidget(toggleEntry_);
+    mainLayout_->addWidget(toggleEntry_);
     connect(toggleEntry_, &SidebarEntryWidget::clicked, this, &SidebarWidget::toggle);
 
     connect(
@@ -586,7 +586,7 @@ int SidebarWidget::insertEntry(int index, const QIcon& icon, const QString& text
 {
     index = std::clamp(index, 0, static_cast<int>(entries_.size()));
 
-    SidebarEntryWidget* entry = new SidebarEntryWidget(false, this);
+    auto* entry = new SidebarEntryWidget(false, this);
     entry->setIcon(icon);
     entry->setText(text);
     entry->setData(data);
@@ -599,9 +599,9 @@ int SidebarWidget::insertEntry(int index, const QIcon& icon, const QString& text
     });
 
     if (index == static_cast<int>(entries_.size()))
-        layout_->addWidget(entry);
+        mainLayout_->addWidget(entry);
     else
-        layout_->insertWidget(layout_->indexOf(entries_[index]), entry);
+        mainLayout_->insertWidget(mainLayout_->indexOf(entries_[index]), entry);
     entries_.insert(entries_.begin() + index, entry);
 
     if (currentIndex_ >= index)
@@ -615,9 +615,9 @@ void SidebarWidget::removeEntry(int index)
     if (index < 0 || index >= static_cast<int>(entries_.size()))
         return;
 
-    SidebarEntryWidget* entry = entries_[index];
+    auto* entry = entries_[index];
     entries_.erase(entries_.begin() + index);
-    layout_->removeWidget(entry);
+    mainLayout_->removeWidget(entry);
     entry->deleteLater();
 
     if (currentIndex_ == index)
@@ -635,7 +635,7 @@ void SidebarWidget::clearEntries()
 {
     for (auto* entry : entries_)
     {
-        layout_->removeWidget(entry);
+        mainLayout_->removeWidget(entry);
         entry->deleteLater();
     }
     entries_.clear();
@@ -699,7 +699,7 @@ void SidebarWidget::setEntrySpacing(int spacing)
     if (entrySpacing_ == spacing)
         return;
     entrySpacing_ = spacing;
-    layout_->setSpacing(entrySpacing_);
+    mainLayout_->setSpacing(entrySpacing_);
 }
 
 int SidebarWidget::entrySpacing() const
@@ -709,12 +709,12 @@ int SidebarWidget::entrySpacing() const
 
 void SidebarWidget::addSpacing(int size)
 {
-    layout_->addSpacing(size);
+    mainLayout_->addSpacing(size);
 }
 
 void SidebarWidget::addStretch(int stretch)
 {
-    layout_->addStretch(stretch);
+    mainLayout_->addStretch(stretch);
 }
 
 bool SidebarWidget::isExpanded() const

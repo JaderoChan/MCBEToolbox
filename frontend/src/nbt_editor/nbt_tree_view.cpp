@@ -135,7 +135,7 @@ bool NbtTreeView::addItem(QStandardItem* parentItem, nbt::Tag value, const QStri
     else if (parentTag->isCompound())
     {
         const auto& stdKey = key.toStdString();
-        auto& target = (*parentTag)[stdKey];
+        auto&       target = (*parentTag)[stdKey];
         if (!target.isEnd())
             return false;
         target = std::move(value);
@@ -190,12 +190,12 @@ bool NbtTreeView::removeItem(QStandardItem* item)
         // 更新删除项之后项的索引值与文本。
         for (qulonglong row = item->row() + 1; row < static_cast<qulonglong>(parentItem->rowCount()); ++row)
         {
-            const qulonglong index = row - 1;
+            const auto& index = row - 1;
 
             QString valueText;
             if (parentTag->isArray())     valueText = nbt_utils::arrayElementText(*parentTag, index);
             else if (parentTag->isList()) valueText = nbt_utils::tagText(parentTag[static_cast<std::size_t>(index)]);
-            const QString text = "[" + QString::number(index) + "]: " + valueText;
+            const auto& text = "[" + QString::number(index) + "]: " + valueText;
 
             auto* child = parentItem->child(static_cast<int>(row));
             child->setText(text);
@@ -232,8 +232,8 @@ bool NbtTreeView::changeItemKey(QStandardItem* item, const QString& newKey)
         return false;
 
     // 更改 Tag 中的名称。
-    auto tag = std::move(*itemTag(item));
-    const QString valueText = nbt_utils::tagText(tag);
+    auto        tag       = std::move(*itemTag(item));
+    const auto& valueText = nbt_utils::tagText(tag);
     parentTag->erase(itemTagKey(item).toString().toStdString());
     parentTag->insert(stdNewKey, std::move(tag));
 
@@ -269,7 +269,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
             case nbt::TT_BYTE_ARRAY:
             {
                 if (!newValue.isByte()) return false;
-                const auto i = itemTagIndex(item).toULongLong();
+                const auto& i = itemTagIndex(item).toULongLong();
                 parentTag->getByteArray()[static_cast<std::size_t>(i)] = newValue.getByte();
                 item->setText(QStringLiteral("[%1]: %2").arg(i).arg(newValue.getByte()));
                 break;
@@ -277,7 +277,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
             case nbt::TT_INT_ARRAY:
             {
                 if (!newValue.isInt()) return false;
-                const auto i = itemTagIndex(item).toULongLong();
+                const auto& i = itemTagIndex(item).toULongLong();
                 parentTag->getIntArray()[static_cast<std::size_t>(i)] = newValue.getInt();
                 item->setText(QStringLiteral("[%1]: %2").arg(i).arg(newValue.getInt()));
                 break;
@@ -285,7 +285,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
             case nbt::TT_LONG_ARRAY:
             {
                 if (!newValue.isLong()) return false;
-                const auto i = itemTagIndex(item).toULongLong();
+                const auto& i = itemTagIndex(item).toULongLong();
                 parentTag->getLongArray()[static_cast<std::size_t>(i)] = newValue.getLong();
                 item->setText(QStringLiteral("[%1]: %2").arg(i).arg(newValue.getLong()));
                 break;
@@ -302,19 +302,19 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
         auto& target = parentTag->at(static_cast<std::size_t>(itemTagIndex(item).toULongLong()));
         target = std::move(newValue);
 
-        auto* parentItem = item->parent();
-        const int row    = item->row();
+        auto*     parentItem = item->parent();
+        const int row        = item->row();
         parentItem->removeRow(row);
         parentItem->insertRow(row, createItem(false, QString(), row, target));
     }
     else if (parentTag->isCompound())
     {
-        const QString& key = itemTagKey(item).toString();
-        auto& target = parentTag->at(key.toStdString());
+        const auto& key    = itemTagKey(item).toString();
+        auto&       target = parentTag->at(key.toStdString());
         target = std::move(newValue);
 
-        auto* parentItem = item->parent();
-        const int row    = item->row();
+        auto*     parentItem = item->parent();
+        const int row        = item->row();
         parentItem->removeRow(row);
         parentItem->insertRow(row, createItem(true, key, 0, target));
     }
@@ -375,8 +375,8 @@ bool NbtTreeView::invokeEditItemKey(QStandardItem* item)
     if (!tag)
         return false;
 
-    const QString keyText   = itemTagKey(item).toString();
-    const QString valueText = nbt_utils::tagText(*tag);
+    const auto& keyText   = itemTagKey(item).toString();
+    const auto& valueText = nbt_utils::tagText(*tag);
 
     beginRowEdit(item, tag->type(), true, keyText, valueText, true, RowEditType::Modify);
     return true;
@@ -404,7 +404,7 @@ bool NbtTreeView::invokeEditItemValue(QStandardItem* item)
         valueText = nbt_utils::tagText(*tag);
     }
 
-    const QString keyText = isNamingTag(item) ? itemTagKey(item).toString() : QString();
+    const auto& keyText = isNamingTag(item) ? itemTagKey(item).toString() : QString();
     beginRowEdit(item, type, isNamingTag(item), keyText, valueText, false, RowEditType::Modify);
     return true;
 }
@@ -442,7 +442,7 @@ void NbtTreeView::keyPressEvent(QKeyEvent* e)
         return;
     }
 
-    QStandardItem* item = selectedItem();
+    auto* item = selectedItem();
     if (item)
     {
         switch (e->key())
@@ -473,7 +473,7 @@ bool NbtTreeView::edit(const QModelIndex& index, EditTrigger trigger, QEvent* e)
 {
     if (trigger == QAbstractItemView::DoubleClicked)
     {
-        QStandardItem* item = model_->itemFromIndex(index);
+        auto* item = model_->itemFromIndex(index);
         if (item && invokeEditItemValue(item))
             return true;
     }
@@ -490,7 +490,7 @@ QString NbtTreeView::defaultValueText(nbt::TagType type)
 
 nbt::Tag* NbtTreeView::itemParentTag(const QStandardItem* item)
 {
-    QStandardItem* parentItem = item->parent();
+    auto* parentItem = item->parent();
     if (!parentItem)
         return nullptr;
     return itemTag(parentItem);
@@ -532,7 +532,7 @@ void NbtTreeView::rebuild()
 
 QStandardItem* NbtTreeView::createArrayItem(nbt::Tag* parentArrayTag, qulonglong index)
 {
-    QStandardItem* item = new QStandardItem();
+    auto* item = new QStandardItem();
     item->setIcon(nbt_utils::tagTypeIcon(nbt_utils::arrayElementTagType(parentArrayTag->type())));
     item->setText(
         QStringLiteral("[%1]: %2")
@@ -546,7 +546,7 @@ QStandardItem* NbtTreeView::createArrayItem(nbt::Tag* parentArrayTag, qulonglong
 
 QStandardItem* NbtTreeView::createItem(bool isNamingTag, const QString& key, qulonglong index, const nbt::Tag& value)
 {
-    QStandardItem* item = new QStandardItem();
+    auto* item = new QStandardItem();
     item->setIcon(nbt_utils::tagTypeIcon(value.type()));
     item->setText(
         isNamingTag
@@ -650,11 +650,11 @@ void NbtTreeView::endRowEdit(bool confirm)
 
     if (confirm)
     {
-        const QString keyText   = editor_->keyText();
-        const QString valueText = editor_->valueText();
+        const auto& keyText   = editor_->keyText();
+        const auto& valueText = editor_->valueText();
 
         bool ok = true;
-        nbt::Tag value = editor_->valueEditable()
+        const auto& value = editor_->valueEditable()
             ? nbt_utils::parseTextToTag(editor_->type(), valueText, ok)
             : nbt::Tag(editor_->type());
 
@@ -675,13 +675,13 @@ void NbtTreeView::endRowEdit(bool confirm)
 
             if (editor_->valueEditable())
             {
-                auto* parentItem = editItem_->parent();
-                const int row    = editItem_->row();
+                auto*     parentItem = editItem_->parent();
+                const int row        = editItem_->row();
                 changeItemValue(editItem_, std::move(value));
 
                 if (parentItem)
                 {
-                    if (QStandardItem* resultItem = parentItem->child(row))
+                    if (auto* resultItem = parentItem->child(row))
                         setCurrentIndex(resultItem->index());
                 }
                 else
@@ -711,7 +711,7 @@ void NbtTreeView::endRowEdit(bool confirm)
 
 void NbtTreeView::showContextMenu(const QPoint& position)
 {
-    QStandardItem* item = model_->itemFromIndex(indexAt(position));
+    auto* item = model_->itemFromIndex(indexAt(position));
     if (!item)
         return;
 
@@ -733,8 +733,8 @@ void NbtTreeView::showContextMenu(const QPoint& position)
 
     if (tag && !nbt_utils::addableTagTypes(tag).empty())
     {
-        QMenu* addMenu = menu.addMenu(tag->isCompound() ? EASYTR("Add Entry") : EASYTR("Add Element"));
-        for (nbt::TagType type : nbt_utils::addableTagTypes(tag))
+        auto* addMenu = menu.addMenu(tag->isCompound() ? EASYTR("Add Entry") : EASYTR("Add Element"));
+        for (auto type : nbt_utils::addableTagTypes(tag))
         {
             addMenu->addAction(
                 EASYTR(nbt::getTagTypeName(type)),

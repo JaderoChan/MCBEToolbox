@@ -74,11 +74,11 @@ private:
 NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     : TrWidget(parent)
 {
-    // 顶部工具栏。
-    QWidget*     toolbar       = new QWidget(this);
-    QHBoxLayout* toolbarLayout = new QHBoxLayout(toolbar);
-    toolbarLayout->setContentsMargins(2, 0, 2, 0);
-    toolbarLayout->setSpacing(2);
+    // 构建顶部工具栏 UI。
+    auto* toolbarWidget = new QWidget(this);
+    auto* toolbarLayout = new QHBoxLayout(toolbarWidget);
+    toolbarLayout->setContentsMargins(3, 0, 3, 0);
+    toolbarLayout->setSpacing(3);
 
     newButton_       = new QToolButton(this);
     openButton_      = new QToolButton(this);
@@ -110,7 +110,7 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
         tabWidget_, &QTabWidget::tabCloseRequested,
         this, [this](int index)
         {
-            QWidget* page = tabWidget_->widget(index);
+            auto* page = tabWidget_->widget(index);
             tabWidget_->removeTab(index);
             page->deleteLater();
         }
@@ -118,10 +118,10 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     connect(tabWidget_, &QTabWidget::currentChanged, this, &NbtEditorWidget::updateButtonState);
 
     // 主布局。
-    QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(2);
-    mainLayout->addWidget(toolbar);
+    mainLayout->setSpacing(3);
+    mainLayout->addWidget(toolbarWidget);
     mainLayout->addWidget(tabWidget_);
 
     updateButtonState();
@@ -146,7 +146,7 @@ void NbtEditorWidget::newNbt()
 
 void NbtEditorWidget::openNbt()
 {
-    const QString filePath =
+    const auto filePath =
         QFileDialog::getOpenFileName(
             this,
             EASYTR("Select File"),
@@ -158,7 +158,7 @@ void NbtEditorWidget::openNbt()
     if (filePath.isEmpty())
         return;
 
-    NbtEditorTabPage* page = NbtEditorTabPage::createFromFile(filePath, this);
+    auto* page = NbtEditorTabPage::createFromFile(filePath, this);
     if (!page)
         return;
 
@@ -223,8 +223,8 @@ void NbtEditorWidget::addPage(NbtEditorTabPage* page, const QString& title)
 
 void NbtEditorWidget::updateButtonState()
 {
-    NbtEditorTabPage* page    = currentPage();
-    const bool        enabled = page && page->hasValidRootTag();
+    auto*      page    = currentPage();
+    const bool enabled = page && page->hasValidRootTag();
     saveButton_->setEnabled(enabled);
     saveAsButton_->setEnabled(enabled);
 }

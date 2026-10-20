@@ -129,8 +129,8 @@ QColor CodeTextEdit::defaultColor(ColorRole role) const
 
 void CodeTextEdit::applyWhitespaceFlags()
 {
-    QTextOption opt = document()->defaultTextOption();
-    QTextOption::Flags flags = opt.flags();
+    auto opt   = document()->defaultTextOption();
+    auto flags = opt.flags();
     if (showWhitespace_) flags |=  QTextOption::ShowTabsAndSpaces;
     else                 flags &= ~QTextOption::ShowTabsAndSpaces;
     opt.setFlags(flags);
@@ -139,7 +139,7 @@ void CodeTextEdit::applyWhitespaceFlags()
 
 int CodeTextEdit::lineNumberAreaWidth() const
 {
-    int digits = 1;
+    int digits   = 1;
     int maxBlock = qMax(1, blockCount());
     while (maxBlock >= 10)
     {
@@ -154,10 +154,10 @@ void CodeTextEdit::lineNumberAreaPaintEvent(QPaintEvent* e)
     QPainter painter(lineNumberArea_);
     painter.fillRect(e->rect(), color(LineNumberBackground));
 
-    QTextBlock block      = firstVisibleBlock();
-    int        blockIndex = block.blockNumber();
-    int        top        = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
-    int        bottom     = top + qRound(blockBoundingRect(block).height());
+    auto block      = firstVisibleBlock();
+    int  blockIndex = block.blockNumber();
+    int  top        = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+    int  bottom     = top + qRound(blockBoundingRect(block).height());
 
     painter.setPen(color(LineNumberText));
     while (block.isValid() && top <= e->rect().bottom())
@@ -179,7 +179,7 @@ void CodeTextEdit::lineNumberAreaPaintEvent(QPaintEvent* e)
 void CodeTextEdit::resizeEvent(QResizeEvent* e)
 {
     QPlainTextEdit::resizeEvent(e);
-    const QRect cr = contentsRect();
+    const auto& cr = contentsRect();
     lineNumberArea_->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
@@ -187,7 +187,7 @@ void CodeTextEdit::keyPressEvent(QKeyEvent* e)
 {
     if (tabToSpaces_ && e->key() == Qt::Key_Tab)
     {
-        QTextCursor cursor = textCursor();
+        auto cursor = textCursor();
         cursor.insertText(QString(indentWidth_, QLatin1Char(' ')));
         setTextCursor(cursor);
         return;
@@ -261,7 +261,7 @@ QPair<int, int> CodeTextEdit::findMatchingBracket(int cursorPos) const
     static const QString openers = QStringLiteral("{[(");
     static const QString closers = QStringLiteral("}])");
 
-    const QString text = toPlainText();
+    const auto& text = toPlainText();
 
     auto tryFrom = [&](int pos) -> QPair<int, int>
     {
@@ -301,7 +301,7 @@ QPair<int, int> CodeTextEdit::findMatchingBracket(int cursorPos) const
         return {-1, -1};
     };
 
-    QPair<int, int> result = tryFrom(cursorPos);
+    auto result = tryFrom(cursorPos);
     if (result.first < 0)
         result = tryFrom(cursorPos - 1);
     return result;
@@ -309,7 +309,7 @@ QPair<int, int> CodeTextEdit::findMatchingBracket(int cursorPos) const
 
 QPair<int, int> CodeTextEdit::findMatchingQuote(int cursorPos) const
 {
-    const QString text = toPlainText();
+    const auto& text = toPlainText();
 
     int   start     = -1;
     QChar quoteChar = QLatin1Char('\0');

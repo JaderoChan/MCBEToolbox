@@ -17,7 +17,7 @@ static QIcon createLogoIcon()
 
 QIcon getLogoIcon()
 {
-    static QIcon icon = createLogoIcon();
+    static const auto& icon = createLogoIcon();
     return icon;
 }
 

@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 
     // 设置语言
     {
-        Settings settings = loadSettings();
+        const auto& settings = loadSettings();
         LanguageManager::getInstance().setLanguage(settings.language);
     }
 

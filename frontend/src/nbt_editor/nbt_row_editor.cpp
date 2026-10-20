@@ -27,7 +27,7 @@ public:
 
     State validate(QString& input, int&) const override
     {
-        const QString trimmed = input.trimmed();
+        const auto& trimmed = input.trimmed();
         if (trimmed.isEmpty() || trimmed == QStringLiteral("-"))
             return Intermediate;
 
@@ -36,7 +36,7 @@ public:
             return Invalid;
 
         bool ok = false;
-        const qlonglong value = trimmed.toLongLong(&ok);
+        const auto& value = trimmed.toLongLong(&ok);
         if (!ok || value < min_ || value > max_)
             return Invalid;
         return Acceptable;
@@ -234,7 +234,7 @@ bool NbtRowEditor::eventFilter(QObject* obj, QEvent* e)
     }
     else if (e->type() == QEvent::FocusOut)
     {
-        QWidget* focusWidget = QApplication::focusWidget();
+        auto* focusWidget = QApplication::focusWidget();
         if (focusWidget != this && !isAncestorOf(focusWidget))
             emit focusLost();
     }

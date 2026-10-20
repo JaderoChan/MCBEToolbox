@@ -75,7 +75,7 @@ public:
         if (entry_.second)
         {
             DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
-            const auto& baseBlock = entry_.second->baseBlock;
+            const auto&   baseBlock   = entry_.second->baseBlock;
             const QString texturePath = QStringLiteral("%1/%2")
                 .arg(APP_BLOCK_TEXTURES_DIRPATH)
                 .arg(QString::fromStdString(baseBlock.surfaceData.side.first));
@@ -150,10 +150,10 @@ protected:
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing);
 
-        const QColor highlight = palette().color(QPalette::Highlight);
-        const QMargins margins = contentsMargins();
-        const QRect effectiveRect = rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
-        const QRectF cardRect  = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+        const auto& highlight     = palette().color(QPalette::Highlight);
+        const auto& margins       = contentsMargins();
+        const auto& effectiveRect = rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
+        const auto& cardRect      = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
 
         if (selected_ || hovered_)
         {
@@ -176,8 +176,8 @@ protected:
 
         const int textureSize    = qMax(1, effectiveRect.width()  / 2);
         const int colorBarHeight = qMax(1, effectiveRect.height() / 12);
-        const int textureX = margins.left() + (effectiveRect.width() - textureSize) / 2;
-        const int textureY = margins.top() + qMax(
+        const int textureX       = margins.left() + (effectiveRect.width() - textureSize) / 2;
+        const int textureY       = margins.top() + qMax(
             0,
             (effectiveRect.height() - textureSize - ITEM_TEXT_HEIGHT - colorBarHeight - ITEM_INNER_GAP * 2) / 2
         );
@@ -188,7 +188,7 @@ protected:
             if (textureScaledSize_ != textureSize)
             {
                 textureScaledSize_ = textureSize;
-                textureScaled_ = textureRaw_.scaled(
+                textureScaled_     = textureRaw_.scaled(
                     textureScaledSize_, textureScaledSize_,
                     Qt::IgnoreAspectRatio, Qt::FastTransformation
                 );
@@ -219,7 +219,7 @@ protected:
             f.setPointSizeF(9.0);
             painter.setFont(f);
             painter.setPen(palette().color(QPalette::WindowText));
-            const QString& elided = QFontMetrics(f).elidedText(name_, Qt::ElideRight, textRect.width());
+            const auto& elided = QFontMetrics(f).elidedText(name_, Qt::ElideRight, textRect.width());
             painter.drawText(textRect, Qt::AlignCenter, elided);
             painter.setFont(font());
         }
@@ -273,9 +273,9 @@ BlockListWidget::BlockListWidget(const BlockEntryMap& entries, QWidget* parent)
     scrollArea_->setWidgetResizable(true);
     scrollArea_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    auto* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(scrollArea_);
+    auto* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->addWidget(scrollArea_);
 
     rebuildBlocks();
 }
@@ -313,7 +313,7 @@ void BlockListWidget::selectRange(int begin, int end)
     auto it = items_.begin();
     for (; begin <= end; ++begin)
     {
-        const std::string id = std::next(it, begin).key().toStdString();
+        const auto& id = std::next(it, begin).key().toStdString();
         std::next(it, begin).value()->setSelected(true);
         if (selecteds_.find(std::string_view(id)) == selecteds_.end())
             selecteds_[std::string_view(id)] = blocks_[std::string_view(id)];
@@ -328,7 +328,7 @@ void BlockListWidget::unselectRange(int begin, int end)
     auto it = items_.begin();
     for (; begin <= end; ++begin)
     {
-        const std::string id = std::next(it, begin).key().toStdString();
+        const auto& id = std::next(it, begin).key().toStdString();
         std::next(it, begin).value()->setSelected(false);
         if (selecteds_.find(std::string_view(id)) != selecteds_.end())
             selecteds_.erase(std::string_view(id));
@@ -389,8 +389,8 @@ void BlockListWidget::selectByAttribute(BlockAttributeFilterMode mode, const Blo
 
     for (auto it = items_.constBegin(); it != items_.constEnd(); ++it)
     {
-        const std::string id = it.key().toStdString();
-        const bool selected = selecteds_.find(std::string_view(id)) != selecteds_.end();
+        const auto& id       = it.key().toStdString();
+        const bool  selected = selecteds_.find(std::string_view(id)) != selecteds_.end();
         it.value()->setSelected(selected);
     }
 }
@@ -428,11 +428,11 @@ void BlockListWidget::rebuildItems()
     int index = 0;
     for (const auto& [id, block] : blocks_)
     {
-        const std::string sid = std::string(id);
-        const QString qid = QString::fromStdString(sid);
+        const auto& sid = std::string(id);
+        const auto& qid = QString::fromStdString(sid);
 
-        const auto entryIt = entries_.find(sid);
-        const BlockEntry* entry = entryIt != entries_.end() ? &entryIt->second : nullptr;
+        const auto  entryIt = entries_.find(sid);
+        const auto* entry   = entryIt != entries_.end() ? &entryIt->second : nullptr;
 
         auto* item = new BlockListItemWidget(BlockEntryPair(id, entry), gridContainer_);
         item->setSelected(selecteds_.count(id) > 0);
@@ -468,8 +468,8 @@ void BlockListWidget::rebuildItems()
 
 void BlockListWidget::setItemSelected(const QString& blockId, bool selected)
 {
-    const std::string id = blockId.toStdString();
-    const auto blockIt = blocks_.find(std::string_view(id));
+    const auto& id      = blockId.toStdString();
+    const auto  blockIt = blocks_.find(std::string_view(id));
     if (blockIt == blocks_.end())
         return;
 

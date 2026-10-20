@@ -12,8 +12,8 @@ ColorSchemeManager& ColorSchemeManager::getInstance()
 
 ColorSchemeManager::ColorScheme ColorSchemeManager::getSystemColorScheme()
 {
-    auto* hints = qApp->styleHints();
-    const Qt::ColorScheme overridden = hints->colorScheme();
+    auto*       hints      = qApp->styleHints();
+    const auto& overridden = hints->colorScheme();
 
     // 若当前 styleHints 已被显式覆盖（非跟随系统模式），需暂时恢复为未知以读取真实系统值。
     Qt::ColorScheme system = overridden;
@@ -38,7 +38,7 @@ void ColorSchemeManager::setColorScheme(ColorScheme colorScheme)
     if (colorScheme_ != colorScheme)
     {
         colorScheme_ = colorScheme;
-        const ColorScheme loadedColorScheme = colorScheme_ == COLOR_SCHEME_AUTO ? getSystemColorScheme() : colorScheme_;
+        const auto& loadedColorScheme = colorScheme_ == COLOR_SCHEME_AUTO ? getSystemColorScheme() : colorScheme_;
         if (loadedColorScheme_ != loadedColorScheme)
         {
             loadedColorScheme_ = loadedColorScheme;
@@ -69,7 +69,7 @@ ColorSchemeManager::ColorSchemeManager()
             if (colorScheme_ != COLOR_SCHEME_AUTO)
                 return;
 
-            const ColorScheme loadedColorScheme = getSystemColorScheme();
+            const auto& loadedColorScheme = getSystemColorScheme();
             if (loadedColorScheme_ != loadedColorScheme)
             {
                 loadedColorScheme_ = loadedColorScheme;

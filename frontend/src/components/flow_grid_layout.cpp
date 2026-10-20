@@ -37,7 +37,7 @@ QLayoutItem* FlowGridLayout::itemAt(int index) const
 
 QLayoutItem* FlowGridLayout::takeAt(int index)
 {
-    QLayoutItem* ret = (index >= 0 && index < static_cast<int>(items_.size())) ? items_.takeAt(index) : nullptr;
+    auto* ret = (index >= 0 && index < static_cast<int>(items_.size())) ? items_.takeAt(index) : nullptr;
     invalidate();
     return ret;
 }
@@ -61,14 +61,14 @@ int FlowGridLayout::heightForWidth(int width) const
         cacheDirty_ = false;
     }
 
-    const QMargins margins = contentsMargins();
-    const int h = cachedRows_ * cachedItemSize_ + qMax(0, cachedRows_ - 1) * spacing();
+    const auto& margins = contentsMargins();
+    const int   h       = cachedRows_ * cachedItemSize_ + qMax(0, cachedRows_ - 1) * spacing();
     return h + margins.top() + margins.bottom();
 }
 
 QSize FlowGridLayout::minimumSize() const
 {
-    const QMargins margins = contentsMargins();
+    const auto& margins = contentsMargins();
     return QSize(
         minItemSize_ + margins.left() + margins.right(),
         minItemSize_ + margins.top()  + margins.bottom()
@@ -92,8 +92,8 @@ void FlowGridLayout::setGeometry(const QRect& rect)
         cacheDirty_ = false;
     }
 
-    const QMargins margins = contentsMargins();
-    const QRect r = rect.adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
+    const auto& margins = contentsMargins();
+    const auto& r       = rect.adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
     int index = 0;
     for (int row = 0; row < cachedRows_; ++row)
     {
@@ -108,8 +108,8 @@ void FlowGridLayout::setGeometry(const QRect& rect)
 
 void FlowGridLayout::updateCached(int width) const
 {
-    const QMargins margins = contentsMargins();
-    const int w = qMax(1, width - margins.left() - margins.right());
+    const auto& margins = contentsMargins();
+    const int   w       = qMax(1, width - margins.left() - margins.right());
 
     if (items_.empty())
     {

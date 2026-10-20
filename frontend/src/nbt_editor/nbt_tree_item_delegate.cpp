@@ -26,9 +26,9 @@ void NbtTreeItemDelegate::paint(
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
-    const QStyle* s = opt.widget ? opt.widget->style() : qApp->style();
-    const QRect textRect = s->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
-    const int textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, opt.widget) + 1;
+    const auto* s          = opt.widget ? opt.widget->style() : qApp->style();
+    const auto  textRect   = s->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
+    const auto  textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, opt.widget) + 1;
 
     const QString summary = QStringLiteral("%1 %2")
         .arg(summaryValue.toULongLong())
@@ -40,7 +40,7 @@ void NbtTreeItemDelegate::paint(
 
     QFont summaryFont = opt.font;
     summaryFont.setItalic(true);
-    const QColor summaryColor = opt.palette.color(QPalette::Disabled, QPalette::Text);
+    const auto& summaryColor = opt.palette.color(QPalette::Disabled, QPalette::Text);
 
     painter->save();
     painter->setFont(summaryFont);
