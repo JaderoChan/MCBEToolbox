@@ -329,7 +329,7 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
         ifs.close();
     }
 
-    // 猜测字节序
+    // 猜测字节序。
     iss.clear();
     iss.seekg(0, std::ios::beg);
     const int result = nbt::Tag::guessByteOrder(iss);
