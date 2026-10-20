@@ -8,7 +8,7 @@
 #include "settings.h"
 
 #include <test/block_list_example_widget.h>
-#include <test/nbt_tree_example_widget.h>
+#include <test/nbt_editor_example_widget.h>
 
 int main(int argc, char* argv[])
 {
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     }
 
     BlockListExampleWidget w1;
-    NbtTreeExampleWidget   w2;
+    NbtEditorExampleWidget w2;
     w1.show();
     w2.show();
 

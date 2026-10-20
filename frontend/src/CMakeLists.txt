@@ -18,14 +18,18 @@ set(
     ./app/mainwidget.h
     ./app/settings.h
     ./components/color_scheme_manager.h
+    ./components/code_text_edit.h
     ./components/flow_grid_layout.h
     ./components/language_manager.h
     ./components/sidebar_widget.h
     ./components/trwidget.h
+    ./nbt_editor/nbt_editor_tab_page.h
     ./nbt_editor/nbt_editor_widget.h
     ./nbt_editor/nbt_row_editor.h
     ./nbt_editor/nbt_tree_item_delegate.h
     ./nbt_editor/nbt_tree_view.h
+    ./nbt_editor/nbt_utils.h
+    ./nbt_editor/snbt_syntax_highlighter.h
     ./utils/debug_output.h
     ./utils/directory_scope.h
     ./utils/file_io.h
@@ -36,7 +40,7 @@ if(MCBE_TOOLBOX_DEV)
     list(
         APPEND HEADERS
         ./test/block_list_example_widget.h
-        ./test/nbt_tree_example_widget.h
+        ./test/nbt_editor_example_widget.h
     )
 endif()
 
@@ -48,14 +52,18 @@ set(
     ./app/mainwidget.cpp
     ./app/settings.cpp
     ./components/color_scheme_manager.cpp
+    ./components/code_text_edit.cpp
     ./components/flow_grid_layout.cpp
     ./components/language_manager.cpp
     ./components/sidebar_widget.cpp
     ./components/trwidget.cpp
+    ./nbt_editor/nbt_editor_tab_page.cpp
     ./nbt_editor/nbt_editor_widget.cpp
     ./nbt_editor/nbt_row_editor.cpp
     ./nbt_editor/nbt_tree_item_delegate.cpp
     ./nbt_editor/nbt_tree_view.cpp
+    ./nbt_editor/nbt_utils.cpp
+    ./nbt_editor/snbt_syntax_highlighter.cpp
 )
 
 if(MCBE_TOOLBOX_DEV)
