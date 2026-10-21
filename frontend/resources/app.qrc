@@ -7,5 +7,7 @@
         <file>icons/app/app_256.png</file>
         <file>icons/app/app_512.png</file>
         <file>icons/app/app_1024.png</file>
+        <file>stylesheets/toolbutton_dark.qss</file>
+        <file>stylesheets/toolbutton_light.qss</file>
     </qresource>
 </RCC>

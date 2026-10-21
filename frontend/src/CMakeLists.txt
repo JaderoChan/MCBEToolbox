@@ -21,8 +21,9 @@ set(
     ./components/code_text_edit.h
     ./components/flow_grid_layout.h
     ./components/language_manager.h
+    ./components/mywidget.h
     ./components/sidebar_widget.h
-    ./components/trwidget.h
+    ./components/stylesheet_table.h
     ./nbt_editor/nbt_editor_tab_page.h
     ./nbt_editor/nbt_editor_widget.h
     ./nbt_editor/nbt_row_editor.h
@@ -55,8 +56,9 @@ set(
     ./components/code_text_edit.cpp
     ./components/flow_grid_layout.cpp
     ./components/language_manager.cpp
+    ./components/mywidget.cpp
     ./components/sidebar_widget.cpp
-    ./components/trwidget.cpp
+    ./components/stylesheet_table.cpp
     ./nbt_editor/nbt_editor_tab_page.cpp
     ./nbt_editor/nbt_editor_widget.cpp
     ./nbt_editor/nbt_row_editor.cpp

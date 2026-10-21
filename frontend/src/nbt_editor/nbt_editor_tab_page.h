@@ -6,7 +6,7 @@
 
 #include <mcnbt/mcnbt.hpp>
 
-#include <components/trwidget.h>
+#include <components/mywidget.h>
 #include "nbt_tree_view.h"
 
 class QLabel;
@@ -15,7 +15,7 @@ class QStackedWidget;
 class QStandardItem;
 class CodeTextEdit;
 
-class NbtEditorTabPage : public TrWidget
+class NbtEditorTabPage : public MyWidget
 {
     Q_OBJECT
 
@@ -38,7 +38,8 @@ signals:
     void filePathChanged(const QString& filePath);
 
 protected:
-    void updateText() override;
+    void updateText()  override;
+    void updateColor() override;
 
 private:
     // 有关 NBT 文件的更多信息可以参见 https://wiki.bedrock.dev/nbt/nbt-in-depth。

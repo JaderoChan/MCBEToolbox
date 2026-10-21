@@ -1,0 +1,36 @@
+QToolButton {
+    border: none;
+    background: transparent;
+    padding: 4px;
+    border-radius: 4px;
+    color: palette(button-text);
+}
+
+QToolButton:hover {
+    background-color: rgba(0, 0, 0, 40);
+}
+
+QToolButton:pressed {
+    background-color: rgba(0, 0, 0, 80);
+}
+
+QToolButton:checked {
+    background-color: rgba(0, 0, 0, 80);
+}
+
+QToolButton:checked:hover {
+    background-color: rgba(0, 0, 0, 110);
+}
+
+QToolButton:checked:pressed {
+    background-color: rgba(0, 0, 0, 140);
+}
+
+QToolButton:disabled {
+    color: rgba(0, 0, 0, 80);
+    background: transparent;
+}
+
+QToolButton:disabled:checked {
+    background-color: rgba(0, 0, 0, 40);
+}

@@ -1,18 +1,19 @@
 #pragma once
 
-#include <components/trwidget.h>
+#include <components/mywidget.h>
 
 class QTabWidget;
 class QToolButton;
 class NbtEditorTabPage;
 
-class NbtEditorWidget : public TrWidget
+class NbtEditorWidget : public MyWidget
 {
 public:
     explicit NbtEditorWidget(QWidget* parent = nullptr);
 
 protected:
-    void updateText() override;
+    void updateText()  override;
+    void updateColor() override;
 
 private:
     void newNbt();

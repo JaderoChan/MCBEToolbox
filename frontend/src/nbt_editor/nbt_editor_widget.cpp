@@ -16,6 +16,7 @@
 #include <mcnbt/mcnbt.hpp>
 
 #include <components/code_text_edit.h>
+#include <components/stylesheet_table.h>
 #include "nbt_editor_tab_page.h"
 #include "nbt_tree_view.h"
 #include "snbt_syntax_highlighter.h"
@@ -24,11 +25,11 @@ namespace
 {
 
 // 用于输入 SNBT 文本进行解析的对话框。
-class SnbtInputDialog : public TrDialog
+class SnbtInputDialog : public MyDialog
 {
 public:
     explicit SnbtInputDialog(QWidget* parent = nullptr)
-        : TrDialog(parent)
+        : MyDialog(parent)
     {
         textEdit_ = new CodeTextEdit(this);
         textEdit_->setContextMenuPolicy(Qt::NoContextMenu);
@@ -78,13 +79,13 @@ private:
 } // namespace
 
 NbtEditorWidget::NbtEditorWidget(QWidget* parent)
-    : TrWidget(parent)
+    : MyWidget(parent)
 {
     // 构建顶部工具栏 UI。
     auto* toolbarWidget = new QWidget(this);
     auto* toolbarLayout = new QHBoxLayout(toolbarWidget);
     toolbarLayout->setContentsMargins(3, 0, 3, 0);
-    toolbarLayout->setSpacing(3);
+    toolbarLayout->setSpacing(4);
 
     newButton_       = new QToolButton(this);
     openButton_      = new QToolButton(this);
@@ -118,7 +119,7 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     // 主布局。
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(3);
+    mainLayout->setSpacing(2);
     mainLayout->addWidget(toolbarWidget);
     mainLayout->addWidget(tabWidget_);
 
@@ -145,6 +146,7 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
 
     updateButtonState();
     updateText();
+    updateColor();
 }
 
 void NbtEditorWidget::updateText()
@@ -154,6 +156,12 @@ void NbtEditorWidget::updateText()
     saveButton_->setText(EASYTR("Save"));
     saveAsButton_->setText(EASYTR("Save As"));
     parseSnbtButton_->setText(EASYTR("Parse SNBT"));
+}
+
+void NbtEditorWidget::updateColor()
+{
+    for (auto& button : {newButton_, openButton_, saveButton_, saveAsButton_, parseSnbtButton_})
+        button->setStyleSheet(toolButtonStyleSheet());
 }
 
 void NbtEditorWidget::newNbt()

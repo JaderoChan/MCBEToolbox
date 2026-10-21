@@ -1,5 +1,6 @@
 #include "nbt_editor_tab_page.h"
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -20,6 +21,7 @@
 #include <easy_translate.hpp>
 
 #include <components/code_text_edit.h>
+#include <components/stylesheet_table.h>
 #include "nbt_utils.h"
 #include "snbt_syntax_highlighter.h"
 
@@ -27,13 +29,13 @@ namespace
 {
 
 // 用于配置保存 NBT 文件信息的对话框。
-class NbtFileInfoDialog : public TrDialog
+class NbtFileInfoDialog : public MyDialog
 {
     Q_OBJECT
 
 public:
     explicit NbtFileInfoDialog(QWidget* parent = nullptr)
-        : TrDialog(parent)
+        : MyDialog(parent)
     {
         // Endian
         endianLabel_       = new QLabel(this);
@@ -172,13 +174,13 @@ private:
 } // namespace
 
 NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
-    : TrWidget(parent)
+    : MyWidget(parent)
 {
     // 构建顶部工具栏 UI。
     auto* toolbarWidget = new QWidget(this);
     auto* toolbarLayout = new QHBoxLayout(toolbarWidget);
     toolbarLayout->setContentsMargins(3, 0, 3, 0);
-    toolbarLayout->setSpacing(3);
+    toolbarLayout->setSpacing(2);
 
     // 基础 Tag 操作按钮。
     renameButton_ = new QToolButton(this);
@@ -209,6 +211,10 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     toolbarLayout->addSpacing(3);
 
     // Tag 增添按钮。
+    auto* addButtonWidget = new QWidget(this);
+    auto* addButtonLayout = new QHBoxLayout(addButtonWidget);
+    addButtonLayout->setContentsMargins(0, 0, 0 ,0);
+    addButtonLayout->setSpacing(2);
     for (auto type : nbt_utils::addableTagTypes())
     {
         auto* button = new QToolButton(this);
@@ -219,7 +225,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
         button->setIconSize(QSize(24, 24));
         button->setStyleSheet(QStringLiteral("border: none; background: transparent; padding: 0px;"));
 
-        toolbarLayout->addWidget(button);
+        addButtonLayout->addWidget(button);
         addButtons_[type] = button;
 
         connect(
@@ -228,6 +234,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
         );
     }
 
+    toolbarLayout->addWidget(addButtonWidget);
     toolbarLayout->addStretch();
 
     // SNBT 按钮。
@@ -237,6 +244,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     snbtButton_->setToolButtonStyle(Qt::ToolButtonTextOnly);
     snbtButton_->setFixedHeight(24);
     snbtButton_->setCheckable(true);
+    snbtButton_->setStyleSheet(toolButtonStyleSheet());
 
     connect(snbtButton_, &QToolButton::clicked, this, &NbtEditorTabPage::togglePage);
 
@@ -264,7 +272,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     auto* stateBarWidget = new QWidget(this);
     auto* stateBarLayout = new QHBoxLayout(stateBarWidget);
     auto font = stateBarWidget->font();
-    font.setPointSize(11);
+    font.setPointSizeF(font.pointSizeF() * 0.95);
     stateBarWidget->setFont(font);
     stateBarWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     stateBarLayout->setContentsMargins(3, 0, 3, 0);
@@ -285,19 +293,26 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     // 主布局。
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(3);
+    mainLayout->setSpacing(2);
     mainLayout->addWidget(toolbarWidget);
     mainLayout->addWidget(stackedWidget_);
     mainLayout->addWidget(stateBarWidget);
 
     updateButtonState();
     updateText();
+    updateColor();
 }
 
 NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWidget* parent)
 {
     // 读取文件。
-    std::ifstream ifs(filePath.toStdString(), std::ios::binary);
+    std::filesystem::path path;
+#ifdef Q_OS_WIN
+    path = std::filesystem::path(filePath.toStdWString());
+#else
+    path = std::filesystem::path(filePath.toStdString());
+#endif // Q_OS_WIN
+    std::ifstream ifs(path, std::ios::binary);
     if (!ifs.is_open())
     {
         QMessageBox(
@@ -423,6 +438,12 @@ void NbtEditorTabPage::updateText()
     addButtons_[nbt::TT_LIST]->setToolTip(EASYTR("Add List Tag"));
     addButtons_[nbt::TT_COMPOUND]->setToolTip(EASYTR("Add Compound Tag"));
     updateStateBarText();
+}
+
+void NbtEditorTabPage::updateColor()
+{
+    for (auto& button : {renameButton_, editButton_, removeButton_, snbtButton_})
+        button->setStyleSheet(toolButtonStyleSheet());
 }
 
 NbtEditorTabPage::NbtEditorTabPage(QString rootName, nbt::Tag rootTag, NbtFileInfo fileInfo, QWidget* parent)
@@ -554,7 +575,13 @@ void NbtEditorTabPage::saveNbt(const NbtFileInfo& fileInfo)
     if (!rootTag.isCompound() || !fileInfo.valid)
         return;
 
-    std::ofstream ofs(fileInfo.filePath.toStdString(), std::ios::binary);
+    std::filesystem::path path;
+#ifdef Q_OS_WIN
+    path = std::filesystem::path(fileInfo.filePath.toStdWString());
+#else
+    path = std::filesystem::path(fileInfo.filePath.toStdString());
+#endif // Q_OS_WIN
+    std::ofstream ofs(path, std::ios::binary);
     if (!ofs.is_open())
     {
         QMessageBox(
