@@ -186,21 +186,24 @@ bool NbtTreeView::removeItem(QStandardItem* item)
     {
         parentTag->erase(static_cast<std::size_t>(itemTagIndex(item).toULongLong()));
 
-        auto* parentItem = item->parent();
+        model_->blockSignals(true);
+        auto*       parentItem       = item->parent();
+        const auto& parentModelIndex = parentItem->index();
         // 更新删除项之后项的索引值与文本。
         for (qulonglong row = item->row() + 1; row < static_cast<qulonglong>(parentItem->rowCount()); ++row)
         {
-            const auto& index = row - 1;
+            const auto& index      = row - 1;
+            const auto& modelIndex = model_->index(row, 0, parentModelIndex);
 
             QString valueText;
             if (parentTag->isArray())     valueText = nbt_utils::arrayElementText(*parentTag, index);
             else if (parentTag->isList()) valueText = nbt_utils::tagText((*parentTag)[static_cast<std::size_t>(index)]);
             const auto& text = QStringLiteral("[%1]: %2").arg(index).arg(valueText);
 
-            auto* child = parentItem->child(static_cast<int>(row));
-            child->setText(text);
-            child->setData(index, TagIndexRole);
+            model_->setData(modelIndex, text,  Qt::DisplayRole);
+            model_->setData(modelIndex, index, TagIndexRole);
         }
+        model_->blockSignals(false);
 
         // 如果删除元素后，列表为空，则将其置为初始状态以使其能够接受不同的 Tag 类型进行重新初始化。
         if (parentTag->isList() && parentTag->empty())
