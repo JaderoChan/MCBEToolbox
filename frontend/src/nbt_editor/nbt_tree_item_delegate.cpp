@@ -30,7 +30,7 @@ void NbtTreeItemDelegate::paint(
     const auto  textRect   = s->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
     const auto  textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, opt.widget) + 1;
 
-    const QString summary = QStringLiteral("%1 %2")
+    const auto& summary = QStringLiteral("%1 %2")
         .arg(summaryValue.toULongLong())
         .arg(isCompoundSummary.toBool() ? EASYTR("entries") : EASYTR("elements"));
 
