@@ -3,9 +3,9 @@
 #include <qstackedwidget.h>
 
 #include <components/sidebar_widget.h>
-#include <components/trwidget.h>
+#include <components/mywidget.h>
 
-class MainWidget : public TrWidget
+class MainWidget : public MyWidget
 {
 public:
     explicit MainWidget(QWidget* parent = nullptr);
