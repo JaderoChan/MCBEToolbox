@@ -11,12 +11,12 @@ public:
     enum ColorScheme : int
     {
         COLOR_SCHEME_AUTO,
-        COLOR_SCHEME_LIGHT,
-        COLOR_SCHEME_DARK
+        COLOR_SCHEME_DARK,
+        COLOR_SCHEME_LIGHT
     };
     static constexpr ColorScheme COLOR_SCHEME_FIRST    = COLOR_SCHEME_AUTO;
-    static constexpr ColorScheme COLOR_SCHEME_LAST     = COLOR_SCHEME_DARK;
-    static constexpr ColorScheme FALLBACK_COLOR_SCHEME = COLOR_SCHEME_LIGHT;
+    static constexpr ColorScheme COLOR_SCHEME_LAST     = COLOR_SCHEME_LIGHT;
+    static constexpr ColorScheme FALLBACK_COLOR_SCHEME = COLOR_SCHEME_DARK;
 
     static ColorSchemeManager& getInstance();
     /** 获得系统颜色模式，如果是不支持的模式返回 #FALLBACK_COLOR_SCHEME。 */

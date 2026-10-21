@@ -27,8 +27,8 @@ ColorSchemeManager::ColorScheme ColorSchemeManager::getSystemColorScheme()
 
     switch (system)
     {
-        case Qt::ColorScheme::Light: return COLOR_SCHEME_LIGHT;
         case Qt::ColorScheme::Dark:  return COLOR_SCHEME_DARK;
+        case Qt::ColorScheme::Light: return COLOR_SCHEME_LIGHT;
         default:                     return FALLBACK_COLOR_SCHEME;
     }
 }
@@ -97,8 +97,8 @@ void ColorSchemeManager::loadColorScheme()
     {
         switch (loadedColorScheme_)
         {
-            case COLOR_SCHEME_LIGHT: hints->setColorScheme(Qt::ColorScheme::Light); break;
             case COLOR_SCHEME_DARK:  hints->setColorScheme(Qt::ColorScheme::Dark);  break;
+            case COLOR_SCHEME_LIGHT: hints->setColorScheme(Qt::ColorScheme::Light); break;
             default:                 return;
         }
     }
