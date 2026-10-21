@@ -130,7 +130,7 @@ NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
     layout->addWidget(valueEdit_);
     layout->addWidget(confirmButton_);
     layout->addWidget(cancelButton_);
-    layout->addStretch(0);
+    layout->addStretch();
 
     if (!keyEditable())   keyEdit_->hide();
     if (!valueEditable()) valueEdit_->hide();

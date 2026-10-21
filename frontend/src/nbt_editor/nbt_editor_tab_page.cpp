@@ -276,7 +276,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     stateBarWidget->setFont(font);
     stateBarWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     stateBarLayout->setContentsMargins(3, 0, 3, 0);
-    stateBarLayout->setSpacing(18);
+    stateBarLayout->setSpacing(14);
 
     filePathLabel_   = new QLabel(this);
     endianLabel_     = new QLabel(this);
@@ -284,6 +284,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     filePathLabel_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     endianLabel_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     compressedLabel_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    filePathLabel_->setMaximumWidth(600);
 
     stateBarLayout->addWidget(filePathLabel_);
     stateBarLayout->addStretch();
@@ -544,6 +545,7 @@ void NbtEditorTabPage::updateStateBarText()
     if (fileInfo_.valid)
     {
         filePathLabel_->setText(fileInfo_.filePath);
+        filePathLabel_->setToolTip(fileInfo_.filePath);
         endianLabel_->setText(fileInfo_.bigEndian ? EASYTR("Big Endian") : EASYTR("Little Endian"));
         compressedLabel_->setText(fileInfo_.compressed ? EASYTR("GZip Compressed") : EASYTR("Uncompressed"));
     }
