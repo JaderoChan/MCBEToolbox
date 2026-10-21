@@ -2,14 +2,14 @@
 
 #include <qlayout.h>
 
-#include <components/trwidget.h>
+#include <components/mywidget.h>
 #include <nbt_editor/nbt_editor_widget.h>
 
-class NbtEditorExampleWidget : public TrWidget
+class NbtEditorExampleWidget : public MyWidget
 {
 public:
     explicit NbtEditorExampleWidget(QWidget* parent = nullptr)
-        : TrWidget(parent)
+        : MyWidget(parent)
     {
         widget_ = new NbtEditorWidget(this);
 

@@ -4,13 +4,13 @@
 
 #include <mcnbt/mcnbt.hpp>
 
-#include <components/trwidget.h>
+#include <components/mywidget.h>
 
 class QLineEdit;
 class QToolButton;
 class QValidator;
 
-class NbtRowEditor : public TrWidget
+class NbtRowEditor : public MyWidget
 {
     Q_OBJECT
 

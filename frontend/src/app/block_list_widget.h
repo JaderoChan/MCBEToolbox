@@ -6,13 +6,13 @@
 #include <qlist.h>
 
 #include <block.hpp>
-#include <components/trwidget.h>
+#include <components/mywidget.h>
 
 class QScrollArea;
 class QLayout;
 class BlockListItemWidget;
 
-class BlockListWidget : public TrWidget
+class BlockListWidget : public MyWidget
 {
 public:
     explicit BlockListWidget(const BlockEntryMap& entries, QWidget* parent = nullptr);

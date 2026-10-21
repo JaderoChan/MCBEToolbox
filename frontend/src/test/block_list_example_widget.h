@@ -5,14 +5,14 @@
 #include <block.hpp>
 #include <config.h>
 #include <app/block_list_widget.h>
-#include <components/trwidget.h>
+#include <components/mywidget.h>
 #include <utils/directory_scope.h>
 
-class BlockListExampleWidget : public TrWidget
+class BlockListExampleWidget : public MyWidget
 {
 public:
     explicit BlockListExampleWidget(QWidget* parent = nullptr)
-        : TrWidget(parent)
+        : MyWidget(parent)
     {
         DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
         entries_ = parseBlockEntriesFromFile(APP_BLOCK_ENTRIES_FILEPATH);

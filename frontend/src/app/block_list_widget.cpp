@@ -64,13 +64,13 @@ QString getBlockAttributesText(BlockAttributes attributes)
 
 } // namespace
 
-class BlockListItemWidget : public TrWidget
+class BlockListItemWidget : public MyWidget
 {
     Q_OBJECT
 
 public:
     explicit BlockListItemWidget(const BlockEntryPair& entry, QWidget* parent = nullptr)
-        : TrWidget(parent), entry_(entry)
+        : MyWidget(parent), entry_(entry)
     {
         if (entry_.second)
         {
@@ -134,7 +134,7 @@ protected:
     {
         if (e->button() == Qt::LeftButton)
             pressed_ = true;
-        TrWidget::mousePressEvent(e);
+        MyWidget::mousePressEvent(e);
     }
 
     void mouseReleaseEvent(QMouseEvent* e) override
@@ -142,7 +142,7 @@ protected:
         if (pressed_ && e->button() == Qt::LeftButton && rect().contains(e->pos()))
             emit clicked();
         pressed_ = false;
-        TrWidget::mouseReleaseEvent(e);
+        MyWidget::mouseReleaseEvent(e);
     }
 
     void paintEvent(QPaintEvent*) override
@@ -263,7 +263,7 @@ private:
 };
 
 BlockListWidget::BlockListWidget(const BlockEntryMap& entries, QWidget* parent)
-    : TrWidget(parent), entries_(entries)
+    : MyWidget(parent), entries_(entries)
 {
     gridContainer_ = new QWidget();
     gridLayout_    = new FlowGridLayout(ITEM_SPACING, ITEM_SPACING, ITEM_MIN_SIZE, ITEM_MAX_SIZE, gridContainer_);
@@ -399,7 +399,7 @@ void BlockListWidget::keyPressEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Shift)
         shiftPressed_ = true;
-    TrWidget::keyPressEvent(e);
+    MyWidget::keyPressEvent(e);
 }
 
 void BlockListWidget::keyReleaseEvent(QKeyEvent* e)
@@ -410,7 +410,7 @@ void BlockListWidget::keyReleaseEvent(QKeyEvent* e)
         rangeSelectEnd_   = -1;
         shiftPressed_     = false;
     }
-    TrWidget::keyReleaseEvent(e);
+    MyWidget::keyReleaseEvent(e);
 }
 
 void BlockListWidget::rebuildBlocks()
