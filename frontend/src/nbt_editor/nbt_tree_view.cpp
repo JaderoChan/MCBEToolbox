@@ -194,7 +194,7 @@ bool NbtTreeView::removeItem(QStandardItem* item)
 
             QString valueText;
             if (parentTag->isArray())     valueText = nbt_utils::arrayElementText(*parentTag, index);
-            else if (parentTag->isList()) valueText = nbt_utils::tagText(parentTag[static_cast<std::size_t>(index)]);
+            else if (parentTag->isList()) valueText = nbt_utils::tagText((*parentTag)[static_cast<std::size_t>(index)]);
             const auto& text = "[" + QString::number(index) + "]: " + valueText;
 
             auto* child = parentItem->child(static_cast<int>(row));
