@@ -478,7 +478,7 @@ void NbtEditorTabPage::togglePage()
         {
             QString snbt;
             if (nbtView_->rootTag().isCompound())
-                snbt = QString::fromStdString(nbtView_->rootTag().toSnbt(2));
+                snbt = QString::fromStdString(nbtView_->rootTag().toSnbt(2, true, true));
             snbtWidget_->setPlainText(snbt);
             needUpdateSnbt_ = false;
         }
