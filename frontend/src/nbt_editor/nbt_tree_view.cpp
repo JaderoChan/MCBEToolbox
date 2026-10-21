@@ -40,7 +40,9 @@ void NbtTreeView::setRootName(QString rootName)
     if (model_->rowCount() > 0)
     {
         auto* rootItem = model_->item(0);
-        rootItem->setText(rootName_ + QStringLiteral(": "));
+        const auto& text = rootName_ + QStringLiteral(": ");
+        rootItem->setText(text);
+        rootItem->setToolTip(text);
         rootItem->setData(rootName_, TagKeyRole);
     }
     emit rootNameChanged();
@@ -201,6 +203,7 @@ bool NbtTreeView::removeItem(QStandardItem* item)
             const auto& text = QStringLiteral("[%1]: %2").arg(index).arg(valueText);
 
             model_->setData(modelIndex, text,  Qt::DisplayRole);
+            model_->setData(modelIndex, text,  Qt::ToolTipRole);
             model_->setData(modelIndex, index, TagIndexRole);
         }
         model_->blockSignals(blocked);
@@ -241,7 +244,9 @@ bool NbtTreeView::changeItemKey(QStandardItem* item, const QString& newKey)
     parentTag->insert(stdNewKey, std::move(tag));
 
     // 更改 Item 名称，并将其按照 Tag 顺序重新排列。
-    item->setText(QStringLiteral("%1: %2").arg(newKey).arg(valueText));
+    const auto& text = QStringLiteral("%1: %2").arg(newKey).arg(valueText);
+    item->setText(text);
+    item->setToolTip(text);
     item->setData(newKey, TagKeyRole);
 
     qulonglong i = 0;
@@ -267,6 +272,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
 
     if (parentTag->isArray())
     {
+        QString text;
         switch (parentTag->type())
         {
             case nbt::TT_BYTE_ARRAY:
@@ -274,7 +280,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
                 if (!newValue.isByte()) return false;
                 const auto& i = itemTagIndex(item).toULongLong();
                 parentTag->getByteArray()[static_cast<std::size_t>(i)] = newValue.getByte();
-                item->setText(QStringLiteral("[%1]: %2").arg(i).arg(newValue.getByte()));
+                text = QStringLiteral("[%1]: %2").arg(i).arg(newValue.getByte());
                 break;
             }
             case nbt::TT_INT_ARRAY:
@@ -282,7 +288,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
                 if (!newValue.isInt()) return false;
                 const auto& i = itemTagIndex(item).toULongLong();
                 parentTag->getIntArray()[static_cast<std::size_t>(i)] = newValue.getInt();
-                item->setText(QStringLiteral("[%1]: %2").arg(i).arg(newValue.getInt()));
+                text = QStringLiteral("[%1]: %2").arg(i).arg(newValue.getInt());
                 break;
             }
             case nbt::TT_LONG_ARRAY:
@@ -290,12 +296,15 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
                 if (!newValue.isLong()) return false;
                 const auto& i = itemTagIndex(item).toULongLong();
                 parentTag->getLongArray()[static_cast<std::size_t>(i)] = newValue.getLong();
-                item->setText(QStringLiteral("[%1]: %2").arg(i).arg(newValue.getLong()));
+                text = QStringLiteral("[%1]: %2").arg(i).arg(newValue.getLong());
                 break;
             }
             default:
                 return false;
         }
+
+        item->setText(text);
+        item->setToolTip(text);
     }
     else if (parentTag->isList())
     {
@@ -537,11 +546,11 @@ QStandardItem* NbtTreeView::createArrayItem(nbt::Tag* parentArrayTag, qulonglong
 {
     auto* item = new QStandardItem();
     item->setIcon(nbt_utils::tagTypeIcon(nbt_utils::arrayElementTagType(parentArrayTag->type())));
-    item->setText(
-        QStringLiteral("[%1]: %2")
+    const auto& text = QStringLiteral("[%1]: %2")
         .arg(index)
-        .arg(nbt_utils::arrayElementText(*parentArrayTag, index))
-    );
+        .arg(nbt_utils::arrayElementText(*parentArrayTag, index));
+    item->setText(text);
+    item->setToolTip(text);
     item->setData(false, IsNamingTagRole);
     item->setData(index, TagIndexRole);
     return item;
@@ -551,11 +560,11 @@ QStandardItem* NbtTreeView::createItem(bool isNamingTag, const QString& key, qul
 {
     auto* item = new QStandardItem();
     item->setIcon(nbt_utils::tagTypeIcon(value.type()));
-    item->setText(
-        isNamingTag
+    const auto& text = isNamingTag
         ? QStringLiteral("%1: %2").arg(key).arg(nbt_utils::tagText(value))
-        : QStringLiteral("[%1]: %2").arg(index).arg(nbt_utils::tagText(value))
-    );
+        : QStringLiteral("[%1]: %2").arg(index).arg(nbt_utils::tagText(value));
+    item->setText(text);
+    item->setToolTip(text);
     item->setData(isNamingTag, IsNamingTagRole);
     isNamingTag ? item->setData(key, TagKeyRole) : item->setData(index, TagIndexRole);
 

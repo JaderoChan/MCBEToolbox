@@ -5,6 +5,15 @@
 namespace nbt_utils
 {
 
+// 将字符串中的换行符转换为可视符号。
+QString replaceNewLineChar(QString text)
+{
+    text.replace(QStringLiteral("\r\n"), QString(QChar(0x21B5)));
+    text.replace(QChar(u'\r'), QChar(0x21B5));
+    text.replace(QChar(u'\n'), QChar(0x21B5));
+    return text;
+}
+
 const QList<nbt::TagType>& addableTagTypes(const nbt::Tag* tag)
 {
     using RetType = QList<nbt::TagType>;
@@ -93,7 +102,7 @@ QString tagText(const nbt::Tag& tag)
         case nbt::TT_LONG:   return QString::number(tag.getLong());
         case nbt::TT_FLOAT:  return QString::number(tag.getFloat());
         case nbt::TT_DOUBLE: return QString::number(tag.getDouble());
-        case nbt::TT_STRING: return QString::fromStdString(tag.getString());
+        case nbt::TT_STRING: return replaceNewLineChar(QString::fromStdString(tag.getString()));
         default:             return QString();
     }
 }

@@ -272,7 +272,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     auto* stateBarWidget = new QWidget(this);
     auto* stateBarLayout = new QHBoxLayout(stateBarWidget);
     auto font = stateBarWidget->font();
-    font.setPointSizeF(font.pointSizeF() * 0.95);
+    font.setPointSizeF(font.pointSizeF() * 0.9);
     stateBarWidget->setFont(font);
     stateBarWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     stateBarLayout->setContentsMargins(3, 0, 3, 0);

@@ -89,8 +89,8 @@ QValidator* tagTypeValidator(nbt::TagType type, QObject* parent = nullptr)
 NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
     : type_(type), isNamingTag_(isNamingTag), MyWidget(parent)
 {
-    constexpr int EDIT_MIN_WIDTH = 80;
-    constexpr int EDIT_MAX_WIDTH = 320;
+    constexpr int EDIT_MIN_WIDTH = 120;
+    constexpr int EDIT_MAX_WIDTH = 600;
 
     setAutoFillBackground(true);
     setBackgroundRole(QPalette::Base);
