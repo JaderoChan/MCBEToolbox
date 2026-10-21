@@ -450,8 +450,11 @@ void BlockListWidget::rebuildItems()
                 else
                 {
                     rangeSelectEnd_ = index;
-                    if (beginSelected_) unselectRange(rangeSelectBegin_, rangeSelectEnd_);
-                    else                selectRange(rangeSelectBegin_,   rangeSelectEnd_);
+                    const auto& begin = std::min(rangeSelectBegin_, rangeSelectEnd_);
+                    const auto& end   = std::max(rangeSelectBegin_, rangeSelectEnd_);
+                    if (beginSelected_) unselectRange(begin, end);
+                    else                selectRange(begin,   end);
+                    rangeSelectBegin_ = -1;
                 }
             }
             else
