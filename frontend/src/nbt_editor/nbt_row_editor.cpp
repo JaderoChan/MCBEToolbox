@@ -92,6 +92,9 @@ NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
     constexpr int EDIT_MIN_WIDTH = 80;
     constexpr int EDIT_MAX_WIDTH = 320;
 
+    setAutoFillBackground(true);
+    setBackgroundRole(QPalette::Base);
+
     if (!editable()) return;
 
     keyEdit_       = new QLineEdit(this);
