@@ -350,17 +350,14 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
     const int result = nbt::Tag::guessByteOrder(iss);
     if (result != -1)
     {
-        fileInfo.valid     = true;
-        fileInfo.bigEndian = result == 1;
-        std::tie(rootName, rootTag) = nbt::Tag::parse(iss, fileInfo.bigEndian, 0);
-        return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
-    }
-    else
-    {
-        // 尝试使用小端序，读取 8 字节文件头。
-        iss.clear();
-        iss.seekg(0, std::ios::beg);
-        try
+        if (result == 0 || result == 1)
+        {
+            fileInfo.valid     = true;
+            fileInfo.bigEndian = result == 0;
+            std::tie(rootName, rootTag) = nbt::Tag::parse(iss, fileInfo.bigEndian, 0);
+            return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
+        }
+        else
         {
             std::tie(rootName, rootTag) = nbt::Tag::parse(iss, false, 8);
 
@@ -378,17 +375,17 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
             fileInfo.hasHeader = true;
             return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
         }
-        catch (...)
-        {
-            QMessageBox(
-                QMessageBox::Critical,
-                EASYTR("Error"),
-                QStringLiteral("%1: %2").arg(EASYTR("Can't parse the NBT file")).arg(filePath),
-                QMessageBox::Close,
-                parent
-            ).exec();
-            return nullptr;
-        }
+    }
+    else
+    {
+        QMessageBox(
+            QMessageBox::Critical,
+            EASYTR("Error"),
+            QStringLiteral("%1: %2").arg(EASYTR("Can't parse the NBT file")).arg(filePath),
+            QMessageBox::Close,
+            parent
+        ).exec();
+        return nullptr;
     }
 }
 
