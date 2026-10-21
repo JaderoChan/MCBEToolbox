@@ -552,7 +552,7 @@ void NbtEditorTabPage::updateStateBarText()
     }
     else
     {
-        filePathLabel_->setText(QStringLiteral("*"));
+        filePathLabel_->setText(QStringLiteral(" "));
         filePathLabel_->setToolTip(QString());
         endianLabel_->setText(QString());
         compressedLabel_->setText(QString());
