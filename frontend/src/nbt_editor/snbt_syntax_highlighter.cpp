@@ -110,9 +110,7 @@ void SnbtSyntaxHighlighter::highlightBlock(const QString& text)
         }
     }
 
-    static const QRegularExpression keyPattern(QStringLiteral(
-        R"([A-Za-z0-9_\-\.\+]+(?::[A-Za-z0-9_\-\.\+]+)?(?:\[[^\[\]]*\])?(?=\s*:))"
-    ));
+    static const QRegularExpression keyPattern(QStringLiteral(R"((?:\\.|[^\s\\:])+(?=\s*:))"));
     {
         auto it = keyPattern.globalMatch(text);
         while (it.hasNext())
