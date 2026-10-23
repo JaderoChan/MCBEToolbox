@@ -24,7 +24,8 @@ cv::Mat convertColorToBgra(const cv::Mat& image)
 cv::Mat resizeImage(const cv::Mat& image, const cv::Size& size, int interpolation)
 {
     cv::Mat ret;
-    if (size.empty()) return ret;
+    if (image.empty() || size.empty()) return ret;
+    if (image.size() == size)          return image;
     cv::resize(image, ret, size, 0.0, 0.0, interpolation);
     return ret;
 }

@@ -13,6 +13,8 @@
 class ImageOStream
 {
 public:
+    using FrameHandler = void (*)(cv::Mat& frame);
+
     // =================================================================================================================
     // > Const/Constexpr
     // =================================================================================================================
@@ -46,6 +48,13 @@ public:
     void setMaxWidth(int maxw)     { maxw_ = maxw; cachedSize_ = cv::Size(); }
     /** 设置输出帧高度上限。 */
     void setMaxHeight(int maxh)    { maxh_ = maxh; cachedSize_ = cv::Size(); }
+
+    // =================================================================================================================
+    // > Ouput frame handler
+    // =================================================================================================================
+
+     FrameHandler frameHandler() const { return frameHandler_; }
+     void setFrameHandler(FrameHandler handler) { frameHandler_ = handler; }
 
     // =================================================================================================================
     // > Stream state Checker and Getter
@@ -92,4 +101,5 @@ private:
     int maxw_;
     int maxh_;
     mutable cv::Size cachedSize_;
+    FrameHandler frameHandler_ = nullptr;
 };
