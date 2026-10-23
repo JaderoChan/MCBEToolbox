@@ -225,8 +225,10 @@ protected:
         }
     }
 
-    void updateText() override
+    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override
     {
+        (void)loaded;
+
         if (entry_.second)
         {
             const auto& localizationNames = entry_.second->localizationNames;

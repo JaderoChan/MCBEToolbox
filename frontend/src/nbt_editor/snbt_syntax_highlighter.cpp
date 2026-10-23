@@ -12,7 +12,7 @@ SnbtSyntaxHighlighter::SnbtSyntaxHighlighter(QTextDocument* document)
     rebuildFormats();
 
     connect(
-        &ColorSchemeManager::getInstance(), &ColorSchemeManager::loadedColorSchemeChanged,
+        &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
         this, [this]()
         {
             rebuildFormats();
@@ -42,7 +42,7 @@ void SnbtSyntaxHighlighter::resetColor(TokenRole role)
 
 QColor SnbtSyntaxHighlighter::defaultColor(TokenRole role) const
 {
-    const bool dark = ColorSchemeManager::getInstance().getLoadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
+    const bool dark = ColorSchemeManager::instance().loadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
     switch (role)
     {
         case KeyRole:         return dark ? QColor(130, 180, 255) : QColor(0, 80, 180);

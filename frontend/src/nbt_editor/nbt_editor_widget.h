@@ -12,8 +12,10 @@ public:
     explicit NbtEditorWidget(QWidget* parent = nullptr);
 
 protected:
-    void updateText()  override;
-    void updateColor() override;
+    void updateText(
+        LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override;
+    void updateColor(
+        ColorSchemeManager::ColorScheme loaded = ColorSchemeManager::instance().loadedColorScheme()) override;
 
 private:
     void newNbt();

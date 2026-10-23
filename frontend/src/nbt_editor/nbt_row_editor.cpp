@@ -10,8 +10,6 @@
 #include <qtoolbutton.h>
 #include <qvalidator.h>
 
-#include <easy_translate.hpp>
-
 #include "nbt_utils.h"
 
 namespace
@@ -245,7 +243,7 @@ bool NbtRowEditor::eventFilter(QObject* obj, QEvent* e)
     return QWidget::eventFilter(obj, e);
 }
 
-void NbtRowEditor::updateText()
+void NbtRowEditor::updateText(LanguageManager::Language /* loaded */)
 {
     confirmButton_->setToolTip(EASYTR("Confirm"));
     cancelButton_->setToolTip(EASYTR("Cancel"));

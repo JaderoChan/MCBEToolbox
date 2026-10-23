@@ -38,7 +38,7 @@ CodeTextEdit::CodeTextEdit(QWidget* parent)
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &CodeTextEdit::updateExtraSelections);
     connect(this, &QPlainTextEdit::textChanged,           this, &CodeTextEdit::updateExtraSelections);
     connect(
-        &ColorSchemeManager::getInstance(), &ColorSchemeManager::loadedColorSchemeChanged,
+        &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
         this, [this]()
         {
             lineNumberArea_->update();
@@ -52,19 +52,14 @@ CodeTextEdit::CodeTextEdit(QWidget* parent)
     updateExtraSelections();
 }
 
-bool CodeTextEdit::tabToSpaces() const
-{
-    return tabToSpaces_;
-}
-
 void CodeTextEdit::setTabToSpaces(bool enabled)
 {
     tabToSpaces_ = enabled;
 }
 
-int CodeTextEdit::indentWidth() const
+bool CodeTextEdit::tabToSpaces() const
 {
-    return indentWidth_;
+    return tabToSpaces_;
 }
 
 void CodeTextEdit::setIndentWidth(int width)
@@ -73,14 +68,19 @@ void CodeTextEdit::setIndentWidth(int width)
     setTabStopDistance(fontMetrics().horizontalAdvance(QLatin1Char(' ')) * indentWidth_);
 }
 
-bool CodeTextEdit::wordWrapEnabled() const
+int CodeTextEdit::indentWidth() const
 {
-    return lineWrapMode() != QPlainTextEdit::NoWrap;
+    return indentWidth_;
 }
 
 void CodeTextEdit::setWordWrapEnabled(bool enabled)
 {
     setLineWrapMode(enabled ? QPlainTextEdit::WidgetWidth : QPlainTextEdit::NoWrap);
+}
+
+bool CodeTextEdit::wordWrapEnabled() const
+{
+    return lineWrapMode() != QPlainTextEdit::NoWrap;
 }
 
 bool CodeTextEdit::showWhitespace() const
@@ -115,7 +115,7 @@ void CodeTextEdit::resetColor(ColorRole role)
 
 QColor CodeTextEdit::defaultColor(ColorRole role) const
 {
-    const bool dark = ColorSchemeManager::getInstance().getLoadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
+    const bool dark = ColorSchemeManager::instance().loadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
     switch (role)
     {
         case LineNumberBackground:     return dark ? QColor(45, 45, 45)    : QColor(240, 240, 240);

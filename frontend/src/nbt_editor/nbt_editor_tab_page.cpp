@@ -18,8 +18,6 @@
 #include <qstandarditemmodel.h>
 #include <qtoolbutton.h>
 
-#include <easy_translate.hpp>
-
 #include <components/code_text_edit.h>
 #include <components/stylesheet_table.h>
 #include "nbt_utils.h"
@@ -132,7 +130,7 @@ public:
     QString filePath() const { return filePathEdit_->text(); }
 
 protected:
-    void updateText() override
+    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override
     {
         setWindowTitle(EASYTR("Save NBT Options"));
         endianLabel_->setText(EASYTR("Endianness:"));
@@ -417,7 +415,7 @@ void NbtEditorTabPage::saveNbtAs()
     saveNbt(fileInfo);
 }
 
-void NbtEditorTabPage::updateText()
+void NbtEditorTabPage::updateText(LanguageManager::Language /* loaded */)
 {
     renameButton_->setText(EASYTR("Rename"));
     editButton_->setText(EASYTR("Edit"));
@@ -438,7 +436,7 @@ void NbtEditorTabPage::updateText()
     updateStateBarText();
 }
 
-void NbtEditorTabPage::updateColor()
+void NbtEditorTabPage::updateColor(ColorSchemeManager::ColorScheme /* loaded */)
 {
     for (auto& button : {renameButton_, editButton_, removeButton_, snbtButton_})
         button->setStyleSheet(toolButtonStyleSheet());

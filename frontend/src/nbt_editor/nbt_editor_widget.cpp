@@ -11,8 +11,6 @@
 #include <qtabwidget.h>
 #include <qtoolbutton.h>
 
-#include <easy_translate.hpp>
-
 #include <mcnbt/mcnbt.hpp>
 
 #include <components/code_text_edit.h>
@@ -63,7 +61,7 @@ public:
     }
 
 protected:
-    void updateText() override
+    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override
     {
         setWindowTitle(EASYTR("Parse SNBT"));
         confirmButton_->setText(EASYTR("Confirm"));
@@ -149,7 +147,7 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     updateColor();
 }
 
-void NbtEditorWidget::updateText()
+void NbtEditorWidget::updateText(LanguageManager::Language /* loaded */)
 {
     newButton_->setText(EASYTR("New"));
     openButton_->setText(EASYTR("Open"));
@@ -158,7 +156,7 @@ void NbtEditorWidget::updateText()
     parseSnbtButton_->setText(EASYTR("Parse SNBT"));
 }
 
-void NbtEditorWidget::updateColor()
+void NbtEditorWidget::updateColor(ColorSchemeManager::ColorScheme /* loaded */)
 {
     for (auto& button : {newButton_, openButton_, saveButton_, saveAsButton_, parseSnbtButton_})
         button->setStyleSheet(toolButtonStyleSheet());

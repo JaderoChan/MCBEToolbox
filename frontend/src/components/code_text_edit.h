@@ -23,17 +23,17 @@ public:
 
     explicit CodeTextEdit(QWidget* parent = nullptr);
 
-    bool tabToSpaces() const;
     void setTabToSpaces(bool enabled);
+    bool tabToSpaces() const;
 
-    int  indentWidth() const;
     void setIndentWidth(int width);
+    int  indentWidth() const;
 
-    bool wordWrapEnabled() const;
     void setWordWrapEnabled(bool enabled);
+    bool wordWrapEnabled() const;
 
-    bool showWhitespace() const;
     void setShowWhitespace(bool enabled);
+    bool showWhitespace() const;
 
     QColor color(ColorRole role) const;
     void   setColor(ColorRole role, const QColor& color);

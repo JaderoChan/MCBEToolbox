@@ -41,7 +41,7 @@ signals:
 
 protected:
     bool eventFilter(QObject* obj, QEvent* e) override;
-    void updateText() override;
+    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override;
 
 private:
     nbt::TagType type_;

@@ -4,13 +4,13 @@
 #include <qobject.h>
 #include <qstylehints.h>
 
-ColorSchemeManager& ColorSchemeManager::getInstance()
+ColorSchemeManager& ColorSchemeManager::instance()
 {
     static ColorSchemeManager instance;
     return instance;
 }
 
-ColorSchemeManager::ColorScheme ColorSchemeManager::getSystemColorScheme()
+ColorSchemeManager::ColorScheme ColorSchemeManager::systemColorScheme()
 {
     auto*       hints      = qApp->styleHints();
     const auto& overridden = hints->colorScheme();
@@ -38,7 +38,7 @@ void ColorSchemeManager::setColorScheme(ColorScheme colorScheme)
     if (colorScheme_ != colorScheme)
     {
         colorScheme_ = colorScheme;
-        const auto& loadedColorScheme = colorScheme_ == COLOR_SCHEME_AUTO ? getSystemColorScheme() : colorScheme_;
+        const auto& loadedColorScheme = colorScheme_ == COLOR_SCHEME_AUTO ? systemColorScheme() : colorScheme_;
         if (loadedColorScheme_ != loadedColorScheme)
         {
             loadedColorScheme_ = loadedColorScheme;
@@ -49,12 +49,12 @@ void ColorSchemeManager::setColorScheme(ColorScheme colorScheme)
     }
 }
 
-ColorSchemeManager::ColorScheme ColorSchemeManager::getColorScheme() const
+ColorSchemeManager::ColorScheme ColorSchemeManager::colorScheme() const
 {
     return colorScheme_;
 }
 
-ColorSchemeManager::ColorScheme ColorSchemeManager::getLoadedColorScheme() const
+ColorSchemeManager::ColorScheme ColorSchemeManager::loadedColorScheme() const
 {
     return loadedColorScheme_;
 }
@@ -69,7 +69,7 @@ ColorSchemeManager::ColorSchemeManager()
             if (colorScheme_ != COLOR_SCHEME_AUTO)
                 return;
 
-            const auto& loadedColorScheme = getSystemColorScheme();
+            const auto& loadedColorScheme = systemColorScheme();
             if (loadedColorScheme_ != loadedColorScheme)
             {
                 loadedColorScheme_ = loadedColorScheme;
@@ -80,7 +80,7 @@ ColorSchemeManager::ColorSchemeManager()
     );
 
     colorScheme_       = COLOR_SCHEME_AUTO;
-    loadedColorScheme_ = getSystemColorScheme();
+    loadedColorScheme_ = systemColorScheme();
     loadColorScheme();
 }
 

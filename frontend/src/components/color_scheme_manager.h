@@ -18,16 +18,16 @@ public:
     static constexpr ColorScheme COLOR_SCHEME_LAST     = COLOR_SCHEME_LIGHT;
     static constexpr ColorScheme FALLBACK_COLOR_SCHEME = COLOR_SCHEME_DARK;
 
-    static ColorSchemeManager& getInstance();
+    static ColorSchemeManager& instance();
     /** 获得系统颜色模式，如果是不支持的模式返回 #FALLBACK_COLOR_SCHEME。 */
-    static ColorScheme         getSystemColorScheme();
+    static ColorScheme         systemColorScheme();
 
     /** 设置程序颜色模式。 */
     void        setColorScheme(ColorScheme colorScheme);
     /** 获得程序颜色模式。 */
-    ColorScheme getColorScheme()  const;
+    ColorScheme colorScheme()  const;
     /** 获得实际加载的颜色模式（不包含 #COLOR_SCHEME_AUTO）。 */
-    ColorScheme getLoadedColorScheme() const;
+    ColorScheme loadedColorScheme() const;
 
 signals:
     /** 程序颜色模式发生变化时发出。 */

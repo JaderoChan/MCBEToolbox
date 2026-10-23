@@ -9,13 +9,13 @@
 #include <utils/debug_output.h>
 #include <utils/directory_scope.h>
 
-LanguageManager& LanguageManager::getInstance()
+LanguageManager& LanguageManager::instance()
 {
     static LanguageManager instance;
     return instance;
 }
 
-LanguageManager::Language LanguageManager::getSystemLanguage()
+LanguageManager::Language LanguageManager::systemLanguage()
 {
     switch (QLocale::system().language())
     {
@@ -30,7 +30,7 @@ void LanguageManager::setLanguage(Language language)
     if (language_ != language)
     {
         language_ = language;
-        const auto& loadedLanguage = language_ == LANGUAGE_AUTO ? getSystemLanguage() : language_;
+        const auto& loadedLanguage = language_ == LANGUAGE_AUTO ? systemLanguage() : language_;
         if (loadedLanguage_ != loadedLanguage)
         {
             loadedLanguage_ = loadedLanguage;
@@ -41,12 +41,12 @@ void LanguageManager::setLanguage(Language language)
     }
 }
 
-LanguageManager::Language LanguageManager::getLanguage() const
+LanguageManager::Language LanguageManager::language() const
 {
     return language_;
 }
 
-LanguageManager::Language LanguageManager::getLoadedLanguage() const
+LanguageManager::Language LanguageManager::loadedLanguage() const
 {
     return loadedLanguage_;
 }
@@ -57,7 +57,7 @@ bool LanguageManager::eventFilter(QObject* obj, QEvent* e)
     {
         if (e->type() == QEvent::LocaleChange && language_ == LANGUAGE_AUTO)
         {
-            const auto& loadedLanguage = getSystemLanguage();
+            const auto& loadedLanguage = systemLanguage();
             if (loadedLanguage_ != loadedLanguage)
             {
                 loadedLanguage_ = loadedLanguage;
@@ -75,11 +75,11 @@ LanguageManager::LanguageManager()
 {
     qApp->installEventFilter(this);
     language_       = LANGUAGE_AUTO;
-    loadedLanguage_ = getSystemLanguage();
+    loadedLanguage_ = systemLanguage();
     loadLanguage();
 }
 
-QString LanguageManager::getLanguageId(Language language)
+QString LanguageManager::languageId(Language language)
 {
     switch (language)
     {
@@ -100,7 +100,7 @@ void LanguageManager::loadLanguage()
         return;
     }
 
-    const auto& id = getLanguageId(loadedLanguage_).toStdString();
+    const auto& id = languageId(loadedLanguage_).toStdString();
     if (!easytr::hasLanguage(id))
     {
         debugOut(qWarning(), "[LanguageManager] Language %1 is not available.", QString::fromStdString(id));

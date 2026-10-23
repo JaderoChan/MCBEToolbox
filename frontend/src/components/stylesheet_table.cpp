@@ -8,6 +8,6 @@ const QString& toolButtonStyleSheet()
     static const auto& dark  = readFileContent(QStringLiteral(":/stylesheets/toolbutton_dark.qss"));
     static const auto& light = readFileContent(QStringLiteral(":/stylesheets/toolbutton_light.qss"));
     return
-        ColorSchemeManager::getInstance().getLoadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK
+        ColorSchemeManager::instance().loadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK
         ? dark : light;
 }

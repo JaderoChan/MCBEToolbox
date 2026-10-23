@@ -20,16 +20,16 @@ public:
     static constexpr Language LANGUAGE_LAST     = LANGUAGE_ZH;
     static constexpr Language FALLBACK_LANGUAGE = LANGUAGE_EN;
 
-    static LanguageManager& getInstance();
+    static LanguageManager& instance();
     /** 获得系统语言，如果是不支持的语言返回 #FALLBACK_LANGUAGE。 */
-    static Language         getSystemLanguage();
+    static Language         systemLanguage();
 
     /** 设置程序语言。 */
     void     setLanguage(Language language);
     /** 获得程序语言。 */
-    Language getLanguage()       const;
+    Language language()       const;
     /** 获得实际加载中的语言（不包含 #LANGUAGE_AUTO）。 */
-    Language getLoadedLanguage() const;
+    Language loadedLanguage() const;
 
 signals:
     /** 程序语言发生变化时发出。 */
@@ -46,7 +46,7 @@ private:
     LanguageManager(const LanguageManager&)           = delete;
     LanguageManager operator=(const LanguageManager&) = delete;
 
-    static QString getLanguageId(Language language);
+    static QString languageId(Language language);
 
     void loadLanguage();
 

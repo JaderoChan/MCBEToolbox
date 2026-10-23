@@ -38,8 +38,10 @@ signals:
     void filePathChanged(const QString& filePath);
 
 protected:
-    void updateText()  override;
-    void updateColor() override;
+    void updateText(
+        LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override;
+    void updateColor(
+        ColorSchemeManager::ColorScheme loaded = ColorSchemeManager::instance().loadedColorScheme()) override;
 
 private:
     // 有关 NBT 文件的更多信息可以参见 https://wiki.bedrock.dev/nbt/nbt-in-depth。
