@@ -1,9 +1,9 @@
 #pragma once
 
 #include <qicon.h>
+#include <qlist.h>
 #include <qstring.h>
 #include <qvariant.h>
-#include <qvector.h>
 #include <qwidget.h>
 
 class QEvent;
@@ -98,8 +98,8 @@ private:
     QVBoxLayout*       mainLayout_ = nullptr;
     QVariantAnimation* anim_       = nullptr;
 
-    SidebarEntryWidget*          toggleEntry_ = nullptr;
-    QVector<SidebarEntryWidget*> entries_;
+    SidebarEntryWidget*        toggleEntry_ = nullptr;
+    QList<SidebarEntryWidget*> entries_;
 
     bool expanded_       = true;
     bool toggleVisible_  = true;
