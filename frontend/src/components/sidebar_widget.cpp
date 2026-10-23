@@ -615,7 +615,7 @@ int SidebarWidget::addEntry(const QIcon& icon, const QString& text, const QVaria
 
 int SidebarWidget::insertEntry(int index, const QIcon& icon, const QString& text, const QVariant& data)
 {
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
+    if (index < 0 || index > static_cast<int>(entries_.size()))
         return -1;
 
     auto* entry = new SidebarEntryWidget(false, this);
