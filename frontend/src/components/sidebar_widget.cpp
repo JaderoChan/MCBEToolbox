@@ -1,7 +1,5 @@
 #include "sidebar_widget.h"
 
-#include <algorithm>
-
 #include <qevent.h>
 #include <qlayout.h>
 #include <qpainter.h>
@@ -617,7 +615,8 @@ int SidebarWidget::addEntry(const QIcon& icon, const QString& text, const QVaria
 
 int SidebarWidget::insertEntry(int index, const QIcon& icon, const QString& text, const QVariant& data)
 {
-    index = std::clamp(index, 0, static_cast<int>(entries_.size()));
+    if (index < 0 || index >= static_cast<int>(entries_.size()))
+        return -1;
 
     auto* entry = new SidebarEntryWidget(false, this);
     entry->setIcon(icon);
@@ -690,43 +689,41 @@ int SidebarWidget::entryCount() const
 
 void SidebarWidget::setEntryIcon(int index, const QIcon& icon)
 {
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
-        return;
     entries_[index]->setIcon(icon);
 }
 
 void SidebarWidget::setEntryText(int index, const QString& text)
 {
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
-        return;
     entries_[index]->setText(text);
+}
+
+void SidebarWidget::setEntryToolTip(int index, const QString& text)
+{
+    entries_[index]->setToolTip(text);
 }
 
 void SidebarWidget::setEntryData(int index, const QVariant& data)
 {
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
-        return;
     entries_[index]->setData(data);
 }
 
 QIcon SidebarWidget::entryIcon(int index) const
 {
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
-        return QIcon();
     return entries_[index]->icon();
 }
 
 QString SidebarWidget::entryText(int index) const
 {
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
-        return QString();
     return entries_[index]->text();
+}
+
+QString SidebarWidget::entryToolTip(int index) const
+{
+    return entries_[index]->toolTip();
 }
 
 QVariant SidebarWidget::entryData(int index) const
 {
-    if (index < 0 || index >= static_cast<int>(entries_.size()))
-        return QVariant();
     return entries_[index]->data();
 }
 

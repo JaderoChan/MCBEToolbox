@@ -20,9 +20,9 @@ public:
 
     /** 添加条目至末尾，返回条目索引。 */
     int  addEntry(const QIcon& icon, const QString& text, const QVariant& data = QVariant());
-    /** 插入条目至指定位置，返回条目索引。 */
+    /** 插入条目至指定位置，返回条目索引；如果给定索引非法返回 -1。 */
     int  insertEntry(int index, const QIcon& icon, const QString& text, const QVariant& data = QVariant());
-    /** 移除指定位置的条目，如果索引超出范围则不做任何事。 */
+    /** 移除指定位置的条目；如果给定索引非法则不做任何事。 */
     void removeEntry(int index);
     /** 移除所有条目。 */
     void clearEntries();
@@ -30,12 +30,23 @@ public:
     /** 获取条目数量。 */
     int  entryCount() const;
 
+    /** @name 无索引检查
+     *
+     * 以下函数不会检查索引合法性，传入非法索引的行为是未定义的。
+     *
+     * @{
+     */
+
     void     setEntryIcon(int index, const QIcon&    icon);
     void     setEntryText(int index, const QString&  text);
+    void     setEntryToolTip(int index, const QString& text);
     void     setEntryData(int index, const QVariant& data);
-    QIcon    entryIcon(int index) const;
-    QString  entryText(int index) const;
-    QVariant entryData(int index) const;
+    QIcon    entryIcon(int index)    const;
+    QString  entryText(int index)    const;
+    QString  entryToolTip(int index) const;
+    QVariant entryData(int index)    const;
+
+    /** @} */
 
     /** 设置条目之间的间距。 */
     void setEntrySpacing(int spacing);
@@ -72,6 +83,7 @@ public slots:
     void fold();
     void toggle();
 
+    /** 传入 -1 以清除选中项，传入其他非法索引则不做任何事。 */
     void setCurrentIndex(int index);
 
 signals:
