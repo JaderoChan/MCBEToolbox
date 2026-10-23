@@ -407,12 +407,20 @@ public:
         setCursor(Qt::PointingHandCursor);
     }
 
-    void setEntryHeight(int height)
+    void setExpandedWidth(int width)
     {
-        if (height_ == height)
+        if (expandedWidth_ == width)
             return;
-        height_ = height;
-        setFixedHeight(height_);
+        expandedWidth_ = width;
+        updateGeometry();
+    }
+
+    void setCollapsedWidth(int width)
+    {
+        if (collapsedWidth_ == width)
+            return;
+        collapsedWidth_ = width;
+        setFixedHeight(collapsedWidth_);
         updateGeometry();
     }
 
@@ -423,6 +431,10 @@ public:
         iconSize_ = size;
         update();
     }
+
+    int collapsedWidth() const { return collapsedWidth_; }
+    int expandedWidth()  const { return expandedWidth_;  }
+    int iconSize()       const { return iconSize_;       }
 
     void setIcon(const QIcon& icon)
     {
@@ -465,7 +477,7 @@ public:
 
     QSize sizeHint() const override
     {
-        return QSize(minimum_ ? height_ : 240, height_);
+        return QSize(minimum_ ? collapsedWidth_ : expandedWidth_, collapsedWidth_);
     }
 
 signals:
@@ -510,10 +522,9 @@ protected:
         {
             QColor fill = highlight;
             fill.setAlpha(selected_ ? ENTRY_PRIMARY_ALPHA : ENTRY_SECONDARY_ALPHA);
-            const QRect bgRect = rect().adjusted(3, 3, -3, -3);
             painter.setPen(Qt::NoPen);
             painter.setBrush(fill);
-            painter.drawRoundedRect(bgRect, 6.0, 6.0);
+            painter.drawRoundedRect(rect(), 6.0, 6.0);
         }
 
         if (selected_)
@@ -553,13 +564,14 @@ private:
     QString  text_;
     QVariant data_;
 
-    bool     selected_ = false;
-    bool     hovered_  = false;
-    bool     expanded_ = true;
-    bool     pressed_  = false;
+    bool selected_ = false;
+    bool hovered_  = false;
+    bool expanded_ = true;
+    bool pressed_  = false;
 
-    int      height_   = 0;
-    int      iconSize_ = 0;
+    int  expandedWidth_  = 0;
+    int  collapsedWidth_ = 0;
+    int  iconSize_       = 0;
 
     const bool minimum_;
 };
@@ -611,8 +623,9 @@ int SidebarWidget::insertEntry(int index, const QIcon& icon, const QString& text
     entry->setText(text);
     entry->setData(data);
     entry->setExpanded(expanded_);
-    entry->setEntryHeight(collapsedWidth_);
-    entry->setIconSize(collapsedWidth_ * 5 / 9);
+    entry->setExpandedWidth(expandedWidth_);
+    entry->setCollapsedWidth(collapsedWidth_);
+    entry->setIconSize(iconSize_);
     connect(entry, &SidebarEntryWidget::clicked, this, [this, entry]()
     {
         const auto it = std::find(entries_.begin(), entries_.end(), entry);
@@ -767,6 +780,7 @@ void SidebarWidget::setExpandedWidth(int width)
     if (expandedWidth_ == width)
         return;
     expandedWidth_ = width;
+    applyEntrySize();
     if (expanded_)
         animateWidthTo(expandedWidth_);
 }
@@ -781,6 +795,14 @@ void SidebarWidget::setCollapsedWidth(int width)
         animateWidthTo(collapsedWidth_);
 }
 
+void SidebarWidget::setIconSize(int size)
+{
+    if (iconSize_ == size)
+        return;
+    iconSize_ = iconSize();
+    applyEntrySize();
+}
+
 int SidebarWidget::expandedWidth() const
 {
     return expandedWidth_;
@@ -789,6 +811,11 @@ int SidebarWidget::expandedWidth() const
 int SidebarWidget::collapsedWidth() const
 {
     return collapsedWidth_;
+}
+
+int SidebarWidget::iconSize() const
+{
+    return iconSize_;
 }
 
 int SidebarWidget::currentIndex() const
@@ -862,14 +889,14 @@ void SidebarWidget::animateWidthTo(int targetWidth)
 
 void SidebarWidget::applyEntrySize()
 {
-    const int iconSize = collapsedWidth_ * 5 / 9;
-
-    toggleEntry_->setEntryHeight(collapsedWidth_);
-    toggleEntry_->setIconSize(iconSize);
+    toggleEntry_->setExpandedWidth(expandedWidth_);
+    toggleEntry_->setCollapsedWidth(collapsedWidth_);
+    toggleEntry_->setIconSize(iconSize_);
     for (auto* entry : entries_)
     {
-        entry->setEntryHeight(collapsedWidth_);
-        entry->setIconSize(iconSize);
+        entry->setExpandedWidth(expandedWidth_);
+        entry->setCollapsedWidth(collapsedWidth_);
+        entry->setIconSize(iconSize_);
     }
 }
 

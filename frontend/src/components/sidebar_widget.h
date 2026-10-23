@@ -59,8 +59,10 @@ public:
 
     void setExpandedWidth(int width);
     void setCollapsedWidth(int width);
+    void setIconSize(int size);
     int  expandedWidth()  const;
     int  collapsedWidth() const;
+    int  iconSize()       const;
 
     /** 获取当前选中的条目索引，未选中时为 -1。 */
     int currentIndex() const;
@@ -91,6 +93,7 @@ private:
     bool toggleVisible_  = true;
     int  expandedWidth_  = 240;
     int  collapsedWidth_ = 48;
+    int  iconSize_       = 24;
     int  entrySpacing_   = 4;
     int  currentIndex_   = -1;
 };
