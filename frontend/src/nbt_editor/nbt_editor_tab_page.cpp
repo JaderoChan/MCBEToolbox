@@ -177,7 +177,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     // 构建顶部工具栏 UI。
     auto* toolbarWidget = new QWidget(this);
     auto* toolbarLayout = new QHBoxLayout(toolbarWidget);
-    toolbarLayout->setContentsMargins(3, 0, 3, 0);
+    toolbarLayout->setContentsMargins(0, 0, 0, 0);
     toolbarLayout->setSpacing(2);
 
     // 基础 Tag 操作按钮。
@@ -273,7 +273,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     font.setPointSizeF(font.pointSizeF() * 0.85);
     stateBarWidget->setFont(font);
     stateBarWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    stateBarLayout->setContentsMargins(3, 0, 3, 0);
+    stateBarLayout->setContentsMargins(0, 0, 0, 0);
     stateBarLayout->setSpacing(14);
 
     filePathLabel_   = new QLabel(this);

@@ -82,7 +82,7 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     // 构建顶部工具栏 UI。
     auto* toolbarWidget = new QWidget(this);
     auto* toolbarLayout = new QHBoxLayout(toolbarWidget);
-    toolbarLayout->setContentsMargins(3, 0, 3, 0);
+    toolbarLayout->setContentsMargins(0, 0, 0, 0);
     toolbarLayout->setSpacing(4);
 
     newButton_       = new QToolButton(this);
