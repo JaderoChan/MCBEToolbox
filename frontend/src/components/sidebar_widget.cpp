@@ -568,7 +568,7 @@ SidebarWidget::SidebarWidget(QWidget* parent)
     : QWidget(parent)
 {
     mainLayout_ = new QVBoxLayout(this);
-    mainLayout_->setContentsMargins(0, 3, 0, 3);
+    mainLayout_->setContentsMargins(0, 0, 0, 0);
     mainLayout_->setSpacing(entrySpacing_);
 
     anim_ = new QVariantAnimation(this);
