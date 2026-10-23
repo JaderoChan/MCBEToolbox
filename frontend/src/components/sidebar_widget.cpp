@@ -528,7 +528,7 @@ protected:
 
         if (selected_)
         {
-            const QRectF barRect(0.0, height() / 2.0 - 8, 3.0, 16.0);
+            const QRectF barRect(1.5, height() / 2.0 - 8, 3.0, 16.0);
             painter.setPen(Qt::NoPen);
             painter.setBrush(highlight);
             painter.drawRoundedRect(barRect, 1.5, 1.5);
