@@ -79,6 +79,7 @@ signals:
 private:
     void updateToggleIcon();
     void animateWidthTo(int targetWidth);
+    void applyEntrySize();
 
     QVBoxLayout*       mainLayout_ = nullptr;
     QVariantAnimation* anim_       = nullptr;

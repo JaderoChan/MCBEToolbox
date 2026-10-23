@@ -12,8 +12,6 @@
 namespace
 {
 
-constexpr int ENTRY_HEIGHT          = 42;
-constexpr int ENTRY_ICON_SIZE       = 24;
 constexpr int ENTRY_ICON_TEXT_GAP   = 12;
 constexpr int ENTRY_PRIMARY_ALPHA   = 144;
 constexpr int ENTRY_SECONDARY_ALPHA = 72;
@@ -405,9 +403,25 @@ public:
     explicit SidebarEntryWidget(bool minimum = false, QWidget* parent = nullptr)
         : QWidget(parent), minimum_(minimum)
     {
-        setFixedHeight(ENTRY_HEIGHT);
         setSizePolicy(minimum ? QSizePolicy::Fixed : QSizePolicy::Expanding, QSizePolicy::Fixed);
         setCursor(Qt::PointingHandCursor);
+    }
+
+    void setEntryHeight(int height)
+    {
+        if (height_ == height)
+            return;
+        height_ = height;
+        setFixedHeight(height_);
+        updateGeometry();
+    }
+
+    void setIconSize(int size)
+    {
+        if (iconSize_ == size)
+            return;
+        iconSize_ = size;
+        update();
     }
 
     void setIcon(const QIcon& icon)
@@ -451,7 +465,7 @@ public:
 
     QSize sizeHint() const override
     {
-        return QSize(minimum_ ? ENTRY_HEIGHT : 240, ENTRY_HEIGHT);
+        return QSize(minimum_ ? height_ : 240, height_);
     }
 
 signals:
@@ -510,7 +524,8 @@ protected:
             painter.drawRoundedRect(barRect, 1.5, 1.5);
         }
 
-        const QRect iconRect(9.0, (height() - ENTRY_ICON_SIZE) / 2, ENTRY_ICON_SIZE, ENTRY_ICON_SIZE);
+        const int offset = (height() - iconSize_) / 2;
+        const QRect iconRect(offset, offset, iconSize_, iconSize_);
         if (!icon_.isNull())
         {
             icon_.paint(
@@ -543,6 +558,9 @@ private:
     bool     expanded_ = true;
     bool     pressed_  = false;
 
+    int      height_   = 0;
+    int      iconSize_ = 0;
+
     const bool minimum_;
 };
 
@@ -550,7 +568,7 @@ SidebarWidget::SidebarWidget(QWidget* parent)
     : QWidget(parent)
 {
     mainLayout_ = new QVBoxLayout(this);
-    mainLayout_->setContentsMargins(3, 3, 3, 3);
+    mainLayout_->setContentsMargins(0, 3, 0, 3);
     mainLayout_->setSpacing(entrySpacing_);
 
     anim_ = new QVariantAnimation(this);
@@ -568,6 +586,8 @@ SidebarWidget::SidebarWidget(QWidget* parent)
     updateToggleIcon();
     mainLayout_->addWidget(toggleEntry_);
     connect(toggleEntry_, &SidebarEntryWidget::clicked, this, &SidebarWidget::toggle);
+
+    applyEntrySize();
 
     connect(
         &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
@@ -591,6 +611,8 @@ int SidebarWidget::insertEntry(int index, const QIcon& icon, const QString& text
     entry->setText(text);
     entry->setData(data);
     entry->setExpanded(expanded_);
+    entry->setEntryHeight(collapsedWidth_);
+    entry->setIconSize(collapsedWidth_ * 5 / 9);
     connect(entry, &SidebarEntryWidget::clicked, this, [this, entry]()
     {
         const auto it = std::find(entries_.begin(), entries_.end(), entry);
@@ -754,6 +776,7 @@ void SidebarWidget::setCollapsedWidth(int width)
     if (collapsedWidth_ == width)
         return;
     collapsedWidth_ = width;
+    applyEntrySize();
     if (!expanded_)
         animateWidthTo(collapsedWidth_);
 }
@@ -835,6 +858,19 @@ void SidebarWidget::animateWidthTo(int targetWidth)
     anim_->setStartValue(width());
     anim_->setEndValue(targetWidth);
     anim_->start();
+}
+
+void SidebarWidget::applyEntrySize()
+{
+    const int iconSize = collapsedWidth_ * 5 / 9;
+
+    toggleEntry_->setEntryHeight(collapsedWidth_);
+    toggleEntry_->setIconSize(iconSize);
+    for (auto* entry : entries_)
+    {
+        entry->setEntryHeight(collapsedWidth_);
+        entry->setIconSize(iconSize);
+    }
 }
 
 #include "sidebar_widget.moc"
