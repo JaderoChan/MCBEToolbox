@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <defs>
+    <mask id="gearMaskDark" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+      <rect width="24" height="24" fill="black"/>
+      <circle cx="12" cy="12" r="6" fill="white"/>
+      <g fill="white">
+        <rect x="10.5" y="2.5" width="3" height="5" rx="1.5"/>
+        <rect x="10.5" y="2.5" width="3" height="5" rx="1.5" transform="rotate(45 12 12)"/>
+        <rect x="10.5" y="2.5" width="3" height="5" rx="1.5" transform="rotate(90 12 12)"/>
+        <rect x="10.5" y="2.5" width="3" height="5" rx="1.5" transform="rotate(135 12 12)"/>
+        <rect x="10.5" y="2.5" width="3" height="5" rx="1.5" transform="rotate(180 12 12)"/>
+        <rect x="10.5" y="2.5" width="3" height="5" rx="1.5" transform="rotate(225 12 12)"/>
+        <rect x="10.5" y="2.5" width="3" height="5" rx="1.5" transform="rotate(270 12 12)"/>
+        <rect x="10.5" y="2.5" width="3" height="5" rx="1.5" transform="rotate(315 12 12)"/>
+      </g>
+      <circle cx="12" cy="12" r="2.6" fill="black"/>
+    </mask>
+  </defs>
+  <rect x="0" y="0" width="24" height="24" fill="#111111" mask="url(#gearMaskDark)"/>
+</svg>

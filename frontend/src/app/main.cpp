@@ -54,7 +54,8 @@ int main(int argc, char* argv[])
         LanguageManager::instance().setLanguage(settings.language);
     }
 
-    // TODO
+    MainWidget w;
+    w.show();
 
     int ret = a.exec();
 
