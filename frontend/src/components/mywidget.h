@@ -17,10 +17,10 @@ public:
     explicit MyWidget(QWidget* parent = nullptr);
 
 public slots:
-    /** \p loaded cannot be \ref LANGUAGE_AUTO. */
+    /** \p loaded 不可能是 \ref LANGUAGE_AUTO。 */
     virtual void updateText(
         LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage());
-    /** \p loaded cannot be \ref COLOR_SCHEME_AUTO. */
+    /** \p loaded 不可能是 \ref COLOR_SCHEME_AUTO。 */
     virtual void updateColor(
         ColorSchemeManager::ColorScheme loaded = ColorSchemeManager::instance().loadedColorScheme());
 };
@@ -33,10 +33,10 @@ public:
     explicit MyMainWindow(QWidget* parent = nullptr);
 
 public slots:
-    /** \p loaded cannot be \ref LANGUAGE_AUTO. */
+    /** \p loaded 不可能是 \ref LANGUAGE_AUTO。 */
     virtual void updateText(
         LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage());
-    /** \p loaded cannot be \ref COLOR_SCHEME_AUTO. */
+    /** \p loaded 不可能是 \ref COLOR_SCHEME_AUTO。 */
     virtual void updateColor(
         ColorSchemeManager::ColorScheme loaded = ColorSchemeManager::instance().loadedColorScheme());
 };
@@ -49,10 +49,10 @@ public:
     explicit MyDialog(QWidget* parent = nullptr);
 
 public slots:
-    /** \p loaded cannot be \ref LANGUAGE_AUTO. */
+    /** \p loaded 不可能是 \ref LANGUAGE_AUTO。 */
     virtual void updateText(
         LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage());
-    /** \p loaded cannot be \ref COLOR_SCHEME_AUTO. */
+    /** \p loaded 不可能是 \ref COLOR_SCHEME_AUTO。 */
     virtual void updateColor(
         ColorSchemeManager::ColorScheme loaded = ColorSchemeManager::instance().loadedColorScheme());
 };

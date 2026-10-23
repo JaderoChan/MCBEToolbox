@@ -57,7 +57,7 @@ private:
     QColor defaultColor(ColorRole role) const;
     void   applyWhitespaceFlags();
 
-    // 返回光标附近匹配的括号/字符串引号的一对位置（文档字符下标），未找到时二者均为 -1。
+    // 返回光标附近匹配的括号/字符串引号的一对位置（文档字符下标）；如果未找到二者均为 -1。
     QPair<int, int> findMatchingBracket(int cursorPos) const;
     QPair<int, int> findMatchingQuote(int cursorPos) const;
 

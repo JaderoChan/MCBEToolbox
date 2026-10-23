@@ -21,14 +21,14 @@ public:
     static constexpr Language FALLBACK_LANGUAGE = LANGUAGE_EN;
 
     static LanguageManager& instance();
-    /** 获得系统语言，如果是不支持的语言返回 #FALLBACK_LANGUAGE。 */
+    /** 获取系统语言；如果是不支持的语言返回 #FALLBACK_LANGUAGE。 */
     static Language         systemLanguage();
 
     /** 设置程序语言。 */
     void     setLanguage(Language language);
-    /** 获得程序语言。 */
+    /** 获取程序语言。 */
     Language language()       const;
-    /** 获得实际加载中的语言（不包含 #LANGUAGE_AUTO）。 */
+    /** 获取实际加载中的语言（不包含 #LANGUAGE_AUTO）。 */
     Language loadedLanguage() const;
 
 signals:
