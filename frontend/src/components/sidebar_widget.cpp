@@ -522,9 +522,10 @@ protected:
         {
             QColor fill = highlight;
             fill.setAlpha(selected_ ? ENTRY_PRIMARY_ALPHA : ENTRY_SECONDARY_ALPHA);
+            const QRect bgRect = rect().adjusted(3, 3, -3, -3);
             painter.setPen(Qt::NoPen);
             painter.setBrush(fill);
-            painter.drawRoundedRect(rect(), 6.0, 6.0);
+            painter.drawRoundedRect(bgRect, 6.0, 6.0);
         }
 
         if (selected_)
