@@ -13,7 +13,7 @@ MyWidget::MyWidget(QWidget* parent)
 
 void MyWidget::updateText(LanguageManager::Language /* loaded */) {}
 
-void MyWidget::updateColor(ColorSchemeManager::ColorScheme /* loaded*/) {}
+void MyWidget::updateColor(ColorSchemeManager::ColorScheme /* loaded */) {}
 
 MyMainWindow::MyMainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -28,7 +28,7 @@ MyMainWindow::MyMainWindow(QWidget* parent)
 
 void MyMainWindow::updateText(LanguageManager::Language /* loaded */) {}
 
-void MyMainWindow::updateColor(ColorSchemeManager::ColorScheme /* loaded*/) {}
+void MyMainWindow::updateColor(ColorSchemeManager::ColorScheme /* loaded */) {}
 
 MyDialog::MyDialog(QWidget* parent)
     : QDialog(parent)
@@ -43,4 +43,4 @@ MyDialog::MyDialog(QWidget* parent)
 
 void MyDialog::updateText(LanguageManager::Language /* loaded */) {}
 
-void MyDialog::updateColor(ColorSchemeManager::ColorScheme /* loaded*/) {}
+void MyDialog::updateColor(ColorSchemeManager::ColorScheme /* loaded */) {}
