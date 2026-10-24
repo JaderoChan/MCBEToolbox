@@ -16,6 +16,7 @@ class QStandardItemModel;
 class NbtRowEditor;
 class NbtTreeItemDelegate;
 
+/** 显示并编辑 NBT 树结构的视图，支持右键菜单及节点增删改查等功能。 */
 class NbtTreeView : public QTreeView
 {
     Q_OBJECT

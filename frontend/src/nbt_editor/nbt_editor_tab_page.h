@@ -15,6 +15,7 @@ class QStackedWidget;
 class QStandardItem;
 class CodeTextEdit;
 
+/** 单个 NBT 文件的显示/编辑页面，主要职责是作为 #NbtTreeView 的父控件扩展其功能。。 */
 class NbtEditorTabPage : public MyWidget
 {
     Q_OBJECT

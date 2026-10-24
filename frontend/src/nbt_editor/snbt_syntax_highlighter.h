@@ -7,6 +7,7 @@
 
 class QTextDocument;
 
+/** 为 SNBT 文本提供语法高亮的 QSyntaxHighlighter。 */
 class SnbtSyntaxHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT

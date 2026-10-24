@@ -2,6 +2,7 @@
 
 #include <qstyleditemdelegate.h>
 
+/** 为 #NbtTreeView 节点绘制外观的自定义委托。 */
 class NbtTreeItemDelegate : public QStyledItemDelegate
 {
 public:

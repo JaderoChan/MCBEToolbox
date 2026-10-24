@@ -8,6 +8,7 @@ class QTabWidget;
 class QToolButton;
 class NbtEditorTabPage;
 
+/** 管理多个 NBT 编辑页面（#NbtEditorTabPage）的父控件，并支持 新建/打开/保存/关闭 标签页等功能。 */
 class NbtEditorWidget : public MyWidget
 {
 public:
