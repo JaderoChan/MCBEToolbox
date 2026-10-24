@@ -338,7 +338,7 @@ void excludeBlocks(
     {
         const BlockAttributes blockAttri = it->second->attributes;
         if ((filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL && (blockAttri & attributes) == attributes) ||
-            (filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY && (blockAttri & attributes) == blockAttri))
+            (filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY && (blockAttri & attributes) != 0))
             it = target.erase(it);
         else
             ++it;
@@ -352,7 +352,7 @@ void appendBlocks(
     {
         const BlockAttributes blockAttri = block->attributes;
         if ((filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL && (blockAttri & attributes) == attributes) ||
-            (filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY && (blockAttri & attributes) == blockAttri))
+            (filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY && (blockAttri & attributes) != 0))
             target[id] = block;
     }
 }

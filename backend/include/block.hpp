@@ -50,7 +50,7 @@ constexpr BlockAttributes BLOCK_ATTRI_ALL  = 0xFFFFFFFF; ///< 包含所有方块
 enum BlockAttributeFilterMode
 {
     BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL, ///> 方块包含给定的全部属性
-    BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY  ///> 方块包含给定的任一属性（包括无属性方块）
+    BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY  ///> 方块包含给定的任一属性
 };
 
 // =====================================================================================================================
