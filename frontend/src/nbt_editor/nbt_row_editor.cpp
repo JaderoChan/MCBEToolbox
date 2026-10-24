@@ -46,7 +46,7 @@ private:
 };
 
 // 构建与指定类型对应的数值验证器。
-QValidator* getTagTypeValidator(nbt::TagType type, QObject* parent = nullptr)
+QValidator* makeTagTypeValidator(nbt::TagType type, QObject* parent = nullptr)
 {
     switch (type)
     {
@@ -133,7 +133,7 @@ NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
     if (!keyEditable())   keyEdit_->hide();
     if (!valueEditable()) valueEdit_->hide();
 
-    validator_ = getTagTypeValidator(type_, this);
+    validator_ = makeTagTypeValidator(type_, this);
     if (validator_) valueEdit_->setValidator(validator_);
 
     updateText();
