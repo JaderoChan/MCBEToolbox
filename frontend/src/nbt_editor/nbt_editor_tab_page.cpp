@@ -324,6 +324,7 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
         return nullptr;
     }
 
+    bool        ok = false;
     std::string rootName;
     nbt::Tag    rootTag;
     NbtFileInfo fileInfo;
@@ -353,8 +354,9 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
         {
             fileInfo.valid     = true;
             fileInfo.bigEndian = result == 0;
+
             std::tie(rootName, rootTag) = nbt::Tag::parse(iss, fileInfo.bigEndian, 0);
-            return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
+            ok = rootTag.isCompound();
         }
         else
         {
@@ -372,8 +374,14 @@ NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWid
             fileInfo.valid     = true;
             fileInfo.bigEndian = false;
             fileInfo.hasHeader = true;
-            return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
+
+            ok = rootTag.isCompound();
         }
+    }
+
+    if (ok)
+    {
+        return new NbtEditorTabPage(QString::fromStdString(rootName), rootTag, fileInfo, parent);
     }
     else
     {
