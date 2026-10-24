@@ -16,10 +16,10 @@ namespace
 
 constexpr int ITEM_MARGIN          = 4;
 constexpr int ITEM_SPACING         = 6;
-constexpr int ITEM_INNER_GAP       = 4;
+constexpr int ITEM_INNER_GAP       = 6;
 constexpr int ITEM_MIN_SIZE        = 72;
 constexpr int ITEM_MAX_SIZE        = 108;
-constexpr int ITEM_TEXT_HEIGHT     = 16;
+constexpr int ITEM_TEXT_HEIGHT     = 14;
 constexpr int ITEM_PRIMARY_ALPHA   = 192;
 constexpr int ITEM_SECONDARY_ALPHA = 96;
 
@@ -177,7 +177,7 @@ protected:
         if (!name_.isEmpty())
         {
             QFont f = font();
-            f.setPointSizeF(9.0);
+            f.setPointSizeF(f.pointSizeF() * 0.85);
             painter.setFont(f);
             painter.setPen(palette().color(QPalette::WindowText));
             const auto& elided = QFontMetrics(f).elidedText(name_, Qt::ElideRight, textRect.width());
