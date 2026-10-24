@@ -30,9 +30,11 @@ public:
     Version minimumVersion() const;
 
     void setMultiSelectEnabled(bool enabled);
-    bool isMultiSelectEnabled() const;
+    bool multiSelectEnabled() const;
 
     void selectByAttribute(BlockAttributeFilterMode mode, const BlockAttributes& attributes);
+
+    const BlockDataMap& selecteds() const;
 
 protected:
     void keyPressEvent(QKeyEvent* e) override;

@@ -377,7 +377,7 @@ void BlockListWidget::setMultiSelectEnabled(bool enabled)
         unselectAll();
 }
 
-bool BlockListWidget::isMultiSelectEnabled() const
+bool BlockListWidget::multiSelectEnabled() const
 {
     return multiSelectEnabled_;
 }
@@ -395,6 +395,11 @@ void BlockListWidget::selectByAttribute(BlockAttributeFilterMode mode, const Blo
         const bool  selected = selecteds_.find(std::string_view(id)) != selecteds_.end();
         it.value()->setSelected(selected);
     }
+}
+
+const BlockDataMap& BlockListWidget::selecteds() const
+{
+    return selecteds_;
 }
 
 void BlockListWidget::keyPressEvent(QKeyEvent* e)
