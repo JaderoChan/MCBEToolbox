@@ -75,19 +75,19 @@ const QIcon& tagTypeIcon(nbt::TagType type)
 {
     static const QIcon icons[] =
     {
-        QIcon(),
-        QIcon(QStringLiteral(":/icons/nbt_editor/byte.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/short.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/int.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/long.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/float.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/double.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/byte_array.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/string.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/list.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/compound.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/int_array.svg")),
-        QIcon(QStringLiteral(":/icons/nbt_editor/long_array.svg")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/end.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/byte.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/short.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/int.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/long.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/float.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/double.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/byte_array.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/string.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/list.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/compound.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/int_array.png")),
+        QIcon(QStringLiteral(":/icons/nbt_editor/long_array.png")),
     };
     return icons[static_cast<int>(type)];
 }
