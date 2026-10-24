@@ -50,8 +50,7 @@ constexpr BlockAttributes BLOCK_ATTRI_ALL  = 0xFFFFFFFF; ///< 包含所有方块
 enum BlockAttributeFilterMode
 {
     BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL, ///> 方块包含给定的全部属性
-    BLOCK_ATTRI_FILTER_MODE_DISJOINT,     ///> 方块不含给定的任一属性
-    BLOCK_ATTRI_FILTER_MODE_SUBSETOF      ///> 方块属性完全属于给定属性集合（包括无属性方块）
+    BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY  ///> 方块包含给定的任一属性（包括无属性方块）
 };
 
 // =====================================================================================================================
@@ -187,5 +186,10 @@ BlockDataMap resolveBlockEntries(const BlockEntryMap& entries);
 /** 从 #BlockEntryMap 中解析符合目标版本的 #BlockDataMap。 */
 BlockDataMap resolveBlockEntries(const BlockEntryMap& entries, Version targetVersion);
 
-/** 根据给定方块属性与匹配模式从 #BlockDataMap 中筛选出符合规则的子集。 */
-BlockDataMap filterBlocks(const BlockDataMap& blocks, BlockAttributeFilterMode filterMode, BlockAttributes attributes);
+/** 将 \p target 中匹配给定规则的方块移除。 */
+void excludeBlocks(
+    BlockDataMap& target, BlockAttributes attributes, BlockAttributeFilterMode filterMode);
+
+/** 将 \p from 中匹配给定规则的方块追加至 \p target。 */
+void appendBlocks(
+    BlockDataMap& target, const BlockDataMap& from, BlockAttributes attributes, BlockAttributeFilterMode filterMode);

@@ -331,22 +331,28 @@ BlockDataMap resolveBlockEntries(const BlockEntryMap& entries, Version targetVer
     return ret;
 }
 
-BlockDataMap filterBlocks(const BlockDataMap& blocks, BlockAttributeFilterMode filterMode, BlockAttributes attributes)
+void excludeBlocks(
+    BlockDataMap& target, BlockAttributes attributes, BlockAttributeFilterMode filterMode)
 {
-    BlockDataMap ret;
-    for (const auto& [id, block] : blocks)
+    for (auto it = target.begin(); it != target.end();)
     {
-        switch (filterMode)
-        {
-            case BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL:
-                if ((block->attributes & attributes) == attributes)        ret[id] = block; break;
-            case BLOCK_ATTRI_FILTER_MODE_DISJOINT:
-                if ((block->attributes & attributes) == 0)                 ret[id] = block; break;
-            case BLOCK_ATTRI_FILTER_MODE_SUBSETOF:
-                if ((block->attributes & attributes) == block->attributes) ret[id] = block; break;
-            default:
-                throw std::invalid_argument("filterBlocks(): invalid block attribute filter mode");
-        }
+        const BlockAttributes blockAttri = it->second->attributes;
+        if ((filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL && (blockAttri & attributes) == attributes) ||
+            (filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY && (blockAttri & attributes) == blockAttri))
+            it = target.erase(it);
+        else
+            ++it;
     }
-    return ret;
+}
+
+void appendBlocks(
+    BlockDataMap& target, const BlockDataMap& from, BlockAttributes attributes, BlockAttributeFilterMode filterMode)
+{
+    for (const auto& [id, block] : from)
+    {
+        const BlockAttributes blockAttri = block->attributes;
+        if ((filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL && (blockAttri & attributes) == attributes) ||
+            (filterMode == BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY && (blockAttri & attributes) == blockAttri))
+            target[id] = block;
+    }
 }
