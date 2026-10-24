@@ -3,6 +3,7 @@
 #include <qmetatype.h>
 #include <qobject.h>
 
+/** 管理程序颜色模式的全局单例类，负责同步 qApp 调色板并在模式变化时发出信号。 */
 class ColorSchemeManager : public QObject
 {
     Q_OBJECT

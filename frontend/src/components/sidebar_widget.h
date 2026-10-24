@@ -11,6 +11,7 @@ class QVBoxLayout;
 class QVariantAnimation;
 class SidebarEntryWidget;
 
+/** 可展开/折叠的侧边导航栏控件。 */
 class SidebarWidget : public QWidget
 {
     Q_OBJECT
@@ -75,7 +76,7 @@ public:
     int  collapsedWidth() const;
     int  iconSize()       const;
 
-    /** 获取当前选中的条目索引，未选中时为 -1。 */
+    /** 获取当前选中的条目索引，未选中时返回 -1。 */
     int currentIndex() const;
 
 public slots:

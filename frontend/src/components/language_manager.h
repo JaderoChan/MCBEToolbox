@@ -5,6 +5,7 @@
 #include <qobject.h>
 #include <qstring.h>
 
+/** 管理程序语言的全局单例类，负责加载翻译文件并在语言变化时发出信号。 */
 class LanguageManager : public QObject
 {
     Q_OBJECT

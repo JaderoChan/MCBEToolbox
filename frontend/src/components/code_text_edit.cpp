@@ -6,6 +6,7 @@
 
 #include "components/color_scheme_manager.h"
 
+// #CodeTextEdit 左侧的行号显示区域，实际绘制委托给宿主编辑器完成。
 class CodeTextEdit::LineNumberArea : public QWidget
 {
 public:

@@ -4,6 +4,7 @@
 #include <qlayoutitem.h>
 #include <qlist.h>
 
+/** 将等宽正方形子控件按可用宽度自动换行排列的流式网格布局。 */
 class FlowGridLayout : public QLayout
 {
 public:
