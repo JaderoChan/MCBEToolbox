@@ -70,7 +70,7 @@ void MainWidget::updateColor(ColorSchemeManager::ColorScheme loaded)
         sidebarWidget_->setPalette(palette);
 
         sidebarWidget_->setEntryIcon(0, QIcon(QStringLiteral(":/icons/app/pixel_art_generator_light.svg")));
-        sidebarWidget_->setEntryIcon(1, QIcon(QStringLiteral(":/icons/app/block_generator_light.svg")));
+        sidebarWidget_->setEntryIcon(1, QIcon(QStringLiteral(":/icons/app/block_image_generator_light.svg")));
         sidebarWidget_->setEntryIcon(2, QIcon(QStringLiteral(":/icons/app/nbt_editor_light.svg")));
         sidebarWidget_->setEntryIcon(3, QIcon(QStringLiteral(":/icons/app/settings_light.svg")));
     }
@@ -82,7 +82,7 @@ void MainWidget::updateColor(ColorSchemeManager::ColorScheme loaded)
         sidebarWidget_->setPalette(palette);
 
         sidebarWidget_->setEntryIcon(0, QIcon(QStringLiteral(":/icons/app/pixel_art_generator_dark.svg")));
-        sidebarWidget_->setEntryIcon(1, QIcon(QStringLiteral(":/icons/app/block_generator_dark.svg")));
+        sidebarWidget_->setEntryIcon(1, QIcon(QStringLiteral(":/icons/app/block_image_generator_dark.svg")));
         sidebarWidget_->setEntryIcon(2, QIcon(QStringLiteral(":/icons/app/nbt_editor_dark.svg")));
         sidebarWidget_->setEntryIcon(3, QIcon(QStringLiteral(":/icons/app/settings_dark.svg")));
     }

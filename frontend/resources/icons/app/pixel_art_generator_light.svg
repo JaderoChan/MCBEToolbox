@@ -1,10 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
   <rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke="#EEEEEE" stroke-width="2" stroke-linejoin="round"/>
-  <rect x="15.6" y="4" width="4.4" height="4.4" rx="1.2" fill="#EEEEEE"/>
-  <rect x="4" y="4" width="4.4" height="4.4" rx="1.2" fill="#EEEEEE"/>
-  <rect x="9.8" y="9.8" width="4.4" height="4.4" rx="1.2" fill="#EEEEEE"/>
-  <rect x="15.6" y="9.8" width="4.4" height="4.4" rx="1.2" fill="#EEEEEE"/>
-  <rect x="4" y="15.6" width="4.4" height="4.4" rx="1.2" fill="#EEEEEE"/>
-  <rect x="9.8" y="15.6" width="4.4" height="4.4" rx="1.2" fill="#EEEEEE"/>
-  <rect x="15.6" y="15.6" width="4.4" height="4.4" rx="1.2" fill="#EEEEEE"/>
+  <polygon points="12,5 19,8.5 12,12 5,8.5" fill="#EEEEEE"/>
+  <polygon points="5,8.5 12,12 12,19 5,15.5" fill="#EEEEEE" fill-opacity="0.6"/>
+  <polygon points="19,8.5 19,15.5 12,19 12,12" fill="#EEEEEE" fill-opacity="0.35"/>
 </svg>

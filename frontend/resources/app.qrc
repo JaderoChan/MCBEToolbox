@@ -11,8 +11,8 @@
         <file>stylesheets/toolbutton_light.qss</file>
         <file>icons/app/pixel_art_generator_light.svg</file>
         <file>icons/app/pixel_art_generator_dark.svg</file>
-        <file>icons/app/block_generator_light.svg</file>
-        <file>icons/app/block_generator_dark.svg</file>
+        <file>icons/app/block_image_generator_light.svg</file>
+        <file>icons/app/block_image_generator_dark.svg</file>
         <file>icons/app/nbt_editor_light.svg</file>
         <file>icons/app/nbt_editor_dark.svg</file>
         <file>icons/app/settings_light.svg</file>
