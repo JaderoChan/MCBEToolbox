@@ -320,6 +320,8 @@ void BlockListWidget::selectRange(int begin, int end)
         if (selecteds_.find(std::string_view(id)) == selecteds_.end())
             selecteds_[std::string_view(id)] = blocks_[std::string_view(id)];
     }
+
+    emit selectionChanged();
 }
 
 void BlockListWidget::unselectRange(int begin, int end)
@@ -335,6 +337,8 @@ void BlockListWidget::unselectRange(int begin, int end)
         if (selecteds_.find(std::string_view(id)) != selecteds_.end())
             selecteds_.erase(std::string_view(id));
     }
+
+    emit selectionChanged();
 }
 
 void BlockListWidget::selectAll()
@@ -345,6 +349,8 @@ void BlockListWidget::selectAll()
     selecteds_ = blocks_;
     for (auto* item : items_)
         item->setSelected(true);
+
+    emit selectionChanged();
 }
 
 void BlockListWidget::unselectAll()
@@ -352,6 +358,8 @@ void BlockListWidget::unselectAll()
     selecteds_.clear();
     for (auto* item : items_)
         item->setSelected(false);
+
+    emit selectionChanged();
 }
 
 void BlockListWidget::setMinimumVersion(const Version& version)
@@ -395,6 +403,13 @@ void BlockListWidget::selectByAttribute(BlockAttributeFilterMode mode, const Blo
         const bool  selected = selecteds_.find(std::string_view(id)) != selecteds_.end();
         it.value()->setSelected(selected);
     }
+
+    emit selectionChanged();
+}
+
+const BlockDataMap& BlockListWidget::blocks() const
+{
+    return blocks_;
 }
 
 const BlockDataMap& BlockListWidget::selecteds() const
@@ -425,6 +440,8 @@ void BlockListWidget::rebuildBlocks()
     blocks_    = resolveBlockEntries(entries_, minimumVersion_);
     selecteds_ = blocks_;
     rebuildItems();
+
+    emit selectionChanged();
 }
 
 void BlockListWidget::rebuildItems()
@@ -461,7 +478,6 @@ void BlockListWidget::rebuildItems()
                     const auto& end   = std::max(rangeSelectBegin_, rangeSelectEnd_);
                     if (beginSelected_) unselectRange(begin, end);
                     else                selectRange(begin,   end);
-                    rangeSelectBegin_ = -1;
                 }
             }
             else
@@ -497,6 +513,8 @@ void BlockListWidget::setItemSelected(const QString& blockId, bool selected)
     const auto itemIt = items_.find(blockId);
     if (itemIt != items_.end())
         itemIt.value()->setSelected(selected);
+
+    emit selectionChanged();
 }
 
 #include "block_list_widget.moc"

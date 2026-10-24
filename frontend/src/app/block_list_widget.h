@@ -14,6 +14,8 @@ class BlockListItemWidget;
 
 class BlockListWidget : public MyWidget
 {
+    Q_OBJECT
+
 public:
     explicit BlockListWidget(const BlockEntryMap& entries, QWidget* parent = nullptr);
 
@@ -34,7 +36,11 @@ public:
 
     void selectByAttribute(BlockAttributeFilterMode mode, const BlockAttributes& attributes);
 
+    const BlockDataMap& blocks() const;
     const BlockDataMap& selecteds() const;
+
+signals:
+    void selectionChanged();
 
 protected:
     void keyPressEvent(QKeyEvent* e) override;
