@@ -83,11 +83,5 @@ endif()
 # 添加子目录 #
 #############
 
-option(MCBE_TOOLBOX_DEV "Only for dev" ON)
-
 add_subdirectory("./backend")
 add_subdirectory("./frontend")
-
-if(MCBE_TOOLBOX_DEV)
-    add_subdirectory("./test")
-endif()

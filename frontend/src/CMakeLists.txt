@@ -122,7 +122,7 @@ if(WIN32)
 endif()
 
 # 程序退出后自动更新语言文件的翻译ID列表。（开发时使用，用于提取翻译ID）
-option(UPDATE_TRANSLATION_MAPPING_FILE "Update the translation mapping files. Only for dev dump Text ID list." ${MCBE_TOOLBOX_DEV})
+option(UPDATE_TRANSLATION_MAPPING_FILE "Update the translation mapping files. Only for dev dump Text ID list." ON)
 target_compile_definitions(
     ${PROJECT_NAME} PRIVATE
     $<$<BOOL:${UPDATE_TRANSLATION_MAPPING_FILE}>:EASY_TRANSLATE_UPDATE_TRANSLATION_MAPPING_FILE>
