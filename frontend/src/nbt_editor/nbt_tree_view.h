@@ -2,10 +2,14 @@
 
 #include <qicon.h>
 #include <qstring.h>
+#include <qstringlist.h>
 #include <qtreeview.h>
 
 #include <mcnbt/mcnbt.hpp>
 
+class QDragEnterEvent;
+class QDragMoveEvent;
+class QDropEvent;
 class QMenu;
 class QStandardItem;
 class QStandardItemModel;
@@ -72,11 +76,16 @@ signals:
 
     // 选中项发生更改时发出，item 可能为 nullptr。
     void selectedItemChanged(QStandardItem* item);
+    // 文件拖入视图时发出。
+    void filesDropped(const QStringList& filePaths);
 
 protected:
     void changeEvent(QEvent* e) override;
     void keyPressEvent(QKeyEvent* e) override;
     bool edit(const QModelIndex& index, EditTrigger trigger, QEvent* e) override;
+    void dragEnterEvent(QDragEnterEvent* e) override;
+    void dragMoveEvent(QDragMoveEvent* e) override;
+    void dropEvent(QDropEvent* e) override;
 
 private:
     friend class NbtTreeItemDelegate;

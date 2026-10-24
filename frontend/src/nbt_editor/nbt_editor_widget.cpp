@@ -3,13 +3,16 @@
 #include <exception>
 
 #include <qaction.h>
+#include <qevent.h>
 #include <qfiledialog.h>
 #include <qfileinfo.h>
 #include <qlayout.h>
 #include <qmessagebox.h>
+#include <qmimedata.h>
 #include <qpushbutton.h>
 #include <qtabwidget.h>
 #include <qtoolbutton.h>
+#include <qurl.h>
 
 #include <mcnbt/mcnbt.hpp>
 
@@ -111,6 +114,8 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     tabWidget_ = new QTabWidget(this);
     tabWidget_->setTabsClosable(true);
     tabWidget_->setMovable(true);
+    tabWidget_->setAcceptDrops(true);
+    tabWidget_->installEventFilter(this);
     connect(tabWidget_, &QTabWidget::tabCloseRequested, this, &NbtEditorWidget::removePage);
     connect(tabWidget_, &QTabWidget::currentChanged,    this, &NbtEditorWidget::updateButtonState);
 
@@ -160,6 +165,55 @@ void NbtEditorWidget::updateColor(ColorSchemeManager::ColorScheme /* loaded */)
 {
     for (auto& button : {newButton_, openButton_, saveButton_, saveAsButton_, parseSnbtButton_})
         button->setStyleSheet(toolButtonStyleSheet());
+}
+
+bool NbtEditorWidget::eventFilter(QObject* obj, QEvent* e)
+{
+    if (obj != tabWidget_)
+        return MyWidget::eventFilter(obj, e);
+
+    if (e->type() == QEvent::DragEnter)
+    {
+        auto* ee = static_cast<QDragEnterEvent*>(e);
+        if (ee->mimeData()->hasUrls())
+        {
+            ee->acceptProposedAction();
+            return true;
+        }
+    }
+    else if (e->type() == QEvent::DragMove)
+    {
+        auto* ee = static_cast<QDragMoveEvent*>(e);
+        if (ee->mimeData()->hasUrls())
+        {
+            ee->acceptProposedAction();
+            return true;
+        }
+    }
+    else if (e->type() == QEvent::Drop)
+    {
+        auto* ee = static_cast<QDropEvent*>(e);
+        if (ee->mimeData()->hasUrls())
+        {
+            QStringList filePaths;
+            for (const auto& url : ee->mimeData()->urls())
+            {
+                if (url.isLocalFile())
+                    filePaths.append(url.toLocalFile());
+            }
+
+            if (filePaths.empty())
+            {
+                ee->ignore();
+                return true;
+            }
+
+            ee->acceptProposedAction();
+            onFilesDropped(filePaths);
+        }
+    }
+
+    return MyWidget::eventFilter(obj, e);
 }
 
 void NbtEditorWidget::newNbt()
@@ -234,16 +288,14 @@ void NbtEditorWidget::addPage(NbtEditorTabPage* page, const QString& title)
 {
     const int index = tabWidget_->addTab(page, title);
     tabWidget_->setTabToolTip(index, title);
-    connect(page->nbtView(), &NbtTreeView::tagChanged, this, &NbtEditorWidget::updateButtonState);
-    connect(
-        page, &NbtEditorTabPage::filePathChanged,
-        this, [this, page](const QString& filePath)
-        {
-            const int index = tabWidget_->indexOf(page);
-            if (index >= 0)
-                tabWidget_->setTabText(index, filePath.isEmpty() ? EASYTR("Untitled") : QFileInfo(filePath).fileName());
-        }
-    );
+    connect(page->nbtView(), &NbtTreeView::tagChanged,   this, &NbtEditorWidget::updateButtonState);
+    connect(page->nbtView(), &NbtTreeView::filesDropped, this, &NbtEditorWidget::onFilesDropped);
+    connect(page, &NbtEditorTabPage::filePathChanged, this, [this, page](const QString& filePath)
+    {
+        const int index = tabWidget_->indexOf(page);
+        if (index >= 0)
+            tabWidget_->setTabText(index, filePath.isEmpty() ? EASYTR("Untitled") : QFileInfo(filePath).fileName());
+    });
     tabWidget_->setCurrentIndex(index);
 }
 
@@ -263,6 +315,16 @@ void NbtEditorWidget::updateButtonState()
     const bool enabled = page && page->hasValidRootTag();
     saveButton_->setEnabled(enabled);
     saveAsButton_->setEnabled(enabled);
+}
+
+void NbtEditorWidget::onFilesDropped(const QStringList& filePaths)
+{
+    for (const auto& filePath : filePaths)
+    {
+        auto* page = NbtEditorTabPage::createFromFile(filePath, this);
+        if (page)
+            addPage(page, QFileInfo(filePath).fileName());
+    }
 }
 
 NbtEditorTabPage* NbtEditorWidget::currentPage() const

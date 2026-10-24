@@ -1,5 +1,7 @@
 #pragma once
 
+#include <qstringlist.h>
+
 #include <components/mywidget.h>
 
 class QTabWidget;
@@ -17,6 +19,8 @@ protected:
     void updateColor(
         ColorSchemeManager::ColorScheme loaded = ColorSchemeManager::instance().loadedColorScheme()) override;
 
+    bool eventFilter(QObject* obj, QEvent* e) override;
+
 private:
     void newNbt();
     void openNbt();
@@ -27,6 +31,8 @@ private:
     void addPage(NbtEditorTabPage* page, const QString& title);
     void removePage(int index);
     void updateButtonState();
+
+    void onFilesDropped(const QStringList& filePaths);
 
     NbtEditorTabPage* currentPage() const;
 

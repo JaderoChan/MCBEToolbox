@@ -2,7 +2,9 @@
 
 #include <qevent.h>
 #include <qmenu.h>
+#include <qmimedata.h>
 #include <qstandarditemmodel.h>
+#include <qurl.h>
 
 #include <easy_translate.hpp>
 
@@ -18,6 +20,8 @@ NbtTreeView::NbtTreeView(QWidget* parent)
     setModel(model_);
 
     setHeaderHidden(true);
+    setAcceptDrops(true);
+    setDragDropMode(QAbstractItemView::DropOnly);
     delegate_ = new NbtTreeItemDelegate(this);
     setItemDelegate(delegate_);
 
@@ -490,6 +494,51 @@ bool NbtTreeView::edit(const QModelIndex& index, EditTrigger trigger, QEvent* e)
             return true;
     }
     return QTreeView::edit(index, trigger, e);
+}
+
+void NbtTreeView::dragEnterEvent(QDragEnterEvent* e)
+{
+    if (e->mimeData()->hasUrls())
+    {
+        e->acceptProposedAction();
+        return;
+    }
+    QTreeView::dragEnterEvent(e);
+}
+
+void NbtTreeView::dragMoveEvent(QDragMoveEvent* e)
+{
+    if (e->mimeData()->hasUrls())
+    {
+        e->acceptProposedAction();
+        return;
+    }
+    QTreeView::dragMoveEvent(e);
+}
+
+void NbtTreeView::dropEvent(QDropEvent* e)
+{
+    if (!e->mimeData()->hasUrls())
+    {
+        QTreeView::dropEvent(e);
+        return;
+    }
+
+    QStringList filePaths;
+    for (const auto& url : e->mimeData()->urls())
+    {
+        if (url.isLocalFile())
+            filePaths.append(url.toLocalFile());
+    }
+
+    if (filePaths.empty())
+    {
+        e->ignore();
+        return;
+    }
+
+    e->acceptProposedAction();
+    emit filesDropped(filePaths);
 }
 
 QString NbtTreeView::defaultValueText(nbt::TagType type)
