@@ -233,6 +233,7 @@ void NbtEditorWidget::parseSnbt()
 void NbtEditorWidget::addPage(NbtEditorTabPage* page, const QString& title)
 {
     const int index = tabWidget_->addTab(page, title);
+    tabWidget_->setTabToolTip(index, title);
     connect(page->nbtView(), &NbtTreeView::tagChanged, this, &NbtEditorWidget::updateButtonState);
     connect(
         page, &NbtEditorTabPage::filePathChanged,
