@@ -15,13 +15,13 @@ static QIcon createLogoIcon()
     return icon;
 }
 
-QIcon logoIcon()
+QIcon getLogoIcon()
 {
     static const auto& icon = createLogoIcon();
     return icon;
 }
 
-QPixmap logoPixmap(int extent)
+QPixmap getLogoPixmap(int extent)
 {
-    return logoIcon().pixmap(extent);
+    return getLogoIcon().pixmap(extent);
 }

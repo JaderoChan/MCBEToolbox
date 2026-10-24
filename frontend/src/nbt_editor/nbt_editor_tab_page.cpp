@@ -213,13 +213,13 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     auto* addButtonLayout = new QHBoxLayout(addButtonWidget);
     addButtonLayout->setContentsMargins(0, 0, 0 ,0);
     addButtonLayout->setSpacing(2);
-    for (auto type : nbt_utils::addableTagTypes())
+    for (auto type : nbt_utils::getAddableTagTypes())
     {
         auto* button = new QToolButton(this);
         button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         button->setFocusPolicy(Qt::ClickFocus);
         button->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        button->setIcon(nbt_utils::tagTypeIcon(type));
+        button->setIcon(nbt_utils::getTagTypeIcon(type));
         button->setIconSize(QSize(24, 24));
         button->setStyleSheet(QStringLiteral("border: none; background: transparent; padding: 0px;"));
 
@@ -242,7 +242,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     snbtButton_->setToolButtonStyle(Qt::ToolButtonTextOnly);
     snbtButton_->setFixedHeight(24);
     snbtButton_->setCheckable(true);
-    snbtButton_->setStyleSheet(toolButtonStyleSheet());
+    snbtButton_->setStyleSheet(getToolButtonStyleSheet());
 
     connect(snbtButton_, &QToolButton::clicked, this, &NbtEditorTabPage::togglePage);
 
@@ -447,7 +447,7 @@ void NbtEditorTabPage::updateText(LanguageManager::Language /* loaded */)
 void NbtEditorTabPage::updateColor(ColorSchemeManager::ColorScheme /* loaded */)
 {
     for (auto& button : {renameButton_, editButton_, removeButton_, snbtButton_})
-        button->setStyleSheet(toolButtonStyleSheet());
+        button->setStyleSheet(getToolButtonStyleSheet());
 }
 
 NbtEditorTabPage::NbtEditorTabPage(QString rootName, nbt::Tag rootTag, NbtFileInfo fileInfo, QWidget* parent)
@@ -535,13 +535,13 @@ void NbtEditorTabPage::updateButtonState()
         // 根据 Tag 类型决定是否启用重命名与数值编辑按钮。
         const auto type         = tag->type();
         const bool isNamingTag  = nbtView_->isNamingTag(item);
-        if (nbt_utils::tagKeyEditable(type, isNamingTag))   renameButton_->setEnabled(true);
-        if (nbt_utils::tagValueEditable(type, isNamingTag)) editButton_->setEnabled(true);
+        if (nbt_utils::isTagKeyEditable(type, isNamingTag))   renameButton_->setEnabled(true);
+        if (nbt_utils::isTagValueEditable(type, isNamingTag)) editButton_->setEnabled(true);
         // 如果当前 item 不是根项则启用删除按钮。
-        if (item != nbtView_->rootItem())                   removeButton_->setEnabled(true);
+        if (item != nbtView_->rootItem())                     removeButton_->setEnabled(true);
 
         // 根据当前 item 对应的 Tag 启用不同增添按钮。
-        for (auto type : nbt_utils::addableTagTypes(tag))
+        for (auto type : nbt_utils::getAddableTagTypes(tag))
             addButtons_[type]->setEnabled(true);
     }
 }

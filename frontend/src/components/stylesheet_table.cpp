@@ -3,7 +3,7 @@
 #include <utils/file_io.h>
 #include "color_scheme_manager.h"
 
-const QString& toolButtonStyleSheet()
+const QString& getToolButtonStyleSheet()
 {
     static const auto& dark  = readFileContent(QStringLiteral(":/stylesheets/toolbutton_dark.qss"));
     static const auto& light = readFileContent(QStringLiteral(":/stylesheets/toolbutton_light.qss"));

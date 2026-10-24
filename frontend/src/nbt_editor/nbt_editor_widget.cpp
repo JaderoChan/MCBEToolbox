@@ -164,7 +164,7 @@ void NbtEditorWidget::updateText(LanguageManager::Language /* loaded */)
 void NbtEditorWidget::updateColor(ColorSchemeManager::ColorScheme /* loaded */)
 {
     for (auto& button : {newButton_, openButton_, saveButton_, saveAsButton_, parseSnbtButton_})
-        button->setStyleSheet(toolButtonStyleSheet());
+        button->setStyleSheet(getToolButtonStyleSheet());
 }
 
 bool NbtEditorWidget::eventFilter(QObject* obj, QEvent* e)

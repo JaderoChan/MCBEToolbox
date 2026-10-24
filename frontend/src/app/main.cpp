@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     a.setApplicationName(APP_TITLE);
     a.setApplicationVersion(APP_VERSION);
 #ifndef Q_OS_MAC
-    a.setWindowIcon(logoIcon());
+    a.setWindowIcon(getLogoIcon());
 #else
     // 启用长按键重复功能。
     QSettings(QSettings::NativeFormat, QSettings::UserScope, QStringLiteral(APP_BUNDLE_IDENTIFIER))

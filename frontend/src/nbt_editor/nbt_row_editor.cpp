@@ -46,7 +46,7 @@ private:
 };
 
 // 构建与指定类型对应的数值验证器。
-QValidator* tagTypeValidator(nbt::TagType type, QObject* parent = nullptr)
+QValidator* getTagTypeValidator(nbt::TagType type, QObject* parent = nullptr)
 {
     switch (type)
     {
@@ -133,7 +133,7 @@ NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
     if (!keyEditable())   keyEdit_->hide();
     if (!valueEditable()) valueEdit_->hide();
 
-    validator_ = tagTypeValidator(type_, this);
+    validator_ = getTagTypeValidator(type_, this);
     if (validator_) valueEdit_->setValidator(validator_);
 
     updateText();
@@ -151,17 +151,17 @@ bool NbtRowEditor::isNamingTag() const
 
 bool NbtRowEditor::keyEditable() const
 {
-    return nbt_utils::tagKeyEditable(type_, isNamingTag_);
+    return nbt_utils::isTagKeyEditable(type_, isNamingTag_);
 }
 
 bool NbtRowEditor::valueEditable() const
 {
-    return nbt_utils::tagValueEditable(type_, isNamingTag_);
+    return nbt_utils::isTagValueEditable(type_, isNamingTag_);
 }
 
 bool NbtRowEditor::editable() const
 {
-    return nbt_utils::tagEditable(type_, isNamingTag_);
+    return nbt_utils::isTagEditable(type_, isNamingTag_);
 }
 
 void NbtRowEditor::setKeyText(const QString& text)

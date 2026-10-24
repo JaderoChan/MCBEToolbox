@@ -202,8 +202,10 @@ bool NbtTreeView::removeItem(QStandardItem* item)
             const auto& modelIndex = model_->index(row, 0, parentModelIndex);
 
             QString valueText;
-            if (parentTag->isArray())     valueText = nbt_utils::arrayElementText(*parentTag, index);
-            else if (parentTag->isList()) valueText = nbt_utils::tagText((*parentTag)[static_cast<std::size_t>(index)]);
+            if (parentTag->isArray())
+                valueText = nbt_utils::makeArrayElementText(*parentTag, index);
+            else if (parentTag->isList())
+                valueText = nbt_utils::makeTextFromTag((*parentTag)[static_cast<std::size_t>(index)]);
             const auto& text = QStringLiteral("[%1]: %2").arg(index).arg(valueText);
 
             model_->setData(modelIndex, text,  Qt::DisplayRole);
@@ -243,7 +245,7 @@ bool NbtTreeView::changeItemKey(QStandardItem* item, const QString& newKey)
 
     // 更改 Tag 中的名称。
     auto        tag       = std::move(*itemTag(item));
-    const auto& valueText = nbt_utils::tagText(tag);
+    const auto& valueText = nbt_utils::makeTextFromTag(tag);
     parentTag->erase(itemTagKey(item).toString().toStdString());
     parentTag->insert(stdNewKey, std::move(tag));
 
@@ -354,7 +356,7 @@ bool NbtTreeView::invokeAddItem(QStandardItem* parentItem, nbt::TagType type)
         bool isNamingTag = true;
         if (parentTag->isArray())
         {
-            if (type != nbt_utils::arrayElementTagType(parentTag->type()))
+            if (type != nbt_utils::getArrayElementTagType(parentTag->type()))
                 return false;
             isNamingTag = false;
         }
@@ -363,14 +365,14 @@ bool NbtTreeView::invokeAddItem(QStandardItem* parentItem, nbt::TagType type)
             if (parentTag->listItemType() != nbt::TT_END && type != parentTag->listItemType())
                 return false;
 
-            if (!nbt_utils::tagEditable(type, false))
+            if (!nbt_utils::isTagEditable(type, false))
                 return addItem(parentItem, nbt::Tag(type));
 
             isNamingTag = false;
         }
 
         auto* item = new QStandardItem();
-        item->setIcon(nbt_utils::tagTypeIcon(type));
+        item->setIcon(nbt_utils::getTagTypeIcon(type));
         parentItem->appendRow(item);
         beginRowEdit(item, type, isNamingTag, QString(), defaultValueText(type), isNamingTag, RowEditType::Append);
 
@@ -392,7 +394,7 @@ bool NbtTreeView::invokeEditItemKey(QStandardItem* item)
         return false;
 
     const auto& keyText   = itemTagKey(item).toString();
-    const auto& valueText = nbt_utils::tagText(*tag);
+    const auto& valueText = nbt_utils::makeTextFromTag(*tag);
 
     beginRowEdit(item, tag->type(), true, keyText, valueText, true, RowEditType::Modify);
     return true;
@@ -408,16 +410,16 @@ bool NbtTreeView::invokeEditItemValue(QStandardItem* item)
         auto* parentTag = itemParentTag(item);
         if (!parentTag)
             return false;
-        type      = nbt_utils::arrayElementTagType(parentTag->type());
-        valueText = nbt_utils::arrayElementText(*parentTag, itemTagIndex(item).toULongLong());
+        type      = nbt_utils::getArrayElementTagType(parentTag->type());
+        valueText = nbt_utils::makeArrayElementText(*parentTag, itemTagIndex(item).toULongLong());
     }
     else
     {
         auto* tag = itemTag(item);
-        if (!tag || !nbt_utils::tagValueEditable(tag->type(), isNamingTag(item)))
+        if (!tag || !nbt_utils::isTagValueEditable(tag->type(), isNamingTag(item)))
             return false;
         type      = tag->type();
-        valueText = nbt_utils::tagText(*tag);
+        valueText = nbt_utils::makeTextFromTag(*tag);
     }
 
     const auto& keyText = isNamingTag(item) ? itemTagKey(item).toString() : QString();
@@ -594,10 +596,10 @@ void NbtTreeView::rebuild()
 QStandardItem* NbtTreeView::createArrayItem(nbt::Tag* parentArrayTag, qulonglong index)
 {
     auto* item = new QStandardItem();
-    item->setIcon(nbt_utils::tagTypeIcon(nbt_utils::arrayElementTagType(parentArrayTag->type())));
+    item->setIcon(nbt_utils::getTagTypeIcon(nbt_utils::getArrayElementTagType(parentArrayTag->type())));
     const auto& text = QStringLiteral("[%1]: %2")
         .arg(index)
-        .arg(nbt_utils::arrayElementText(*parentArrayTag, index));
+        .arg(nbt_utils::makeArrayElementText(*parentArrayTag, index));
     item->setText(text);
     item->setToolTip(text);
     item->setData(false, IsNamingTagRole);
@@ -608,10 +610,10 @@ QStandardItem* NbtTreeView::createArrayItem(nbt::Tag* parentArrayTag, qulonglong
 QStandardItem* NbtTreeView::createItem(bool isNamingTag, const QString& key, qulonglong index, const nbt::Tag& value)
 {
     auto* item = new QStandardItem();
-    item->setIcon(nbt_utils::tagTypeIcon(value.type()));
+    item->setIcon(nbt_utils::getTagTypeIcon(value.type()));
     const auto& text = isNamingTag
-        ? QStringLiteral("%1: %2").arg(key).arg(nbt_utils::tagText(value))
-        : QStringLiteral("[%1]: %2").arg(index).arg(nbt_utils::tagText(value));
+        ? QStringLiteral("%1: %2").arg(key).arg(nbt_utils::makeTextFromTag(value))
+        : QStringLiteral("[%1]: %2").arg(index).arg(nbt_utils::makeTextFromTag(value));
     item->setText(text);
     item->setToolTip(text);
     item->setData(isNamingTag, IsNamingTagRole);
@@ -783,7 +785,7 @@ void NbtTreeView::showContextMenu(const QPoint& position)
         menu.addAction(EASYTR("Rename"), this, [this, item]() { invokeEditItemKey(item); });
 
     const bool valueEditable =
-        isArrayElement(item) || (tag && nbt_utils::tagValueEditable(tag->type(), isNamingTag(item)));
+        isArrayElement(item) || (tag && nbt_utils::isTagValueEditable(tag->type(), isNamingTag(item)));
     if (valueEditable)
         menu.addAction(EASYTR("Edit Value"), this, [this, item]() { invokeEditItemValue(item); });
 
@@ -792,10 +794,10 @@ void NbtTreeView::showContextMenu(const QPoint& position)
         menu.addAction(EASYTR("Delete"), this, [this, item]() { removeItem(item); });
     menu.addSeparator();
 
-    if (tag && !nbt_utils::addableTagTypes(tag).empty())
+    if (tag && !nbt_utils::getAddableTagTypes(tag).empty())
     {
         auto* addMenu = menu.addMenu(tag->isCompound() ? EASYTR("Add Entry") : EASYTR("Add Element"));
-        for (auto type : nbt_utils::addableTagTypes(tag))
+        for (auto type : nbt_utils::getAddableTagTypes(tag))
         {
             addMenu->addAction(
                 EASYTR(nbt::getTagTypeName(type)),

@@ -3,6 +3,6 @@
 #include <qicon.h>
 #include <qpixmap.h>
 
-QIcon logoIcon();
+QIcon getLogoIcon();
 
-QPixmap logoPixmap(int extent = 1024);
+QPixmap getLogoPixmap(int extent = 1024);

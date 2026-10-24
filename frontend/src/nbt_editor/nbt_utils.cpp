@@ -14,7 +14,7 @@ QString replaceNewLineChar(QString text)
     return text;
 }
 
-const QList<nbt::TagType>& addableTagTypes(const nbt::Tag* tag)
+const QList<nbt::TagType>& getAddableTagTypes(const nbt::Tag* tag)
 {
     using RetType = QList<nbt::TagType>;
 
@@ -71,7 +71,7 @@ const QList<nbt::TagType>& addableTagTypes(const nbt::Tag* tag)
     }
 }
 
-const QIcon& tagTypeIcon(nbt::TagType type)
+const QIcon& getTagTypeIcon(nbt::TagType type)
 {
     static const QIcon icons[] =
     {
@@ -92,7 +92,7 @@ const QIcon& tagTypeIcon(nbt::TagType type)
     return icons[static_cast<int>(type)];
 }
 
-QString tagText(const nbt::Tag& tag)
+QString makeTextFromTag(const nbt::Tag& tag)
 {
     switch (tag.type())
     {
@@ -123,7 +123,7 @@ nbt::Tag parseTextToTag(nbt::TagType type, const QString& text, bool& ok)
     }
 }
 
-QString arrayElementText(const nbt::Tag& arrayTag, qulonglong index)
+QString makeArrayElementText(const nbt::Tag& arrayTag, qulonglong index)
 {
     switch (arrayTag.type())
     {
@@ -134,7 +134,7 @@ QString arrayElementText(const nbt::Tag& arrayTag, qulonglong index)
     }
 }
 
-nbt::TagType arrayElementTagType(nbt::TagType arrayType)
+nbt::TagType getArrayElementTagType(nbt::TagType arrayType)
 {
     switch (arrayType)
     {
