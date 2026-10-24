@@ -11,14 +11,11 @@ SnbtSyntaxHighlighter::SnbtSyntaxHighlighter(QTextDocument* document)
 {
     rebuildFormats();
 
-    connect(
-        &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, [this]()
-        {
-            rebuildFormats();
-            rehighlight();
-        }
-    );
+    connect(&ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged, this, [this]()
+    {
+        rebuildFormats();
+        rehighlight();
+    });
 }
 
 QColor SnbtSyntaxHighlighter::color(TokenRole role) const

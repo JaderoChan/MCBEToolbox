@@ -4,11 +4,13 @@ MyWidget::MyWidget(QWidget* parent)
     : QWidget(parent)
 {
     connect(
-        &LanguageManager::instance(),    &LanguageManager::loadedLanguageChanged,
-        this, &MyWidget::updateText);
+        &LanguageManager::instance(), &LanguageManager::loadedLanguageChanged,
+        this, &MyWidget::updateText
+    );
     connect(
         &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, &MyWidget::updateColor);
+        this, &MyWidget::updateColor
+    );
 }
 
 void MyWidget::updateText(LanguageManager::Language /* loaded */) {}
@@ -19,11 +21,13 @@ MyMainWindow::MyMainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
     connect(
-        &LanguageManager::instance(),    &LanguageManager::loadedLanguageChanged,
-        this, &MyMainWindow::updateText);
+        &LanguageManager::instance(), &LanguageManager::loadedLanguageChanged,
+        this, &MyMainWindow::updateText
+    );
     connect(
         &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, &MyMainWindow::updateColor);
+        this, &MyMainWindow::updateColor
+    );
 }
 
 void MyMainWindow::updateText(LanguageManager::Language /* loaded */) {}
@@ -34,11 +38,13 @@ MyDialog::MyDialog(QWidget* parent)
     : QDialog(parent)
 {
     connect(
-        &LanguageManager::instance(),    &LanguageManager::loadedLanguageChanged,
-        this, &MyDialog::updateText);
+        &LanguageManager::instance(), &LanguageManager::loadedLanguageChanged,
+        this, &MyDialog::updateText
+    );
     connect(
         &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, &MyDialog::updateColor);
+        this, &MyDialog::updateColor
+    );
 }
 
 void MyDialog::updateText(LanguageManager::Language /* loaded */) {}

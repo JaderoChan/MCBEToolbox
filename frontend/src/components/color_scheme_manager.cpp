@@ -62,22 +62,19 @@ ColorSchemeManager::ColorScheme ColorSchemeManager::loadedColorScheme() const
 ColorSchemeManager::ColorSchemeManager()
     : QObject()
 {
-    connect(
-        qApp->styleHints(), &QStyleHints::colorSchemeChanged, this,
-        [this](Qt::ColorScheme)
-        {
-            if (colorScheme_ != COLOR_SCHEME_AUTO)
-                return;
+    connect(qApp->styleHints(), &QStyleHints::colorSchemeChanged, this, [this](Qt::ColorScheme)
+    {
+        if (colorScheme_ != COLOR_SCHEME_AUTO)
+            return;
 
-            const auto& loadedColorScheme = systemColorScheme();
-            if (loadedColorScheme_ != loadedColorScheme)
-            {
-                loadedColorScheme_ = loadedColorScheme;
-                loadColorScheme();
-                emit loadedColorSchemeChanged(loadedColorScheme_);
-            }
+        const auto& loadedColorScheme = systemColorScheme();
+        if (loadedColorScheme_ != loadedColorScheme)
+        {
+            loadedColorScheme_ = loadedColorScheme;
+            loadColorScheme();
+            emit loadedColorSchemeChanged(loadedColorScheme_);
         }
-    );
+    });
 
     colorScheme_       = COLOR_SCHEME_AUTO;
     loadedColorScheme_ = systemColorScheme();

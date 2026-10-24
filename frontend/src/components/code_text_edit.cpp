@@ -37,14 +37,11 @@ CodeTextEdit::CodeTextEdit(QWidget* parent)
     connect(this, &QPlainTextEdit::updateRequest,         this, &CodeTextEdit::updateLineNumberArea);
     connect(this, &QPlainTextEdit::cursorPositionChanged, this, &CodeTextEdit::updateExtraSelections);
     connect(this, &QPlainTextEdit::textChanged,           this, &CodeTextEdit::updateExtraSelections);
-    connect(
-        &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, [this]()
-        {
-            lineNumberArea_->update();
-            updateExtraSelections();
-        }
-    );
+    connect(&ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged, this, [this]()
+    {
+        lineNumberArea_->update();
+        updateExtraSelections();
+    });
 
     updateLineNumberAreaWidth(0);
     setIndentWidth(indentWidth_);
