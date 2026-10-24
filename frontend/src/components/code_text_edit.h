@@ -3,9 +3,9 @@
 #include <qmap.h>
 #include <qplaintextedit.h>
 
+class QKeyEvent;
 class QPaintEvent;
 class QResizeEvent;
-class QKeyEvent;
 
 /** 带行号显示、括号/字符串匹配高亮、Tab 转空格等功能的文本编辑控件。 */
 class CodeTextEdit : public QPlainTextEdit
