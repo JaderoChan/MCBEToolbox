@@ -34,7 +34,8 @@ public:
     void setMultiSelectEnabled(bool enabled);
     bool multiSelectEnabled() const;
 
-    void selectByAttribute(BlockAttributeFilterMode mode, const BlockAttributes& attributes);
+    void excludeBlocks(const BlockAttributes& attributes, BlockAttributeFilterMode filterMode);
+    void appendBlocks(const BlockAttributes& attributes, BlockAttributeFilterMode filterMode);
 
     const BlockDataMap& blocks() const;
     const BlockDataMap& selecteds() const;
@@ -50,6 +51,7 @@ private:
     void rebuildBlocks();
     void rebuildItems();
     void setItemSelected(const QString& blockId, bool selected);
+    void onSelectedsChanged();
 
     const BlockEntryMap& entries_;
     BlockDataMap         blocks_;

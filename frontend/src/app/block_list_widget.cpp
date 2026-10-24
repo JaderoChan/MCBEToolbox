@@ -9,6 +9,7 @@
 #include <config.h>
 #include <components/flow_grid_layout.h>
 #include <utils/directory_scope.h>
+#include "block_attributes_text.h"
 
 namespace
 {
@@ -21,46 +22,6 @@ constexpr int ITEM_MAX_SIZE        = 108;
 constexpr int ITEM_TEXT_HEIGHT     = 16;
 constexpr int ITEM_PRIMARY_ALPHA   = 192;
 constexpr int ITEM_SECONDARY_ALPHA = 96;
-
-inline const char* blockAttributeString(BlockAttribute attribute)
-{
-    switch (attribute)
-    {
-        case BLOCK_ATTRI_IS_INCOMPLETE:     return "Incomplete Block";
-        case BLOCK_ATTRI_IS_TRANSPARENT:    return "Transparent Block";
-        case BLOCK_ATTRI_IS_LUMINOUS:       return "Luminous Block";
-        case BLOCK_ATTRI_IS_UNSTABLE:       return "Unstable Block";
-        case BLOCK_ATTRI_IS_CREATIVE:       return "Creative Block";
-        case BLOCK_ATTRI_HAS_GRAVITY:       return "Has Gravity";
-        case BLOCK_ATTRI_HAS_PATTERN:       return "Has Pattern";
-        case BLOCK_ATTRI_FLAMMABLE:         return "Flammable";
-        case BLOCK_ATTRI_ENDERMAN_PICKABLE: return "Enderman Pickable";
-        default:                            return "Unknown Block Attribute";
-    }
-}
-
-QString getBlockAttributesText(BlockAttributes attributes)
-{
-#define APPEND_ATTRIBUTE_TEXT(attribute)                                        \
-    if (HAS_BLOCK_ATTRIS(attributes, attribute)) text =                         \
-        text +                                                                  \
-        (text.isEmpty() ? "" : "; ") +                                          \
-        EASYTR(blockAttributeString(attribute))
-
-    QString text;
-    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_INCOMPLETE);
-    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_TRANSPARENT);
-    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_LUMINOUS);
-    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_UNSTABLE);
-    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_CREATIVE);
-    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_HAS_GRAVITY);
-    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_HAS_PATTERN);
-    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_FLAMMABLE);
-    APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_ENDERMAN_PICKABLE);
-    return text.isEmpty() ? EASYTR("None Block Attributes") : text;
-
-#undef APPEND_ATTRIBUTE_TEXT
-}
 
 } // namespace
 
@@ -390,20 +351,17 @@ bool BlockListWidget::multiSelectEnabled() const
     return multiSelectEnabled_;
 }
 
-void BlockListWidget::selectByAttribute(BlockAttributeFilterMode mode, const BlockAttributes& attributes)
+void BlockListWidget::excludeBlocks(const BlockAttributes& attributes, BlockAttributeFilterMode filterMode)
 {
-    selecteds_ = filterBlocks(blocks_, mode, attributes);
+    ::excludeBlocks(selecteds_, attributes, filterMode);
+    onSelectedsChanged();
+    emit selectionChanged();
+}
 
-    if (!multiSelectEnabled_ && selecteds_.size() > 1)
-        selecteds_ = {*selecteds_.begin()};
-
-    for (auto it = items_.constBegin(); it != items_.constEnd(); ++it)
-    {
-        const auto& id       = it.key().toStdString();
-        const bool  selected = selecteds_.find(std::string_view(id)) != selecteds_.end();
-        it.value()->setSelected(selected);
-    }
-
+void BlockListWidget::appendBlocks(const BlockAttributes& attributes, BlockAttributeFilterMode filterMode)
+{
+    ::appendBlocks(selecteds_, blocks_, attributes, filterMode);
+    onSelectedsChanged();
     emit selectionChanged();
 }
 
@@ -515,6 +473,19 @@ void BlockListWidget::setItemSelected(const QString& blockId, bool selected)
         itemIt.value()->setSelected(selected);
 
     emit selectionChanged();
+}
+
+void BlockListWidget::onSelectedsChanged()
+{
+    if (!multiSelectEnabled_ && selecteds_.size() > 1)
+    selecteds_ = {*selecteds_.begin()};
+
+    for (auto it = items_.constBegin(); it != items_.constEnd(); ++it)
+    {
+        const auto& id       = it.key().toStdString();
+        const bool  selected = selecteds_.find(std::string_view(id)) != selecteds_.end();
+        it.value()->setSelected(selected);
+    }
 }
 
 #include "block_list_widget.moc"
