@@ -1,17 +1,17 @@
 #pragma once
 
-#include <qevent.h>
+#include <qlist.h>
 #include <qmap.h>
 #include <qstring.h>
-#include <qlist.h>
 
 #include <block.hpp>
 #include <components/mywidget.h>
 
-class QScrollArea;
 class QLayout;
+class QScrollArea;
 class BlockListItemWidget;
 
+/** 以流式网格布局形式（列宽自适应列表）显示方块信息的控件，支持对方块进行单选/多选。 */
 class BlockListWidget : public MyWidget
 {
     Q_OBJECT
@@ -28,6 +28,7 @@ public:
     void selectAll();
     void unselectAll();
 
+    /** 通过给定的版本解析出合适的 BlockDataMap，并以此重建视图。 */
     void    setMinimumVersion(const Version& version);
     Version minimumVersion() const;
 

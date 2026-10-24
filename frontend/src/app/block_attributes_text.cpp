@@ -24,7 +24,7 @@ inline const char* getBlockAttributeRawText(BlockAttribute attribute)
 
 } // namespace
 
-QString getBlockAttributesText(BlockAttributes attributes)
+QString makeBlockAttributesText(BlockAttributes attributes)
 {
 #define APPEND_ATTRIBUTE_TEXT(attribute)                                        \
     if (HAS_BLOCK_ATTRIS(attributes, attribute)) text =                         \

@@ -1,7 +1,7 @@
 #include "block_list_widget.h"
 
 #include <qalgorithms.h>
-#include <qboxlayout.h>
+#include <qevent.h>
 #include <qpainter.h>
 #include <qpixmap.h>
 #include <qscrollarea.h>
@@ -199,7 +199,7 @@ protected:
             else
                 name_ = QString::fromStdString(entry_.second->name);
 
-            auto attributesText = getBlockAttributesText(entry_.second->baseBlock.attributes);
+            auto attributesText = makeBlockAttributesText(entry_.second->baseBlock.attributes);
             attributesText = QFontMetrics(font()).elidedText(attributesText, Qt::ElideRight, 480);
             const auto& tooltipText = QStringLiteral("%1: %2\n%3: %4\n%5: %6\n%7: %8")
                 .arg(EASYTR("Block Name")).arg(name_)
