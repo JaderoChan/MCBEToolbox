@@ -118,7 +118,15 @@ private:
     QStandardItem* buildItem(
         QStandardItem* parentItem, bool isNamingTag, const QString& key, qulonglong index, nbt::Tag& value);
 
+    // 插入子项至给定项（此函数用于实现增量撤销/重做功能）。
+    // 如果给定项不是 Array 或 List 类型、给定子项不符合父项类型返回 false。
+    // 对于给定项是 Array 类型，则子项仅保留数值。
+    bool insertItem(QStandardItem* parentItem, nbt::Tag value, qulonglong index);
+
     void updateSummaryValue(QStandardItem* item, const nbt::Tag& tag);
+    // 通过给定的索引偏移量更新 parentItem 给定范围内子元素的文本/数据。
+    // 如果给定父项不是 Array 或 List 类型，则不做任何事。
+    void updateElementItemData(QStandardItem* parentItem, qulonglong begin, qulonglong end, int offset);
 
     void beginRowEdit(
         QStandardItem* item, nbt::TagType type, bool isNamingTag,

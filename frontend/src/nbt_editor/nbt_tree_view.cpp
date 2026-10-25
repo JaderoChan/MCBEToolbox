@@ -181,47 +181,25 @@ bool NbtTreeView::removeItem(QStandardItem* item)
         return false;
     }
 
+    auto* parentItem = item->parent();
     if (isNamingTag(item))
     {
-        auto* parentItem = item->parent();
         parentTag->erase(itemTagKey(item).toString().toStdString());
-        model_->removeRow(item->row(), item->index().parent());
-        updateSummaryValue(parentItem, *parentTag);
     }
     else
     {
         parentTag->erase(static_cast<std::size_t>(itemTagIndex(item).toULongLong()));
 
-        const bool blocked = model_->blockSignals(true);
-        auto*       parentItem       = item->parent();
-        const auto& parentModelIndex = parentItem->index();
         // 更新删除项之后项的索引值与文本。
-        for (qulonglong row = item->row() + 1; row < static_cast<qulonglong>(parentItem->rowCount()); ++row)
-        {
-            const auto& index      = row - 1;
-            const auto& modelIndex = model_->index(row, 0, parentModelIndex);
-
-            QString valueText;
-            if (parentTag->isArray())
-                valueText = nbt_utils::makeArrayElementText(*parentTag, index);
-            else if (parentTag->isList())
-                valueText = nbt_utils::makeTextFromTag((*parentTag)[static_cast<std::size_t>(index)]);
-            const auto& text = QStringLiteral("[%1]: %2").arg(index).arg(valueText);
-
-            model_->setData(modelIndex, text,  Qt::DisplayRole);
-            model_->setData(modelIndex, text,  Qt::ToolTipRole);
-            model_->setData(modelIndex, index, TagIndexRole);
-        }
-        model_->blockSignals(blocked);
+        updateElementItemData(parentItem, item->row() + 1, static_cast<qulonglong>(parentItem->rowCount()), -1);
 
         // 如果删除元素后，列表为空，则将其置为初始状态以使其能够接受不同的 Tag 类型进行重新初始化。
         if (parentTag->isList() && parentTag->empty())
             *parentTag = nbt::Tag::list();
-
-        model_->removeRow(item->row(), item->index().parent());
-        updateSummaryValue(parentItem, *parentTag);
     }
 
+    model_->removeRow(item->row(), item->index().parent());
+    updateSummaryValue(parentItem, *parentTag);
     emit tagChanged();
     return true;
 }
@@ -663,11 +641,103 @@ QStandardItem* NbtTreeView::buildItem(
     return item;
 }
 
+bool NbtTreeView::insertItem(QStandardItem* parentItem, nbt::Tag value, qulonglong index)
+{
+    auto* parentTag = itemTag(parentItem);
+    if (parentTag->isArray())
+    {
+        switch (parentTag->type())
+        {
+            case nbt::TT_BYTE_ARRAY:
+            {
+                if (!value.isByte()) return false;
+                auto& array = parentTag->getByteArray();
+                array.insert(array.begin() + static_cast<std::size_t>(index), value.getByte());
+                break;
+            }
+            case nbt::TT_INT_ARRAY:
+            {
+                if (!value.isInt()) return false;
+                auto& array = parentTag->getIntArray();
+                array.insert(array.begin() + static_cast<std::size_t>(index), value.getInt());
+                break;
+            }
+            case nbt::TT_LONG_ARRAY:
+            {
+                if (!value.isLong()) return false;
+                auto& array = parentTag->getLongArray();
+                array.insert(array.begin() + static_cast<std::size_t>(index), value.getLong());
+                break;
+            }
+            default:
+                return false;
+        }
+
+        auto* child = createArrayItem(parentTag, index);
+        updateElementItemData(parentItem, index, parentItem->rowCount(), 1);
+        parentItem->insertRow(static_cast<int>(index), child);
+    }
+    else if (parentTag->isList())
+    {
+        if (parentTag->listItemType() != nbt::TT_END && value.type() != parentTag->listItemType())
+            return false;
+
+        auto* child = createItem(false, QString(), index, value);
+        if (value.isList())
+        {
+            for (std::size_t i = 0; i < value.size(); ++i)
+                (void)buildItem(child, false, QString(), static_cast<qulonglong>(i), value[i]);
+        }
+
+        parentTag->insert(static_cast<std::size_t>(index), std::move(value));
+        updateElementItemData(parentItem, index, parentItem->rowCount(), 1);
+        parentItem->insertRow(static_cast<int>(index), child);
+    }
+    else
+    {
+        return false;
+    }
+
+    updateSummaryValue(parentItem, *parentTag);
+    emit tagChanged();
+    return true;
+}
+
 void NbtTreeView::updateSummaryValue(QStandardItem* item, const nbt::Tag& tag)
 {
     if (!item)
         return;
     item->setData(static_cast<qulonglong>(tag.size()), SummaryValueRole);
+}
+
+void NbtTreeView::updateElementItemData(QStandardItem* parentItem, qulonglong begin, qulonglong end, int offset)
+{
+    if (!parentItem || begin >= end)
+        return;
+
+    const auto* parentTag = itemTag(parentItem);
+    if (!parentTag || (!parentTag->isArray() && !parentTag->isList()))
+        return;
+
+    const bool  blocked          = model_->blockSignals(true);
+    const auto& parentModelIndex = parentItem->index();
+    for (qulonglong row = begin; row < end; ++row)
+    {
+        const auto& index      = row + offset;
+        const auto& modelIndex = model_->index(row, 0, parentModelIndex);
+
+        QString valueText;
+        if (parentTag->isArray())
+            valueText = nbt_utils::makeArrayElementText(*parentTag, index);
+        else if (parentTag->isList())
+            valueText = nbt_utils::makeTextFromTag((*parentTag)[static_cast<std::size_t>(index)]);
+        const auto& text = QStringLiteral("[%1]: %2").arg(index).arg(valueText);
+
+        model_->setData(modelIndex, text,  Qt::DisplayRole);
+        model_->setData(modelIndex, text,  Qt::ToolTipRole);
+        model_->setData(modelIndex, index, TagIndexRole);
+    }
+    model_->blockSignals(blocked);
 }
 
 void NbtTreeView::beginRowEdit(
