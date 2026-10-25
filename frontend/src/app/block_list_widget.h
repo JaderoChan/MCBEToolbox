@@ -23,8 +23,10 @@ public:
     void select(const QList<QString>& blockIds);
     void unselect(const QString& blockId);
     void unselect(const QList<QString>& blockIds);
-    void selectRange(int begin, int end);
-    void unselectRange(int begin, int end);
+    /** 闭区间范围选择。 */
+    void selectRange(int start, int end);
+    /** 闭区间范围取消选择。 */
+    void unselectRange(int start, int end);
     void selectAll();
     void unselectAll();
 
@@ -66,8 +68,8 @@ private:
 
     QMap<QString, BlockListItemWidget*> items_;
 
-    int  rangeSelectBegin_ = -1;
+    int  rangeSelectStart_ = -1;
     int  rangeSelectEnd_   = -1;
     bool shiftPressed_     = false;
-    bool beginSelected_    = false;
+    bool startIsSelected_  = false;
 };

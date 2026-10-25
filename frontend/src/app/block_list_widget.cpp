@@ -265,19 +265,19 @@ void BlockListWidget::unselect(const QList<QString>& blockIds)
         setItemSelected(blockId, false);
 }
 
-void BlockListWidget::selectRange(int begin, int end)
+void BlockListWidget::selectRange(int start, int end)
 {
-    if (begin > end || begin < 0 || end >= static_cast<int>(items_.size()))
+    if (start > end || start < 0 || end >= static_cast<int>(items_.size()))
         return;
 
     if (!multiSelectEnabled_)
         return;
 
     auto it = items_.begin();
-    for (; begin <= end; ++begin)
+    for (; start <= end; ++start)
     {
-        const auto& id = std::next(it, begin).key().toStdString();
-        std::next(it, begin).value()->setSelected(true);
+        const auto& id = std::next(it, start).key().toStdString();
+        std::next(it, start).value()->setSelected(true);
         if (selecteds_.find(std::string_view(id)) == selecteds_.end())
             selecteds_[std::string_view(id)] = blocks_[std::string_view(id)];
     }
@@ -285,16 +285,16 @@ void BlockListWidget::selectRange(int begin, int end)
     emit selectionChanged();
 }
 
-void BlockListWidget::unselectRange(int begin, int end)
+void BlockListWidget::unselectRange(int start, int end)
 {
-    if (begin > end || begin < 0 || end >= static_cast<int>(items_.size()))
+    if (start > end || start < 0 || end >= static_cast<int>(items_.size()))
         return;
 
     auto it = items_.begin();
-    for (; begin <= end; ++begin)
+    for (; start <= end; ++start)
     {
-        const auto& id = std::next(it, begin).key().toStdString();
-        std::next(it, begin).value()->setSelected(false);
+        const auto& id = std::next(it, start).key().toStdString();
+        std::next(it, start).value()->setSelected(false);
         if (selecteds_.find(std::string_view(id)) != selecteds_.end())
             selecteds_.erase(std::string_view(id));
     }
@@ -386,7 +386,7 @@ void BlockListWidget::keyReleaseEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Shift)
     {
-        rangeSelectBegin_ = -1;
+        rangeSelectStart_ = -1;
         rangeSelectEnd_   = -1;
         shiftPressed_     = false;
     }
@@ -423,18 +423,18 @@ void BlockListWidget::rebuildItems()
         {
             if (shiftPressed_ && multiSelectEnabled_)
             {
-                if (rangeSelectBegin_ < 0)
+                if (rangeSelectStart_ < 0)
                 {
-                    rangeSelectBegin_ = index;
-                    beginSelected_    = item->isSelected();
+                    rangeSelectStart_ = index;
+                    startIsSelected_  = item->isSelected();
                     setItemSelected(qid, !item->isSelected());
                 }
                 else
                 {
                     rangeSelectEnd_ = index;
-                    const auto& begin = std::min(rangeSelectBegin_, rangeSelectEnd_);
-                    const auto& end   = std::max(rangeSelectBegin_, rangeSelectEnd_);
-                    if (beginSelected_) unselectRange(begin, end);
+                    const auto& begin = std::min(rangeSelectStart_, rangeSelectEnd_);
+                    const auto& end   = std::max(rangeSelectStart_, rangeSelectEnd_);
+                    if (startIsSelected_) unselectRange(begin, end);
                     else                selectRange(begin,   end);
                 }
             }
