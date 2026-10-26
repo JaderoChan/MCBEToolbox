@@ -2,35 +2,40 @@
 
 #include <easy_translate.hpp>
 
-namespace
-{
-
-inline const char* getBlockAttributeRawText(BlockAttribute attribute)
+QString getBlockAttributeText(BlockAttribute attribute)
 {
     switch (attribute)
     {
-        case BLOCK_ATTRI_IS_INCOMPLETE:     return "Incomplete Block";
-        case BLOCK_ATTRI_IS_TRANSPARENT:    return "Transparent Block";
-        case BLOCK_ATTRI_IS_LUMINOUS:       return "Luminous Block";
-        case BLOCK_ATTRI_IS_UNSTABLE:       return "Unstable Block";
-        case BLOCK_ATTRI_IS_CREATIVE:       return "Creative Block";
-        case BLOCK_ATTRI_HAS_GRAVITY:       return "Has Gravity";
-        case BLOCK_ATTRI_HAS_PATTERN:       return "Has Pattern";
-        case BLOCK_ATTRI_FLAMMABLE:         return "Flammable";
-        case BLOCK_ATTRI_ENDERMAN_PICKABLE: return "Enderman Pickable";
-        default:                            return "Unknown Block Attribute";
+        case BLOCK_ATTRI_IS_INCOMPLETE:     return EASYTR("Incomplete Block");
+        case BLOCK_ATTRI_IS_TRANSPARENT:    return EASYTR("Transparent Block");
+        case BLOCK_ATTRI_IS_LUMINOUS:       return EASYTR("Luminous Block");
+        case BLOCK_ATTRI_IS_UNSTABLE:       return EASYTR("Unstable Block");
+        case BLOCK_ATTRI_IS_CREATIVE:       return EASYTR("Creative Block");
+        case BLOCK_ATTRI_HAS_GRAVITY:       return EASYTR("Has Gravity");
+        case BLOCK_ATTRI_HAS_PATTERN:       return EASYTR("Has Pattern");
+        case BLOCK_ATTRI_FLAMMABLE:         return EASYTR("Flammable");
+        case BLOCK_ATTRI_ENDERMAN_PICKABLE: return EASYTR("Enderman Pickable");
+        default:                            return EASYTR("Unknown Block Attribute");
     }
 }
 
-} // namespace
+QString getBlockAttributeFilterModeText(BlockAttributeFilterMode filterMode)
+{
+    switch (filterMode)
+    {
+        case BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL: return EASYTR("Contains All Checked Attributes");
+        case BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY: return EASYTR("Contains Any Checked Attribute");
+        default:                                   return EASYTR("Unknown Filter Mode");
+    }
+}
 
 QString makeBlockAttributesText(BlockAttributes attributes)
 {
 #define APPEND_ATTRIBUTE_TEXT(attribute)                                        \
     if (HAS_BLOCK_ATTRIS(attributes, attribute)) text =                         \
         text +                                                                  \
-        (text.isEmpty() ? "" : "; ") +                                          \
-        EASYTR(getBlockAttributeRawText(attribute))
+        (text.isEmpty() ? QString() : QStringLiteral("; ")) +                   \
+        getBlockAttributeText(attribute)
 
     QString text;
     APPEND_ATTRIBUTE_TEXT(BLOCK_ATTRI_IS_INCOMPLETE);
