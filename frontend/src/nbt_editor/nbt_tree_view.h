@@ -147,10 +147,10 @@ private:
     QString  rootName_;
     nbt::Tag rootTag_;
 
-    QStandardItemModel*  model_    = nullptr;
-    NbtTreeItemDelegate* delegate_ = nullptr;
+    QStandardItemModel*  model_     = nullptr;
+    NbtTreeItemDelegate* delegate_  = nullptr;
 
-    RowEditType    editType_  = RowEditType::None;
-    QStandardItem* editItem_  = nullptr;
-    NbtRowEditor*  editor_    = nullptr;
+    RowEditType          editType_  = RowEditType::None;
+    QStandardItem*       editItem_  = nullptr;
+    NbtRowEditor*        editor_    = nullptr;
 };

@@ -71,16 +71,16 @@ private:
 
     NbtFileInfo fileInfo_;
 
-    QToolButton* renameButton_ = nullptr;
-    QToolButton* editButton_   = nullptr;
-    QToolButton* removeButton_ = nullptr;
-    QToolButton* snbtButton_   = nullptr;
+    QToolButton* renameButton_      = nullptr;
+    QToolButton* editButton_        = nullptr;
+    QToolButton* removeButton_      = nullptr;
+    QToolButton* snbtButton_        = nullptr;
 
     std::map<nbt::TagType, QToolButton*> addButtons_;
 
-    QLabel* filePathLabel_   = nullptr;
-    QLabel* endianLabel_     = nullptr;
-    QLabel* compressedLabel_ = nullptr;
+    QLabel* filePathLabel_          = nullptr;
+    QLabel* endianLabel_            = nullptr;
+    QLabel* compressedLabel_        = nullptr;
 
     QStackedWidget* stackedWidget_  = nullptr;
     NbtTreeView*    nbtView_        = nullptr;

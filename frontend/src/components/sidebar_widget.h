@@ -96,8 +96,8 @@ private:
     void animateWidthTo(int targetWidth);
     void applyEntrySize();
 
-    QVBoxLayout*       mainLayout_ = nullptr;
-    QVariantAnimation* anim_       = nullptr;
+    QVBoxLayout*               mainLayout_  = nullptr;
+    QVariantAnimation*         anim_        = nullptr;
 
     SidebarEntryWidget*        toggleEntry_ = nullptr;
     QList<SidebarEntryWidget*> entries_;
