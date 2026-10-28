@@ -3,7 +3,6 @@
 #include <assert.h>     // assert
 #include <stdio.h>      // fprintf
 #include <atomic>       // std::atomic
-#include <system_error> // std::error_code
 
 #include <opencv2/imgproc.hpp>   // cv::cvtColor
 #include <opencv2/videoio.hpp>   // cv::VideoWriter
@@ -85,6 +84,7 @@ bool BlockImageFactory::generateBlockVideo(
 
     const std::filesystem::path tempVideoPath =
         outParentPath / (fs_utils::generateUuid4() + outFilePath.extension().string());
+    const fs_utils::ScopedPathRemover tempVideoRemover(tempVideoPath);
 
     // 优先使用 H264 编码，若打不开（例如系统未注册对应的硬件/软件编码器），
     // 尝试改用 avc1 标签，输出文件名应该以 .mp4 为后缀
@@ -159,11 +159,7 @@ bool BlockImageFactory::generateBlockVideo(
     writer.release();
 
     if (!pipelineOk)
-    {
-        std::error_code ec;
-        std::filesystem::remove(tempVideoPath, ec);
         return false;
-    }
 
     return fs_utils::moveFileReplacing(tempVideoPath, outFilePath);
 }

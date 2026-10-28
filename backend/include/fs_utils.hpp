@@ -33,6 +33,20 @@ bool ensureDirectoryExists(const std::filesystem::path& dirPath);
  */
 bool moveFileReplacing(const std::filesystem::path& src, const std::filesystem::path& dst);
 
+/** RAII 路径清理，析构时递归删除给定路径（文件或目录）。 */
+class ScopedPathRemover
+{
+public:
+    explicit ScopedPathRemover(std::filesystem::path path) : path_(std::move(path)) {}
+    ~ScopedPathRemover() { removeDirectoryRecursive(path_); }
+
+    ScopedPathRemover(const ScopedPathRemover&)            = delete;
+    ScopedPathRemover& operator=(const ScopedPathRemover&) = delete;
+
+private:
+    std::filesystem::path path_;
+};
+
 #ifdef _WIN32
 /**
  * 为“只接受窄字符串路径、且内部按本地 ANSI 代码页解释该路径”的旧式 C/C++ API

@@ -53,6 +53,7 @@ FactoryResult generateBlockImage(
     const std::filesystem::path& tempDir     = fs_utils::createUniqueHiddenTempDir(outFilePath);
     if (tempDir.empty())
         return {false, {}};
+    const fs_utils::ScopedPathRemover tempDirRemover(tempDir);
 
     const std::filesystem::path& tempFilePath = tempDir / outFilePath.filename();
 
@@ -66,7 +67,6 @@ FactoryResult generateBlockImage(
                 stderr,
                 "generateBlockImage() option.generateVideo is true but 'stream' is not a VideoImageOStream\n"
             );
-            fs_utils::removeDirectoryRecursive(tempDir);
             return {false, {}};
         }
         ok = factory.generateBlockVideo(*videoStream, tempFilePath, option.numThreads);
@@ -80,7 +80,6 @@ FactoryResult generateBlockImage(
                 stderr,
                 "generateBlockImage() option.generateVideo is false but 'stream' is not a SingleImageOStream\n"
             );
-            fs_utils::removeDirectoryRecursive(tempDir);
             return {false, {}};
         }
         const cv::Mat& image = factory.generateBlockImage(*singleStream);
@@ -91,8 +90,6 @@ FactoryResult generateBlockImage(
 
     if (ok)
         ok = fs_utils::moveFileReplacing(tempFilePath, outFilePath);
-
-    fs_utils::removeDirectoryRecursive(tempDir);
 
     return {ok, usage};
 }
