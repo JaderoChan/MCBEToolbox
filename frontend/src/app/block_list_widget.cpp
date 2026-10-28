@@ -9,7 +9,7 @@
 #include <config.h>
 #include <components/flow_grid_layout.h>
 #include <utils/directory_scope.h>
-#include "block_attributes_text.h"
+#include "block_attribute_text.h"
 
 namespace
 {

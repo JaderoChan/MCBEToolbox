@@ -1,4 +1,4 @@
-#include "block_attributes_text.h"
+#include "block_attribute_text.h"
 
 #include <easy_translate.hpp>
 

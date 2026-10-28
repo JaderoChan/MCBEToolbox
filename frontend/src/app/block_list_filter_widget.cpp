@@ -8,7 +8,7 @@
 #include <qpushbutton.h>
 #include <qvariantanimation.h>
 
-#include "block_attributes_text.h"
+#include "block_attribute_text.h"
 #include "block_list_widget.h"
 
 namespace

@@ -13,7 +13,7 @@ configure_file(
 set(
     HEADERS
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
-    ./app/block_attributes_text.h
+    ./app/block_attribute_text.h
     ./app/block_list_filter_widget.h
     ./app/block_list_widget.h
     ./app/logo_icon.h
@@ -42,7 +42,7 @@ set(
 # 源文件
 set(
     SRCS
-    ./app/block_attributes_text.cpp
+    ./app/block_attribute_text.cpp
     ./app/block_list_filter_widget.cpp
     ./app/block_list_widget.cpp
     ./app/logo_icon.cpp
