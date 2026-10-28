@@ -13,6 +13,41 @@
 namespace fs_utils
 {
 
+namespace
+{
+
+// 便利函数：在 parent 目录下尝试创建一个以 anchorPath 文件名为前缀的隐藏临时目录，如果失败返回空路径。
+std::filesystem::path tryCreateHiddenTempDirIn(
+    const std::filesystem::path& parent, const std::filesystem::path& anchorPath)
+{
+    std::error_code ec;
+    for (int attempt = 0; attempt < 8; ++attempt)
+    {
+        std::filesystem::path hiddenName(".");
+        hiddenName += anchorPath.stem();
+        hiddenName += ("_" + generateUuid4() + ".tmp");
+        const std::filesystem::path tempPath = parent / hiddenName;
+
+        if (std::filesystem::exists(tempPath, ec))
+            continue;
+
+        // 隐藏文件夹。
+        if (std::filesystem::create_directories(tempPath, ec) && !ec)
+        {
+        #ifdef _WIN32
+            SetFileAttributesW(tempPath.wstring().c_str(), FILE_ATTRIBUTE_HIDDEN);
+        #elif defined(__APPLE__)
+            chflags(tempPath.c_str(), UF_HIDDEN);
+        #endif
+            return tempPath;
+        }
+        return std::filesystem::path();
+    }
+    return std::filesystem::path();
+}
+
+} // namespace
+
 std::string generateUuid4()
 {
     static thread_local std::mt19937_64 rng(std::random_device{}());
@@ -57,30 +92,19 @@ bool ensureDirectoryExists(const std::filesystem::path& dirPath)
 
 std::filesystem::path createUniqueHiddenTempDir(const std::filesystem::path& anchorPath)
 {
+#ifdef _WIN32
+    std::error_code ec;
+    const std::filesystem::path absAnchor = std::filesystem::absolute(anchorPath, ec);
+    const std::filesystem::path tempPath =
+        ec ? std::filesystem::path() : tryCreateHiddenTempDirIn(absAnchor.root_path(), anchorPath);
+#else
     const std::filesystem::path parent =
         anchorPath.has_parent_path() ? anchorPath.parent_path() : std::filesystem::current_path();
+    const std::filesystem::path tempPath = tryCreateHiddenTempDirIn(parent, anchorPath);
+#endif
 
-    std::error_code ec;
-    // 重试几次以应对 UUID 碰撞或目录已被占用。
-    for (int attempt = 0; attempt < 8; ++attempt)
-    {
-        const std::string           hiddenName = "." + anchorPath.string() + "_" + generateUuid4() + ".tmp";
-        const std::filesystem::path tempPath   = parent / hiddenName;
-
-        if (std::filesystem::exists(tempPath, ec))
-            continue;
-
-        if (std::filesystem::create_directories(tempPath, ec) && !ec)
-        {
-            // 隐藏文件夹。
-        #ifdef _WIN32
-            SetFileAttributesW(tempPath.wstring().c_str(), FILE_ATTRIBUTE_HIDDEN);
-        #elif defined(__APPLE__)
-            chflags(tempPath.c_str(), UF_HIDDEN);
-        #endif
-            return tempPath;
-        }
-    }
+    if (!tempPath.empty())
+        return tempPath;
 
     fprintf(
         stderr,
