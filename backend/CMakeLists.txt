@@ -7,6 +7,7 @@ set(
     ./include/block_image_factory.hpp
     ./include/block.hpp
     ./include/color.hpp
+    ./include/factory_mcpack_wrapper.hpp
     ./include/fs_utils.hpp
     ./include/gif_image_ostream.hpp
     ./include/image_ostream.hpp
@@ -33,6 +34,7 @@ set(
     ./src/block.cpp
     ./src/color_kd_tree.cpp
     ./src/color.cpp
+    ./src/factory_mcpack_wrapper.cpp
     ./src/fs_utils.cpp
     ./src/gif_image_ostream.cpp
     ./src/image_ostream.cpp
