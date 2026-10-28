@@ -3,34 +3,19 @@
 #include <stdio.h>      // fprintf
 #include <filesystem>   // std::filesystem
 #include <fstream>      // std::ifstream, std::ofstream
-#include <random>       // std::mt19937_64, std::random_device, std::uniform_int_distribution
 #include <system_error> // std::error_code
 
-#include <mz.h>          // MZ_OK, MZ_COMPRESS_METHOD_DEFLATE, MZ_COMPRESS_LEVEL_DEFAULT
-#include <mz_strm.h>     // mz_stream_read_cb, mz_stream_write_cb
-#include <mz_zip.h>      // mz_zip_file
-#include <mz_zip_rw.h>   // mz_zip_writer_*
+#include <mz.h>              // MZ_OK, MZ_COMPRESS_METHOD_DEFLATE, MZ_COMPRESS_LEVEL_DEFAULT
+#include <mz_strm.h>         // mz_stream_read_cb, mz_stream_write_cb
+#include <mz_zip.h>          // mz_zip_file
+#include <mz_zip_rw.h>       // mz_zip_writer_*
 #include <nlohmann/json.hpp> // nlohmann::json
 
+#include "fs_utils.hpp"
 #include "pack_icon_data.hpp"
-
-#ifdef _WIN32
-    #include <windows.h> // SetFileAttributesW
-#endif
 
 namespace
 {
-
-// 便利函数：确保给定目录存在，不存在则创建，已存在但不是目录则失败。
-bool ensureDirectoryExists(const std::filesystem::path& dirPath)
-{
-    std::error_code ec;
-    if (std::filesystem::exists(dirPath, ec))
-        return std::filesystem::is_directory(dirPath, ec);
-
-    std::filesystem::create_directories(dirPath, ec);
-    return !ec;
-}
 
 // 便利函数：递归判断给定目录下是否不包含任何常规文件。
 bool isDirectoryEmptyOfFiles(const std::filesystem::path& dirPath)
@@ -51,11 +36,11 @@ bool isDirectoryEmptyOfFiles(const std::filesystem::path& dirPath)
 } // namespace
 
 MCPack::MCPack(
-    std::string_view filePath,
-    std::string_view name,
-    std::string_view description,
-    std::string_view nameSpace,
-    const Version&   version)
+    const std::filesystem::path& filePath,
+    std::string_view             name,
+    std::string_view             description,
+    std::string_view             nameSpace,
+    const Version&               version)
     : filePath_(filePath), name_(name), description_(description)
     , nameSpace_(nameSpace), version_(version)
 {
@@ -69,15 +54,19 @@ MCPack::MCPack(
     if (!isOk_)
         return;
 
-    if (!ensureDirectoryExists(std::filesystem::path(tempPath_) / "functions"  / nameSpace_) ||
-        !ensureDirectoryExists(std::filesystem::path(tempPath_) / "structures" / nameSpace_))
+    contentPath_ = (std::filesystem::path(tempPath_) / "content").string();
+
+    if (!fs_utils::ensureDirectoryExists(
+            std::filesystem::path(contentPath_) / "functions"  / fs_utils::pathFromUtf8(nameSpace_)) ||
+        !fs_utils::ensureDirectoryExists(
+            std::filesystem::path(contentPath_) / "structures" / fs_utils::pathFromUtf8(nameSpace_)))
     {
         fprintf(stderr, "MCPack::MCPack() Failed to create the functions/structures directory\n");
         isOk_ = false;
         return;
     }
 
-    const std::filesystem::path tickJsonPath = std::filesystem::path(tempPath_) / "functions" / "tick.json";
+    const std::filesystem::path tickJsonPath = std::filesystem::path(contentPath_) / "functions" / "tick.json";
     std::ofstream tickJsonFile(tickJsonPath, std::ios::binary | std::ios::trunc);
     if (!tickJsonFile)
     {
@@ -94,14 +83,14 @@ MCPack::~MCPack()
     removeTempPath();
 }
 
-std::string MCPack::getFunctionsPath() const
+std::filesystem::path MCPack::getFunctionsPath() const
 {
-    return (std::filesystem::path(tempPath_) / "functions" / nameSpace_).string();
+    return std::filesystem::path(contentPath_) / "functions" / fs_utils::pathFromUtf8(nameSpace_);
 }
 
-std::string MCPack::getStructuresPath() const
+std::filesystem::path MCPack::getStructuresPath() const
 {
-    return (std::filesystem::path(tempPath_) / "structures" / nameSpace_).string();
+    return std::filesystem::path(contentPath_) / "structures" / fs_utils::pathFromUtf8(nameSpace_);
 }
 
 bool MCPack::addFunction(std::string_view relativePath, const std::vector<std::string>& mcfunction) const
@@ -110,8 +99,8 @@ bool MCPack::addFunction(std::string_view relativePath, const std::vector<std::s
         return false;
 
     const std::filesystem::path path =
-        std::filesystem::path(getFunctionsPath()) / (std::string(relativePath) + ".mcfunction");
-    if (!ensureDirectoryExists(path.parent_path()))
+        getFunctionsPath() / fs_utils::pathFromUtf8(std::string(relativePath) + ".mcfunction");
+    if (!fs_utils::ensureDirectoryExists(path.parent_path()))
     {
         fprintf(stderr, "MCPack::addFunction() Failed to create the parent directory of '%s'\n", path.string().c_str());
         return false;
@@ -135,7 +124,7 @@ bool MCPack::addTickFunction(std::string_view relativePath) const
     if (!isOk_ || relativePath.empty())
         return false;
 
-    const std::filesystem::path tickJsonPath = std::filesystem::path(tempPath_) / "functions" / "tick.json";
+    const std::filesystem::path tickJsonPath = std::filesystem::path(contentPath_) / "functions" / "tick.json";
 
     std::ifstream inFile(tickJsonPath, std::ios::binary);
     if (!inFile)
@@ -189,7 +178,7 @@ bool MCPack::pack() const
         {"header", {
             {"description", description_},
             {"name", name_},
-            {"uuid", generateUuid()},
+            {"uuid", fs_utils::generateUuid4()},
             {"version", {version_.major, version_.minor, version_.patch}},
             {"min_engine_version", {minVersion_.major, minVersion_.minor, minVersion_.patch}}
         }},
@@ -197,36 +186,38 @@ bool MCPack::pack() const
             {
                 {"description", description_},
                 {"type", "data"},
-                {"uuid", generateUuid()},
+                {"uuid", fs_utils::generateUuid4()},
                 {"version", {version_.major, version_.minor, version_.patch}}
             }
         })}
     };
 
-    const std::filesystem::path manifestPath = std::filesystem::path(tempPath_) / "manifest.json";
+    const std::filesystem::path manifestPath = std::filesystem::path(contentPath_) / "manifest.json";
     std::ofstream manifestFile(manifestPath, std::ios::binary | std::ios::trunc);
     if (!manifestFile)
     {
         fprintf(stderr, "MCPack::pack() Failed to create 'manifest.json'\n");
+        removeTempPath();
         return false;
     }
     manifestFile << manifest.dump(4);
     manifestFile.close();
 
-    const std::filesystem::path iconPath = std::filesystem::path(tempPath_) / "pack_icon.png";
+    const std::filesystem::path iconPath = std::filesystem::path(contentPath_) / "pack_icon.png";
     std::ofstream iconFile(iconPath, std::ios::binary | std::ios::trunc);
     if (!iconFile)
     {
         fprintf(stderr, "MCPack::pack() Failed to create 'pack_icon.png'\n");
+        removeTempPath();
         return false;
     }
     iconFile.write(reinterpret_cast<const char*>(DEFAULT_PACK_ICON_PNG), DEFAULT_PACK_ICON_PNG_SIZE);
     iconFile.close();
 
-    const std::filesystem::path functionsRootPath       = std::filesystem::path(tempPath_) / "functions";
-    const std::filesystem::path functionsNameSpacePath  = functionsRootPath  / nameSpace_;
-    const std::filesystem::path structuresRootPath      = std::filesystem::path(tempPath_) / "structures";
-    const std::filesystem::path structuresNameSpacePath = structuresRootPath / nameSpace_;
+    const std::filesystem::path functionsRootPath       = std::filesystem::path(contentPath_) / "functions";
+    const std::filesystem::path functionsNameSpacePath  = getFunctionsPath();
+    const std::filesystem::path structuresRootPath      = std::filesystem::path(contentPath_) / "structures";
+    const std::filesystem::path structuresNameSpacePath = getStructuresPath();
 
     std::error_code ec;
     if (isDirectoryEmptyOfFiles(functionsNameSpacePath))
@@ -234,37 +225,32 @@ bool MCPack::pack() const
     if (isDirectoryEmptyOfFiles(structuresNameSpacePath))
         std::filesystem::remove_all(structuresRootPath, ec);
 
-    const std::filesystem::path zipPath = filePath_;
-    const std::filesystem::path zipParentPath =
-        zipPath.has_parent_path() ? zipPath.parent_path() : std::filesystem::current_path();
-    if (!ensureDirectoryExists(zipParentPath))
-    {
-        fprintf(stderr, "MCPack::pack() Failed to create the target directory '%s'\n", zipParentPath.string().c_str());
-        return false;
-    }
-
-    std::filesystem::remove(zipPath, ec);
+    const std::filesystem::path zipPath     = filePath_;
+    const std::filesystem::path tempZipPath = std::filesystem::path(tempPath_) / zipPath.filename();
 
     void* writer = mz_zip_writer_create();
     if (!writer)
     {
         fprintf(stderr, "MCPack::pack() Failed to create the zip writer\n");
+        removeTempPath();
         return false;
     }
 
     mz_zip_writer_set_compress_method(writer, MZ_COMPRESS_METHOD_DEFLATE);
     mz_zip_writer_set_compress_level(writer, MZ_COMPRESS_LEVEL_DEFAULT);
 
-    const std::string zipPathUtf8  = zipPath.u8string();
-    const std::string tempPathUtf8 = std::filesystem::path(tempPath_).u8string();
+    const std::string tempZipPathUtf8  = tempZipPath.u8string();
+    const std::string contentPathUtf8  = std::filesystem::path(contentPath_).u8string();
 
-    int32_t err = mz_zip_writer_open_file(writer, zipPathUtf8.c_str(), 0, 0);
+    int32_t err = mz_zip_writer_open_file(writer, tempZipPathUtf8.c_str(), 0, 0);
     if (err != MZ_OK)
-        fprintf(stderr, "MCPack::pack() Failed to open the zip file '%s' (error %d)\n", zipPath.string().c_str(), err);
+        fprintf(
+            stderr, "MCPack::pack() Failed to open the zip file '%s' (error %d)\n", tempZipPath.string().c_str(), err
+        );
 
     if (err == MZ_OK)
     {
-        err = mz_zip_writer_add_path(writer, tempPathUtf8.c_str(), tempPathUtf8.c_str(), 0, 1);
+        err = mz_zip_writer_add_path(writer, contentPathUtf8.c_str(), contentPathUtf8.c_str(), 0, 1);
         if (err != MZ_OK)
             fprintf(stderr, "MCPack::pack() Failed to add the pack contents to the zip (error %d)\n", err);
     }
@@ -275,84 +261,23 @@ bool MCPack::pack() const
 
     mz_zip_writer_delete(&writer);
 
-    return err == MZ_OK && closeErr == MZ_OK;
-}
+    bool ok = err == MZ_OK && closeErr == MZ_OK;
+    if (ok)
+        ok = fs_utils::moveFileReplacing(tempZipPath, zipPath);
 
-std::string MCPack::generateUuid()
-{
-    static thread_local std::mt19937_64 rng(std::random_device{}());
-    std::uniform_int_distribution<int> dist(0, 15);
-    static const char hex[] = "0123456789abcdef";
+    removeTempPath();
 
-    char buf[37];
-    int  pos = 0;
-    for (int i = 0; i < 36; ++i)
-    {
-        if (i == 8 || i == 13 || i == 18 || i == 23)
-        {
-            buf[pos++] = '-';
-            continue;
-        }
-
-        int value = dist(rng);
-        if (i == 14)
-            value = 4;                   // UUID version 4
-        else if (i == 19)
-            value = (value & 0x3) | 0x8; // UUID variant 1
-        buf[pos++] = hex[value];
-    }
-    buf[pos] = '\0';
-
-    return std::string(buf);
+    return ok;
 }
 
 std::string MCPack::generateTempPath()
 {
-    const std::filesystem::path anchor(filePath_);
-    const std::filesystem::path parent =
-        anchor.has_parent_path()
-        ? anchor.parent_path()
-        : std::filesystem::current_path();
-
-    const std::string hiddenName = "." + anchor.stem().string() + "_" + generateUuid() + ".tmp";
-    const std::filesystem::path tempPath = parent / hiddenName;
-
-    std::error_code ec;
-    if (std::filesystem::exists(tempPath, ec))
-    {
-        fprintf(
-            stderr,
-            "MCPack::generateTempPath() Temporary directory '%s' already exists\n",
-            tempPath.string().c_str()
-        );
-        isOk_ = false;
-        return std::string();
-    }
-
-    if (!std::filesystem::create_directories(tempPath, ec) || ec)
-    {
-        fprintf(
-            stderr,
-            "MCPack::generateTempPath() Failed to create the temporary directory '%s'\n",
-            tempPath.string().c_str()
-        );
-        isOk_ = false;
-        return std::string();
-    }
-
-#ifdef _WIN32
-    SetFileAttributesW(tempPath.wstring().c_str(), FILE_ATTRIBUTE_HIDDEN);
-#endif
-
-    isOk_ = true;
+    const std::filesystem::path tempPath = fs_utils::createUniqueHiddenTempDir(filePath_);
+    isOk_ = !tempPath.empty();
     return tempPath.string();
 }
 
 void MCPack::removeTempPath() const
 {
-    if (tempPath_.empty())
-        return;
-
-    std::error_code ec;
-    std::filesystem::remove_all(tempPath_, ec);
+    fs_utils::removeDirectoryRecursive(tempPath_);
 }

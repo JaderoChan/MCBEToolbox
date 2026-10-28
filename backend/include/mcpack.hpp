@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -10,11 +11,11 @@ class MCPack
 {
 public:
     MCPack(
-        std::string_view filePath,
-        std::string_view name,
-        std::string_view description,
-        std::string_view nameSpace,
-        const Version&   version = Version(1, 0, 0));
+        const std::filesystem::path& filePath,
+        std::string_view             name,
+        std::string_view             description,
+        std::string_view             nameSpace,
+        const Version&               version = Version(1, 0, 0));
     ~MCPack();
 
     MCPack(const MCPack&)            = delete;
@@ -24,18 +25,18 @@ public:
     void setVersion(const Version& version)    { version_       = version; }
     void setMinVersion(const Version& version) { minVersion_    = version; }
 
-    int         getFormatVersion() const { return formatVersion_; }
-    std::string getFilePath()      const { return filePath_;      }
-    std::string getName()          const { return name_;          }
-    std::string getDescription()   const { return description_;   }
-    std::string getNameSpace()     const { return nameSpace_;     }
-    Version     getVersion()       const { return version_;       }
-    Version     getMinVersion()    const { return minVersion_;    }
+    int                   getFormatVersion() const { return formatVersion_; }
+    std::filesystem::path getFilePath()      const { return filePath_;      }
+    std::string           getName()          const { return name_;          }
+    std::string           getDescription()   const { return description_;   }
+    std::string           getNameSpace()     const { return nameSpace_;     }
+    Version               getVersion()       const { return version_;       }
+    Version               getMinVersion()    const { return minVersion_;    }
 
     /** 获取临时工作目录下 "functions/<namespace>" 子目录路径，用于存放 .mcfunction 文件。 */
-    std::string getFunctionsPath()  const;
+    std::filesystem::path getFunctionsPath()  const;
     /** 获取临时工作目录下 "structures/<namespace>" 子目录路径，用于存放 .mcstructure 文件。 */
-    std::string getStructuresPath() const;
+    std::filesystem::path getStructuresPath() const;
 
     /**
      * 添加一个 .mcfunction 文件到 getFunctionsPath() 目录下。
@@ -55,23 +56,28 @@ public:
     /** 临时工作目录是否已就绪）。 */
     bool isOk() const { return isOk_; }
 
-    /** 打包：生成 manifest.json 与 pack_icon.png，将临时目录压缩为 #filePath 指定的文件，完成后清理临时目录。 */
+    /**
+     * 打包：生成 manifest.json 与 pack_icon.png，将临时工作目录下的内容压缩为一个临时 zip 文件，
+     * 压缩成功后再将其移动至 #filePath 指定的位置，无论成功与否都会清理临时目录。
+     */
     bool pack() const;
 
 private:
-    static std::string generateUuid();
-
     std::string generateTempPath();
     void        removeTempPath() const;
 
-    int         formatVersion_ = 2;
-    std::string filePath_;
-    std::string name_;
-    std::string description_;
-    std::string nameSpace_;
-    Version     version_;
-    Version     minVersion_ = Version(1, 21, 50);
+    int                   formatVersion_ = 2;
+    std::filesystem::path filePath_;
+    std::string           name_;
+    std::string           description_;
+    std::string           nameSpace_;
+    Version               version_;
+    Version               minVersion_ = Version(1, 21, 50);
 
+    // 临时工作目录。
     std::string tempPath_;
+    // 临时工作目录下实际存放 mcpack 内容（functions/structures/manifest.json/pack_icon.png）的子目录，
+    // 与压缩产物（直接位于 #tempPath_ 下）相互隔离。
+    std::string contentPath_;
     bool        isOk_ = false;
 };

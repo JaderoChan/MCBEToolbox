@@ -1,9 +1,10 @@
 #pragma once
 
-#include <array>  // std::array
-#include <string> // std::string
-#include <map>    // std::map
-#include <memory> // std::unique_ptr
+#include <array>      // std::array
+#include <filesystem> // std::filesystem::path
+#include <string>     // std::string
+#include <map>        // std::map
+#include <memory>     // std::unique_ptr
 
 #include <opencv2/core/matx.hpp> // cv::Vec
 
@@ -101,7 +102,7 @@ protected:
 
     // 确保给定目录存在，如果不存在则创建，已存在但不是目录则失败。
     // 参数 logPrefix 用于打印日志时标记调用者来源。
-    static bool ensureDirectoryExists(const std::string& dirPath, const char* logPrefix);
+    static bool ensureDirectoryExists(const std::filesystem::path& dirPath, const char* logPrefix);
 
     // 判断当前工厂是否已成功配置（可用方块不为空，KD 树已构建等）。
     virtual bool isConfigured() const;

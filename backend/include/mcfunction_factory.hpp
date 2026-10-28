@@ -1,9 +1,10 @@
 #pragma once
 
-#include <atomic>  // std::atomic
-#include <string>  // std::string
-#include <utility> // std::pair
-#include <vector>  // std::vector
+#include <atomic>     // std::atomic
+#include <filesystem> // std::filesystem::path
+#include <string>     // std::string
+#include <utility>    // std::pair
+#include <vector>     // std::vector
 
 #include <opencv2/core/mat.hpp> // cv::Mat
 
@@ -23,7 +24,7 @@ public:
 
     MCFunction generateSingleMCFunction(ImageOStream& stream, bool callbackPerFrame);
     std::vector<MCFunction> generateDetachMCFunction(ImageOStream& stream, int numThreads = 4);
-    bool generateDetachMCFunction(ImageOStream& stream, const std::string& outDirPath, int numThreads = 4);
+    bool generateDetachMCFunction(ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads = 4);
 
 private:
     MCFunction generateSingleMCFunctionHelper(

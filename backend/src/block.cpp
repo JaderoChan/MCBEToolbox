@@ -279,11 +279,11 @@ BlockEntryMap parseBlockEntries(std::string_view json)
     return ret;
 }
 
-BlockEntryMap parseBlockEntriesFromFile(const std::string& filepath)
+BlockEntryMap parseBlockEntriesFromFile(const std::filesystem::path& filepath)
 {
     std::ifstream file(filepath);
     if (!file.is_open())
-        throw std::runtime_error("parseBlockEntriesFromFile(): can't open the file '" + filepath + "'");
+        throw std::runtime_error("parseBlockEntriesFromFile(): can't open the file '" + filepath.string() + "'");
 
     std::string json(
         (std::istreambuf_iterator<char>(file)),

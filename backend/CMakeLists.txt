@@ -7,6 +7,7 @@ set(
     ./include/block_image_factory.hpp
     ./include/block.hpp
     ./include/color.hpp
+    ./include/fs_utils.hpp
     ./include/gif_image_ostream.hpp
     ./include/image_ostream.hpp
     ./include/image_utilities.hpp
@@ -22,6 +23,7 @@ set(
     ./src/frame_pipeline.hpp
     ./src/nanoflann.hpp
     ./src/pack_icon_data.hpp
+    ./src/stb_image.h
     ./src/thread_pool.hpp
 )
 set(
@@ -31,6 +33,7 @@ set(
     ./src/block.cpp
     ./src/color_kd_tree.cpp
     ./src/color.cpp
+    ./src/fs_utils.cpp
     ./src/gif_image_ostream.cpp
     ./src/image_ostream.cpp
     ./src/image_utilities.cpp
@@ -56,7 +59,6 @@ target_link_libraries(
     opencv_videoio
     mcnbt::mcnbt
     PRIVATE
-    gifdec
     nlohmann_json::nlohmann_json
     MINIZIP::minizip
 )

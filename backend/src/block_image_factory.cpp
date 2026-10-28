@@ -1,21 +1,21 @@
 #include <block_image_factory.hpp>
 
-#include <assert.h>   // assert
-#include <stdio.h>    // fprintf
-#include <atomic>     // std::atomic
-#include <filesystem> // std::filesystem
+#include <assert.h>     // assert
+#include <stdio.h>      // fprintf
+#include <atomic>       // std::atomic
+#include <system_error> // std::error_code
 
-#include <opencv2/imgcodecs.hpp> // cv::imread
 #include <opencv2/imgproc.hpp>   // cv::cvtColor
 #include <opencv2/videoio.hpp>   // cv::VideoWriter
 
 #include <image_utilities.hpp>
+#include "fs_utils.hpp"
 #include "frame_pipeline.hpp"
 
 BlockImageFactory::BlockImageFactory(
-    const BlockDataMap& blocks,
-    SurfaceDirection    desiredSurface,
-    std::string_view    texturesDirPath)
+    const BlockDataMap&          blocks,
+    SurfaceDirection             desiredSurface,
+    const std::filesystem::path& texturesDirPath)
     : BaseFactory(blocks, desiredSurface), texturesDirPath_(texturesDirPath)
 {}
 
@@ -25,7 +25,13 @@ cv::Mat BlockImageFactory::generateBlockImage(SingleImageOStream& stream)
     return generateBlockImageHelper(stream, callback_, userdata_, blockUsageMap_, texturesCache_, false);
 }
 
-bool BlockImageFactory::generateBlockVideo(VideoImageOStream& stream, const std::string& outFilePath, int numThreads)
+std::filesystem::path BlockImageFactory::createTexturePath(const std::string& path)
+{
+    return texturesDirPath_ / fs_utils::pathFromUtf8(path);
+}
+
+bool BlockImageFactory::generateBlockVideo(
+    VideoImageOStream& stream, const std::filesystem::path& outFilePath, int numThreads)
 {
     reinitializeState();
 
@@ -43,12 +49,10 @@ bool BlockImageFactory::generateBlockVideo(VideoImageOStream& stream, const std:
     }
 
     // 确保输出路径的父目录存在
-    const std::filesystem::path outPath(outFilePath);
-    if (outPath.has_parent_path())
-    {
-        if (!ensureDirectoryExists(outPath.parent_path().string(), "BlockImageFactory::generateBlockVideo()"))
-            return false;
-    }
+    const std::filesystem::path outParentPath =
+        outFilePath.has_parent_path() ? outFilePath.parent_path() : std::filesystem::current_path();
+    if (!ensureDirectoryExists(outParentPath, "BlockImageFactory::generateBlockVideo()"))
+        return false;
 
     int fps = stream.fps();
     fps = fps > 0 ? fps : 25;
@@ -79,6 +83,9 @@ bool BlockImageFactory::generateBlockVideo(VideoImageOStream& stream, const std:
 
     frameSize *= 16;
 
+    const std::filesystem::path tempVideoPath =
+        outParentPath / (fs_utils::generateUuid4() + outFilePath.extension().string());
+
     // 优先使用 H264 编码，若打不开（例如系统未注册对应的硬件/软件编码器），
     // 尝试改用 avc1 标签，输出文件名应该以 .mp4 为后缀
     const int fourccCandidates[] = {
@@ -89,7 +96,7 @@ bool BlockImageFactory::generateBlockVideo(VideoImageOStream& stream, const std:
     cv::VideoWriter writer;
     for (const int fourcc : fourccCandidates)
     {
-        writer.open(outFilePath, DEFAULT_VIDEO_BACKEND, fourcc, fps, frameSize);
+        writer.open(tempVideoPath.string(), DEFAULT_VIDEO_BACKEND, fourcc, fps, frameSize);
         if (writer.isOpened())
             break;
     }
@@ -100,7 +107,7 @@ bool BlockImageFactory::generateBlockVideo(VideoImageOStream& stream, const std:
             "BlockImageFactory::generateBlockVideo() "
             "Failed to open the video writer created by file '%s' with all attempted codecs, "
             "please check whether a H264 video encoder is available on this system\n",
-            outFilePath.c_str()
+            outFilePath.string().c_str()
         );
         return false;
     }
@@ -109,7 +116,7 @@ bool BlockImageFactory::generateBlockVideo(VideoImageOStream& stream, const std:
 
     using TaskResult = std::pair<cv::Mat, BlockUsageMap>;
 
-    return runFramePipeline<TaskResult>(
+    const bool pipelineOk = runFramePipeline<TaskResult>(
         stream,
         numThreads,
         TASK_WINDOW_SIZE_FACTOR,
@@ -148,6 +155,17 @@ bool BlockImageFactory::generateBlockVideo(VideoImageOStream& stream, const std:
             return true;
         }
     );
+
+    writer.release();
+
+    if (!pipelineOk)
+    {
+        std::error_code ec;
+        std::filesystem::remove(tempVideoPath, ec);
+        return false;
+    }
+
+    return fs_utils::moveFileReplacing(tempVideoPath, outFilePath);
 }
 
 cv::Mat BlockImageFactory::generateBlockImageHelper(
@@ -194,21 +212,22 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
                 const auto& surface = block->surfaceData.get(desiredSurface_);
                 if (!surface.first.empty())
                 {
-                    const std::string texturePath = createTexturePath(surface.first);
+                    const std::filesystem::path texturePath = createTexturePath(surface.first);
+                    const std::string textureKey = texturePath.string();
 
                     // 如果当前材质还未被加载则将其加载至缓存中
-                    if (texturesCache.find(texturePath) == texturesCache.end())
+                    if (texturesCache.find(textureKey) == texturesCache.end())
                     {
-                        cv::Mat texture = cv::imread(texturePath, cv::IMREAD_UNCHANGED);
+                        cv::Mat texture = imreadUnicode(texturePath);
                         if (!texture.empty())
                             texture = convertColorToBgra(texture);
                         if (texture.empty())
                             texture = cv::Mat(16, 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
-                        texturesCache[texturePath] = texture;
+                        texturesCache[textureKey] = texture;
                     }
 
                     // 直接从缓存中加载方块材质
-                    const cv::Mat texture = texturesCache[texturePath];
+                    const cv::Mat texture = texturesCache[textureKey];
                     // 复制方块材质至像素映射区域
                     texture.copyTo(ret(
                         cv::Range(row * 16, row * 16 + 16),

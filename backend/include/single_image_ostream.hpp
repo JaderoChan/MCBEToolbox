@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string> // std::string
+#include <filesystem> // std::filesystem::path
 
 #include "image_ostream.hpp"
 
@@ -8,8 +8,8 @@
 class SingleImageOStream : public ImageOStream
 {
 public:
-    explicit SingleImageOStream(const std::string& imageFilePath, int maxw = -1, int maxh = -1) noexcept;
-    explicit SingleImageOStream(cv::Mat image,                    int maxw = -1, int maxh = -1) noexcept;
+    explicit SingleImageOStream(const std::filesystem::path& imageFilePath, int maxw = -1, int maxh = -1) noexcept;
+    explicit SingleImageOStream(cv::Mat image,                              int maxw = -1, int maxh = -1) noexcept;
 
     bool      isOpened()   const override { return !image_.empty();                }
     bool      isEnd()      const override { return consumed_ || image_.empty();    }

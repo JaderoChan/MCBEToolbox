@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>  // std::filesystem::path
 #include <map>         // std::map
 #include <stdexcept>   // std::invalid_argument, std::runtime_error
 #include <string>      // std::string
@@ -178,7 +179,7 @@ BlockEntryMap parseBlockEntries(std::string_view json);
  * @throw std::runtime_error
  * @throw std::invalid_argument
  */
-BlockEntryMap parseBlockEntriesFromFile(const std::string& filepath);
+BlockEntryMap parseBlockEntriesFromFile(const std::filesystem::path& filepath);
 
 /** 从 #BlockEntryMap 中解析由基础方块数据组成的 #BlockDataMap。 */
 BlockDataMap resolveBlockEntries(const BlockEntryMap& entries);

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <atomic>  // std::atomic
-#include <string>  // std::string
-#include <utility> // std::pair
-#include <vector>  // std::vector
+#include <atomic>     // std::atomic
+#include <filesystem> // std::filesystem::path
+#include <string>     // std::string
+#include <utility>    // std::pair
+#include <vector>     // std::vector
 
 #include <opencv2/core/mat.hpp> // cv::Mat
 #include <mcnbt/mcnbt.hpp>      // nbt::Tag
@@ -28,7 +29,7 @@ public:
 
     nbt::Tag generateSingleMCStructure(ImageOStream& stream, bool callbackPerFrame);
     std::vector<nbt::Tag> generateDetachMCStructure(ImageOStream& stream, int numThreads = 4);
-    bool generateDetachMCStructure(ImageOStream& stream, const std::string& outDirPath, int numThreads = 4);
+    bool generateDetachMCStructure(ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads = 4);
 
 private:
     nbt::Tag generateSingleMCStructureHelper(

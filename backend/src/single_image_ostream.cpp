@@ -1,9 +1,9 @@
 #include <single_image_ostream.hpp>
 
-#include <opencv2/imgcodecs.hpp> // cv::imread
+#include <image_utilities.hpp>
 
-SingleImageOStream::SingleImageOStream(const std::string& imageFilePath, int maxw, int maxh) noexcept
-    : SingleImageOStream(cv::imread(imageFilePath, cv::IMREAD_UNCHANGED), maxw, maxh)
+SingleImageOStream::SingleImageOStream(const std::filesystem::path& imageFilePath, int maxw, int maxh) noexcept
+    : SingleImageOStream(imreadUnicode(imageFilePath), maxw, maxh)
 {}
 
 SingleImageOStream::SingleImageOStream(cv::Mat image, int maxw, int maxh) noexcept

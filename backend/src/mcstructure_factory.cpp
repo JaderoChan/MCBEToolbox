@@ -3,6 +3,8 @@
 #include <assert.h>      // assert
 #include <limits.h>      // INT_MAX
 #include <stdio.h>       // fprintf
+#include <exception>     // std::exception
+#include <fstream>       // std::ofstream
 #include <string_view>   // std::string_view
 #include <unordered_map> // std::unordered_map
 
@@ -73,7 +75,8 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(ImageOStream
     return ok ? std::move(ret) : std::vector<nbt::Tag>();
 }
 
-bool MCStructureFactory::generateDetachMCStructure(ImageOStream& stream, const std::string& outDirPath, int numThreads)
+bool MCStructureFactory::generateDetachMCStructure(
+    ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads)
 {
     reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
@@ -117,7 +120,30 @@ bool MCStructureFactory::generateDetachMCStructure(ImageOStream& stream, const s
             for (auto& [id, count] : localUsageCount)
                 updateBlockUsageMap(id, count);
 
-            mcstructure.dump(outDirPath + "/" + std::to_string(frameIdx) + ".mcstructure", false);
+            const std::filesystem::path path = outDirPath / (std::to_string(frameIdx) + ".mcstructure");
+            std::ofstream ofs(path, std::ios::binary | std::ios::trunc);
+            if (!ofs)
+            {
+                fprintf(
+                    stderr,
+                    "MCStructureFactory::generateDetachMCStructure() Failed to create the file '%s'\n",
+                    path.string().c_str()
+                );
+                return false;
+            }
+            try
+            {
+                mcstructure.dump(ofs, false);
+            }
+            catch (const std::exception& e)
+            {
+                fprintf(
+                    stderr,
+                    "MCStructureFactory::generateDetachMCStructure() Failed to dump the mcstructure: %s\n",
+                    e.what()
+                );
+                return false;
+            }
             ++frameIdx;
             return true;
         }

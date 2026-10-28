@@ -35,8 +35,6 @@ add_subdirectory("${3RDPARTY_DIR}/easy_translate")
 # 配置 MC NBT 库
 set(MCNBT_USE_BUILTIN_ZLIB OFF)
 add_subdirectory("${3RDPARTY_DIR}/mcnbt")
-# 配置 GIF 库
-add_subdirectory("${3RDPARTY_DIR}/gifdec")
 # 配置 minizip 库
 set(MZ_COMPAT OFF)
 set(MZ_ZLIB ON)

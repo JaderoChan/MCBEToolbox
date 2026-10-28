@@ -64,7 +64,8 @@ MCFunctionFactory::generateDetachMCFunction(ImageOStream& stream, int numThreads
     return ok ? std::move(ret) : std::vector<MCFunction>();
 }
 
-bool MCFunctionFactory::generateDetachMCFunction(ImageOStream& stream, const std::string& outDirPath, int numThreads)
+bool MCFunctionFactory::generateDetachMCFunction(
+    ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads)
 {
     reinitializeState();
     if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
@@ -101,22 +102,23 @@ bool MCFunctionFactory::generateDetachMCFunction(ImageOStream& stream, const std
                 updateBlockUsageMap(id, count);
 
             std::size_t subIdx = 0;
-            char buf[256];
+            char nameBuf[64];
             std::ofstream file;
             for (std::size_t i = 0; i < mcfunction.size(); ++i)
             {
                 if (i % MAX_COMMAND_COUNT_PER_MCFUNCTION == 0)
                 {
                     ++subIdx;
-                    snprintf(buf, sizeof(buf), "%s/%zu-%zu.mcfunction", outDirPath.c_str(), frameIdx, subIdx);
+                    snprintf(nameBuf, sizeof(nameBuf), "%zu-%zu.mcfunction", frameIdx, subIdx);
+                    const std::filesystem::path path = outDirPath / nameBuf;
                     if (file.is_open()) file.close();
-                    file = std::ofstream(buf);
+                    file = std::ofstream(path, std::ios::binary | std::ios::trunc);
                     if (!file.is_open())
                     {
                         fprintf(
                             stderr,
                             "MCFunctionFactory::generateDetachMCFunction() Failed to open the out file '%s'\n",
-                            buf
+                            path.string().c_str()
                         );
                         return false;
                     }

@@ -1,7 +1,15 @@
 #include <video_image_ostream.hpp>
 
-VideoImageOStream::VideoImageOStream(const std::string& videoFilePath, long long maxn, int maxw, int maxh) noexcept
-    : VideoImageOStream(cv::VideoCapture(videoFilePath, DEFAULT_VIDEO_BACKEND), maxn, maxw, maxh)
+VideoImageOStream::VideoImageOStream(
+    const std::filesystem::path& videoFilePath, long long maxn, int maxw, int maxh) noexcept
+    : ImageOStream(maxw, maxh)
+    , maxn_(maxn)
+#ifdef _WIN32
+    , pathAlias_(std::make_unique<fs_utils::AsciiSafeAlias>(videoFilePath))
+    , capture_(pathAlias_->path().string(), DEFAULT_VIDEO_BACKEND)
+#else
+    , capture_(videoFilePath.string(), DEFAULT_VIDEO_BACKEND)
+#endif
 {}
 
 VideoImageOStream::VideoImageOStream(cv::VideoCapture capture, long long maxn, int maxw, int maxh) noexcept

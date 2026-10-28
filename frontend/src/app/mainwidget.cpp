@@ -3,9 +3,12 @@
 #include <qlayout.h>
 #include <qstackedwidget.h>
 
+#include <block.hpp>
 #include <config.h>
 #include <components/sidebar_widget.h>
 #include <nbt_editor/nbt_editor_widget.h>
+#include <utils/directory_scope.h>
+#include "block_list_filter_widget.h"
 
 MainWidget::MainWidget(QWidget* parent)
     : MyWidget(parent)
@@ -25,9 +28,13 @@ MainWidget::MainWidget(QWidget* parent)
     sidebarWidget_->setCurrentIndex(0);
 
     // Stacked widget
+    DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
+    static const BlockEntryMap& entries = parseBlockEntriesFromFile(APP_BLOCK_ENTRIES_FILEPATH);
+    auto* wgt = new BlockListFilterWidget(entries, this);
+
     stackedWidget_ = new QStackedWidget(this);
     stackedWidget_->setContentsMargins(0, 0, 0, 0);
-    stackedWidget_->addWidget(new QWidget(this)); // TODO
+    stackedWidget_->addWidget(wgt); // TODO
     stackedWidget_->addWidget(new QWidget(this)); // TODO
     stackedWidget_->addWidget(new NbtEditorWidget(this));
     stackedWidget_->addWidget(new QWidget(this)); // TODO

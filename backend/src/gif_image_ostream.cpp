@@ -1,27 +1,40 @@
 #include <gif_image_ostream.hpp>
 
-#include <gifdec.h>
+#include <fstream> // std::ifstream
+#include <vector>  // std::vector
 
-#include <image_utilities.hpp>
+#include <opencv2/imgproc.hpp> // cv::cvtColor
 
-GifImageOStream::GifImageOStream(const std::string& gifFilePath, long long maxn, int maxw, int maxh) noexcept
-    : ImageOStream(maxw, maxh), maxn_(maxn), gif_(gd_open_gif(gifFilePath.c_str()))
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+GifImageOStream::GifImageOStream(const std::filesystem::path& gifFilePath, long long maxn, int maxw, int maxh) noexcept
+    : ImageOStream(maxw, maxh), maxn_(maxn)
 {
-    if (!gif_)
+    std::ifstream file(gifFilePath, std::ios::binary | std::ios::ate);
+    if (!file)
         return;
 
-    // 预扫描 GIF 文件以获取总帧数，随后 rewind 回动画起始位置
-    long long count = 0;
-    while (gd_get_frame(gif_) == 1)
-        ++count;
-    gd_rewind(gif_);
-    totalFrameCount_ = count;
+    const std::streamsize size = file.tellg();
+    if (size <= 0)
+        return;
+    file.seekg(0, std::ios::beg);
+
+    std::vector<unsigned char> buf(static_cast<std::size_t>(size));
+    if (!file.read(reinterpret_cast<char*>(buf.data()), size))
+        return;
+
+    int frameCount = 0;
+    pixels_ = stbi_load_gif_from_memory(
+        buf.data(), static_cast<int>(buf.size()), &delays_, &width_, &height_, &frameCount, nullptr, 4);
+    if (pixels_)
+        totalFrameCount_ = frameCount;
 }
 
 GifImageOStream::~GifImageOStream()
 {
-    if (gif_)
-        gd_close_gif(gif_);
+    if (pixels_) stbi_image_free(pixels_);
+    if (delays_) stbi_image_free(delays_);
 }
 
 long long GifImageOStream::frameCount() const
@@ -40,16 +53,14 @@ long long GifImageOStream::frameIndex() const
 
 int GifImageOStream::delay() const
 {
-    if (!isOpened())
+    if (!isOpened() || frameIdx_ < 0)
         return static_cast<int>(INVALID_VALUE);
-    return gif_->gce.delay;
+    return delays_[frameIdx_];
 }
 
 int GifImageOStream::loopCount() const
 {
-    if (!isOpened())
-        return static_cast<int>(INVALID_VALUE);
-    return gif_->loop_count;
+    return static_cast<int>(INVALID_VALUE);
 }
 
 cv::Mat GifImageOStream::readNextFrame()
@@ -63,44 +74,26 @@ cv::Mat GifImageOStream::readNextFrame()
         return cv::Mat();
     }
 
-    if (gd_get_frame(gif_) != 1)
+    const long long nextIdx = frameIdx_ + 1;
+    if (nextIdx >= totalFrameCount_)
     {
         isEnd_ = true;
         return cv::Mat();
     }
 
-    const int w = gif_->width;
-    const int h = gif_->height;
+    const std::size_t frameBytes = static_cast<std::size_t>(width_) * static_cast<std::size_t>(height_) * 4;
+    const cv::Mat rgba(height_, width_, CV_8UC4, pixels_ + static_cast<std::size_t>(nextIdx) * frameBytes);
 
-    cv::Mat image(h, w, CV_8UC3);
-    gd_render_frame(gif_, image.data);
-    image = convertColorToBgra(image);
-    if (image.empty())
-        return cv::Mat();
+    cv::Mat bgra;
+    cv::cvtColor(rgba, bgra, cv::COLOR_RGBA2BGRA);
 
-    // 处理透明像素
-    if (gif_->gce.transparency)
-    {
-        for (int y = 0; y < gif_->fh; ++y)
-        {
-            const int gy = gif_->fy + y;
-            const uint8_t* indexRow = gif_->frame + static_cast<size_t>(gy) * w + gif_->fx;
-            cv::Vec4b* pixelRow = image.ptr<cv::Vec4b>(gy) + gif_->fx;
-            for (int x = 0; x < gif_->fw; ++x)
-            {
-                if (indexRow[x] == gif_->gce.tindex)
-                    pixelRow[x][3] = 0;
-            }
-        }
-    }
-
-    ++frameIdx_;
-    return image;
+    frameIdx_ = nextIdx;
+    return bgra;
 }
 
 cv::Size GifImageOStream::readFrameSize() const
 {
     if (!isOpened())
         return cv::Size();
-    return cv::Size(gif_->width, gif_->height);
+    return cv::Size(width_, height_);
 }

@@ -55,24 +55,23 @@ bool BaseFactory::invokeProgressCallback(std::size_t current, std::size_t total)
     return invokeProgressCallback(callback_, current, total, userdata_);
 }
 
-bool BaseFactory::ensureDirectoryExists(const std::string& dirPath, const char* logPrefix)
+bool BaseFactory::ensureDirectoryExists(const std::filesystem::path& dirPath, const char* logPrefix)
 {
-    const std::filesystem::path path(dirPath);
-    if (std::filesystem::exists(path))
+    if (std::filesystem::exists(dirPath))
     {
-        if (!std::filesystem::is_directory(path))
+        if (!std::filesystem::is_directory(dirPath))
         {
-            fprintf(stderr, "%s Target path '%s' is not a directory\n", logPrefix, dirPath.c_str());
+            fprintf(stderr, "%s Target path '%s' is not a directory\n", logPrefix, dirPath.string().c_str());
             return false;
         }
         return true;
     }
 
     std::error_code ec;
-    std::filesystem::create_directories(path, ec);
+    std::filesystem::create_directories(dirPath, ec);
     if (ec)
     {
-        fprintf(stderr, "%s Failed to create the directory '%s'\n", logPrefix, dirPath.c_str());
+        fprintf(stderr, "%s Failed to create the directory '%s'\n", logPrefix, dirPath.string().c_str());
         return false;
     }
     return true;

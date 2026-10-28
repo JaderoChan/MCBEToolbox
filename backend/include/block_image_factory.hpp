@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>        // std::string
-#include <string_view>   // std::string_view
 #include <unordered_map> // std::unordered_map
 
 #include <opencv2/core/mat.hpp> // cv::Mat
@@ -21,18 +20,18 @@ public:
     static constexpr int VIDEO_FRAME_MAX_HEIGHT = 2048 / 16;
 
     BlockImageFactory(
-        const BlockDataMap& blocks,
-        SurfaceDirection    desiredSurface,
-        std::string_view    texturesDirPath = DEFAULT_TEXTURES_DIR_PATH);
+        const BlockDataMap&          blocks,
+        SurfaceDirection             desiredSurface,
+        const std::filesystem::path& texturesDirPath = DEFAULT_TEXTURES_DIR_PATH);
 
-    void setTexturesDirPath(std::string_view texturesDirPath) { texturesDirPath_ = texturesDirPath; }
-    std::string getTexturesDirPath() const                    { return texturesDirPath_;            }
+    void setTexturesDirPath(const std::filesystem::path& texturesDirPath) { texturesDirPath_ = texturesDirPath; }
+    std::filesystem::path getTexturesDirPath() const                      { return texturesDirPath_;            }
 
     cv::Mat generateBlockImage(SingleImageOStream& stream);
-    bool generateBlockVideo(VideoImageOStream& stream, const std::string& outFilePath, int numThreads = 4);
+    bool generateBlockVideo(VideoImageOStream& stream, const std::filesystem::path& outFilePath, int numThreads = 4);
 
 private:
-    std::string createTexturePath(const std::string& path) { return texturesDirPath_ + "/" + path; }
+    std::filesystem::path createTexturePath(const std::string& path);
 
     cv::Mat generateBlockImageHelper(
         ImageOStream&    stream,
@@ -42,6 +41,6 @@ private:
         BlockTextureMap& texturesCache,
         bool             callbackPerFrame);
 
-    std::string     texturesDirPath_;
-    BlockTextureMap texturesCache_;
+    std::filesystem::path texturesDirPath_;
+    BlockTextureMap       texturesCache_;
 };

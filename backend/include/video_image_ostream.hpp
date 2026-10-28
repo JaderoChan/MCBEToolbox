@@ -1,9 +1,11 @@
 #pragma once
 
-#include <string> // std::string
+#include <filesystem> // std::filesystem::path
+#include <memory>     // std::unique_ptr
 
 #include <opencv2/videoio.hpp> // cv::VideoCapture
 
+#include "fs_utils.hpp"
 #include "image_ostream.hpp"
 
 #ifdef _WIN32
@@ -19,7 +21,7 @@ class VideoImageOStream : public ImageOStream
 {
 public:
     explicit VideoImageOStream(
-        const std::string& videoFilePath,
+        const std::filesystem::path& videoFilePath,
         long long maxn = -1, int maxw = -1, int maxh = -1) noexcept;
     explicit VideoImageOStream(
         cv::VideoCapture capture,
@@ -43,5 +45,9 @@ private:
     bool      isEnd_    = false;
     long long maxn_     = INVALID_VALUE;
     long long frameIdx_ = INVALID_VALUE;
+
+#ifdef _WIN32
+    std::unique_ptr<fs_utils::AsciiSafeAlias> pathAlias_;
+#endif
     cv::VideoCapture capture_;
 };
