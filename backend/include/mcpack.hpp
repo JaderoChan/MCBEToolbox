@@ -13,7 +13,7 @@ public:
         std::string_view filePath,
         std::string_view name,
         std::string_view description,
-        std::string_view _namespace,
+        std::string_view nameSpace,
         const Version&   version = Version(1, 0, 0));
     ~MCPack();
 
@@ -28,7 +28,7 @@ public:
     std::string getFilePath()      const { return filePath_;      }
     std::string getName()          const { return name_;          }
     std::string getDescription()   const { return description_;   }
-    std::string getNamespace()     const { return namespace_;     }
+    std::string getNameSpace()     const { return nameSpace_;     }
     Version     getVersion()       const { return version_;       }
     Version     getMinVersion()    const { return minVersion_;    }
 
@@ -68,7 +68,7 @@ private:
     std::string filePath_;
     std::string name_;
     std::string description_;
-    std::string namespace_;
+    std::string nameSpace_;
     Version     version_;
     Version     minVersion_ = Version(1, 21, 50);
 

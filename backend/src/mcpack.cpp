@@ -54,10 +54,10 @@ MCPack::MCPack(
     std::string_view filePath,
     std::string_view name,
     std::string_view description,
-    std::string_view _namespace,
+    std::string_view nameSpace,
     const Version&   version)
     : filePath_(filePath), name_(name), description_(description)
-    , namespace_(_namespace), version_(version)
+    , nameSpace_(nameSpace), version_(version)
 {
     if (filePath_.empty())
     {
@@ -69,8 +69,8 @@ MCPack::MCPack(
     if (!isOk_)
         return;
 
-    if (!ensureDirectoryExists(std::filesystem::path(tempPath_) / "functions"  / namespace_) ||
-        !ensureDirectoryExists(std::filesystem::path(tempPath_) / "structures" / namespace_))
+    if (!ensureDirectoryExists(std::filesystem::path(tempPath_) / "functions"  / nameSpace_) ||
+        !ensureDirectoryExists(std::filesystem::path(tempPath_) / "structures" / nameSpace_))
     {
         fprintf(stderr, "MCPack::MCPack() Failed to create the functions/structures directory\n");
         isOk_ = false;
@@ -96,12 +96,12 @@ MCPack::~MCPack()
 
 std::string MCPack::getFunctionsPath() const
 {
-    return (std::filesystem::path(tempPath_) / "functions" / namespace_).string();
+    return (std::filesystem::path(tempPath_) / "functions" / nameSpace_).string();
 }
 
 std::string MCPack::getStructuresPath() const
 {
-    return (std::filesystem::path(tempPath_) / "structures" / namespace_).string();
+    return (std::filesystem::path(tempPath_) / "structures" / nameSpace_).string();
 }
 
 bool MCPack::addFunction(std::string_view relativePath, const std::vector<std::string>& mcfunction) const
@@ -160,7 +160,7 @@ bool MCPack::addTickFunction(std::string_view relativePath) const
     if (!values.is_array())
         values = nlohmann::json::array();
 
-    const std::string entry = namespace_ + "/" + std::string(relativePath);
+    const std::string entry = nameSpace_ + "/" + std::string(relativePath);
     for (const auto& value : values)
     {
         if (value.is_string() && value.get<std::string>() == entry)
@@ -224,14 +224,14 @@ bool MCPack::pack() const
     iconFile.close();
 
     const std::filesystem::path functionsRootPath       = std::filesystem::path(tempPath_) / "functions";
-    const std::filesystem::path functionsNamespacePath  = functionsRootPath / namespace_;
+    const std::filesystem::path functionsNameSpacePath  = functionsRootPath  / nameSpace_;
     const std::filesystem::path structuresRootPath      = std::filesystem::path(tempPath_) / "structures";
-    const std::filesystem::path structuresNamespacePath = structuresRootPath / namespace_;
+    const std::filesystem::path structuresNameSpacePath = structuresRootPath / nameSpace_;
 
     std::error_code ec;
-    if (isDirectoryEmptyOfFiles(functionsNamespacePath))
+    if (isDirectoryEmptyOfFiles(functionsNameSpacePath))
         std::filesystem::remove_all(functionsRootPath, ec);
-    if (isDirectoryEmptyOfFiles(structuresNamespacePath))
+    if (isDirectoryEmptyOfFiles(structuresNameSpacePath))
         std::filesystem::remove_all(structuresRootPath, ec);
 
     const std::filesystem::path zipPath = filePath_;
