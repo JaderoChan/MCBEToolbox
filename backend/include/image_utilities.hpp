@@ -1,7 +1,26 @@
 #pragma once
 
-#include <opencv2/core/mat.hpp> // cv::Mat
-#include <opencv2/imgproc.hpp>  // cv::cvtColor, cv::resize
+#include <filesystem> // std::filesystem::path
+#include <vector>     // std::vector
+
+#include <opencv2/core/mat.hpp>  // cv::Mat
+#include <opencv2/imgcodecs.hpp> // cv::IMREAD_UNCHANGED
+#include <opencv2/imgproc.hpp>   // cv::cvtColor, cv::resize
+
+/**
+ * 以 Unicode 安全的方式读取图像文件。
+ *
+ * @return 读取或解码失败时返回空图像。
+ */
+cv::Mat imreadUnicode(const std::filesystem::path& path, int flags = cv::IMREAD_UNCHANGED);
+
+/**
+ * 以 Unicode 安全的方式将写入图像。
+ *
+ * @return 是否成功。
+ */
+bool imwriteUnicode(
+    const std::filesystem::path& path, const cv::Mat& image, const std::vector<int>& params = std::vector<int>());
 
 /**
  * 将 GRAY 或 BGR 格式的图像转换为 BGRA 格式。

@@ -2,6 +2,54 @@
 
 #include <stdio.h>   // fprintf
 #include <algorithm> // std::min
+#include <fstream>   // std::fstream
+
+cv::Mat imreadUnicode(const std::filesystem::path& path, int flags)
+{
+    std::ifstream file(path, std::ios::binary | std::ios::ate);
+    if (!file)
+    {
+        fprintf(stderr, "imreadUnicode() Failed to open the file '%s'\n", path.string().c_str());
+        return cv::Mat();
+    }
+
+    const std::streamsize size = file.tellg();
+    if (size <= 0)
+        return cv::Mat();
+    file.seekg(0, std::ios::beg);
+
+    std::vector<unsigned char> buf(static_cast<std::size_t>(size));
+    if (!file.read(reinterpret_cast<char*>(buf.data()), size))
+    {
+        fprintf(stderr, "imreadUnicode() Failed to read the file '%s'\n", path.string().c_str());
+        return cv::Mat();
+    }
+
+    return cv::imdecode(buf, flags);
+}
+
+bool imwriteUnicode(const std::filesystem::path& path, const cv::Mat& image, const std::vector<int>& params)
+{
+    if (image.empty())
+        return false;
+
+    std::vector<unsigned char> buf;
+    if (!cv::imencode(path.extension().string(), image, buf, params))
+    {
+        fprintf(stderr, "imwriteUnicode() Failed to encode the image for '%s'\n", path.string().c_str());
+        return false;
+    }
+
+    std::ofstream file(path, std::ios::binary | std::ios::trunc);
+    if (!file)
+    {
+        fprintf(stderr, "imwriteUnicode() Failed to create the file '%s'\n", path.string().c_str());
+        return false;
+    }
+
+    file.write(reinterpret_cast<const char*>(buf.data()), static_cast<std::streamsize>(buf.size()));
+    return file.good();
+}
 
 cv::Mat convertColorToBgra(const cv::Mat& image)
 {
