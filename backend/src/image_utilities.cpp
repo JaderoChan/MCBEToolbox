@@ -54,6 +54,9 @@ bool imwriteUnicode(const std::filesystem::path& path, const cv::Mat& image, con
 cv::Mat convertColorToBgra(const cv::Mat& image)
 {
     cv::Mat ret;
+    if (image.empty())
+        return ret;
+
     switch (image.type())
     {
         case CV_8UC1: cv::cvtColor(image, ret, cv::COLOR_GRAY2BGRA); return ret;
