@@ -23,8 +23,8 @@ QString getBlockAttributeFilterModeText(BlockAttributeFilterMode filterMode)
 {
     switch (filterMode)
     {
-        case BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL: return EASYTR("Contains All Checked Attributes");
         case BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY: return EASYTR("Contains Any Checked Attribute");
+        case BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL: return EASYTR("Contains All Checked Attributes");
         default:                                   return EASYTR("Unknown Filter Mode");
     }
 }

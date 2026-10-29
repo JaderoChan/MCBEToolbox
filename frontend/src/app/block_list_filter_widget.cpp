@@ -72,7 +72,7 @@ BlockListFilterWidget::BlockListFilterWidget(const BlockEntryMap& entries, QWidg
     // 方块属性筛选模式。
     filterModeLabel_ = new QLabel(filterPanel_);
     filterModeCombo_ = new QComboBox(filterPanel_);
-    for (const auto mode : {BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL, BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY})
+    for (const auto mode : {BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY, BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL})
         filterModeCombo_->addItem(QString(), static_cast<int>(mode));
 
     // 筛选操作。
