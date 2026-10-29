@@ -8,13 +8,13 @@ static inline int hexCharToInt(char c)
     if (c >= '0' && c <= '9') return c - '0';
     if (c >= 'A' && c <= 'F') return c - 'A' + 10;
     if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    throw std::invalid_argument("Rgb::fromHex(): invalid hex character '" + std::string(1, c) + "'");
+    throw std::invalid_argument("Rgb::fromHex() invalid hex character '" + std::string(1, c) + "'");
 }
 
 Rgb Rgb::fromHex(std::string_view hex)
 {
     if (hex.empty())
-        throw std::invalid_argument("Rgb::fromHex(): empty hex color string");
+        throw std::invalid_argument("Rgb::fromHex() empty hex color string");
 
     if (hex[0] == '#')
         hex = hex.substr(1);
@@ -34,7 +34,7 @@ Rgb Rgb::fromHex(std::string_view hex)
     }
     else
     {
-        throw std::invalid_argument("Rgb::fromHex(): invalid hex color string '" + std::string(hex) + "'");
+        throw std::invalid_argument("Rgb::fromHex() invalid hex color string '" + std::string(hex) + "'");
     }
 
     return Rgb(
@@ -50,7 +50,7 @@ static inline char intToHexChar(int i, bool uppercase)
 
     if (i >= 0  && i <= 9)  return i + '0';
     if (i >= 10 && i <= 15) return (uppercase ? (i - 10 + 'A') : (i - 10 + 'a'));
-    throw std::invalid_argument("Rgb::toHex(): invalid integer for hex character");
+    throw std::invalid_argument("Rgb::toHex() invalid integer for hex character");
 }
 
 std::string Rgb::toHex(const Rgb& rgb, bool uppercase, bool prefixed) const

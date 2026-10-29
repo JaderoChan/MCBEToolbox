@@ -19,7 +19,7 @@ throw std::runtime_error(                                                       
     "' but got '" + got_type + "' type in object '" + obj_name + "'"                                \
 )
 
-// 检查指定对象中是否存在符合预期类型的键
+// 检查指定对象中是否存在符合预期类型的键。
 #define CHECK_KEY(obj, obj_name, key, expected_type)                                                \
 do {                                                                                                \
     if (!obj.contains(key))                                                                         \
@@ -28,7 +28,7 @@ do {                                                                            
         THROW_KEY_UNCORRECT_TYPE_ERROR(obj_name, key, obj[key].type_name(), expected_type);         \
 } while (0)
 
-// 从给定 json 对象的字段中读取颜色值
+// 从给定 json 对象的字段中读取颜色值。
 inline Rgb readRgb(const nlohmann::json& obj, const char* field)
 {
     assert(!obj.is_discarded() && obj.is_object());
@@ -38,7 +38,7 @@ inline Rgb readRgb(const nlohmann::json& obj, const char* field)
     return Rgb::fromHex(s);
 }
 
-// 从给定 json 对象的字段中读取版本号
+// 从给定 json 对象的字段中读取版本号。
 inline Version readVersion(const nlohmann::json& obj, const char* field)
 {
     assert(!obj.is_discarded() && obj.is_object());
@@ -53,7 +53,7 @@ void parseBlockAttributes(const nlohmann::json& obj, BlockAttributes& attributes
 {
     assert(!obj.is_discarded() && obj.is_object());
 
-// 尝试读取新的属性值并覆盖原有值
+// 尝试读取新的属性值并覆盖原有值。
 #define TRY_OVERRIDE_ATTRIBUTE(attribute_name, attribute_value)                 \
 do {                                                                            \
     if (obj.contains(attribute_name) && obj[attribute_name].is_boolean())       \
@@ -153,7 +153,7 @@ void parseBlockSurfaceData(const nlohmann::json& obj, const char* objName, Block
 }
 
 // 解析方块数据
-// 如果 force 为真，则要求对象必须包含 id 和所有面数据
+// 如果 force 为真，则要求对象必须包含 id 和所有面数据。
 void parseBlockData(const nlohmann::json& obj, const char* objName, BlockData& block, bool force)
 {
     assert(!obj.is_discarded() && obj.is_object());
@@ -203,7 +203,7 @@ void parseBlockEntriesHelper(std::string_view json, BlockEntryMap& entries)
         }
         else
         {
-            // 默认最低版本：1.20.50.7（苍园觉醒版本）
+            // 默认最低版本：1.20.50.7（苍园觉醒版本）。
             constexpr Version defaultVersion(1, 21, 50, 7);
             entry.minVersion = defaultVersion;
         }
@@ -220,18 +220,18 @@ void parseBlockEntriesHelper(std::string_view json, BlockEntryMap& entries)
             }
         }
 
-        // 解析 base 方块数据
+        // 解析 base 方块数据。
         CHECK_KEY(entryObj, id, "base", object);
         const auto& baseBlockObj = entryObj["base"];
         parseBlockData(baseBlockObj, "base", entry.baseBlock, true);
 
-        // 解析不同版本的方块数据
+        // 解析不同版本的方块数据。
         if (entryObj.contains(("versioned")))
         {
             CHECK_KEY(entryObj, id, "versioned", object);
             const auto& versionedObj = entryObj["versioned"];
 
-            // 按照版本号进行排序，用于实现 “新版本数据继承上一版本数据” 的功能
+            // 按照版本号进行排序，用于实现 “新版本数据继承上一版本数据” 的功能。
             std::map<Version, const nlohmann::json*> sortedObjs;
             for (const auto& [versionStr, blockObj] : versionedObj.items())
             {
@@ -241,7 +241,7 @@ void parseBlockEntriesHelper(std::string_view json, BlockEntryMap& entries)
                 sortedObjs[version] = &blockObj;
             }
 
-            // 实际解析行为
+            // 实际解析行为。
             BlockData lastestBlock = entry.baseBlock;
             for (const auto& [version, blockObj] : sortedObjs)
             {
@@ -273,7 +273,7 @@ BlockEntryMap parseBlockEntries(std::string_view json)
     catch (std::exception& e)
     {
         throw std::runtime_error(
-            std::string("parseBlockEntries(): invalid json for parse 'Block Entry Map': ") + e.what()
+            std::string("parseBlockEntries() invalid json for parse 'Block Entry Map': ") + e.what()
         );
     }
     return ret;
@@ -283,7 +283,7 @@ BlockEntryMap parseBlockEntriesFromFile(const std::filesystem::path& filepath)
 {
     std::ifstream file(filepath);
     if (!file.is_open())
-        throw std::runtime_error("parseBlockEntriesFromFile(): can't open the file '" + filepath.string() + "'");
+        throw std::runtime_error("parseBlockEntriesFromFile() can't open the file '" + filepath.string() + "'");
 
     std::string json(
         (std::istreambuf_iterator<char>(file)),

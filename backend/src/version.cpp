@@ -7,10 +7,10 @@
 Version Version::fromString(std::string_view str)
 {
     if (str.empty())
-        throw std::invalid_argument("Version::fromString(): empty version string");
+        throw std::invalid_argument("Version::fromString() empty version string");
 
 #define THROW_INVALID_VERSION_STRING \
-throw std::invalid_argument("Version::fromString(): invalid version string '" + std::string(str) + "'")
+throw std::invalid_argument("Version::fromString() invalid version string '" + std::string(str) + "'")
 
     int  values[4] = {0};   // 各个字段的值
     int  pos       = 0;     // 当前正在解析的字段下标（0~3）

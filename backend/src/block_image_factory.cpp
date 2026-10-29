@@ -47,7 +47,7 @@ bool BlockImageFactory::generateBlockVideo(
         return false;
     }
 
-    // 确保输出路径的父目录存在
+    // 确保输出路径的父目录存在。
     const std::filesystem::path outParentPath =
         outFilePath.has_parent_path() ? outFilePath.parent_path() : std::filesystem::current_path();
     if (!ensureDirectoryExists(outParentPath, "BlockImageFactory::generateBlockVideo()"))
@@ -87,7 +87,7 @@ bool BlockImageFactory::generateBlockVideo(
     const fs_utils::ScopedPathRemover tempVideoRemover(tempVideoPath);
 
     // 优先使用 H264 编码，若打不开（例如系统未注册对应的硬件/软件编码器），
-    // 尝试改用 avc1 标签，输出文件名应该以 .mp4 为后缀
+    // 尝试改用 avc1 标签，输出文件名应该以 .mp4 为后缀。
     const int fourccCandidates[] = {
         cv::VideoWriter::fourcc('H', '2', '6', '4'),
         cv::VideoWriter::fourcc('a', 'v', 'c', '1'),
@@ -194,7 +194,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
     std::size_t current = 0;
     const std::size_t total = static_cast<std::size_t>(image.rows) * static_cast<std::size_t>(image.cols);
 
-    // 假定所有材质图片尺寸为 16*16，所以每个像素对应 16*16 的方块材质区域
+    // 假定所有材质图片尺寸为 16*16，所以每个像素对应 16*16 的方块材质区域。
     cv::Mat ret(image.rows * 16, image.cols * 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
     for (int row = 0; row < image.rows; ++row)
     {
@@ -211,7 +211,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
                     const std::filesystem::path texturePath = createTexturePath(surface.first);
                     const std::string textureKey = texturePath.string();
 
-                    // 如果当前材质还未被加载则将其加载至缓存中
+                    // 如果当前材质还未被加载则将其加载至缓存中。
                     if (texturesCache.find(textureKey) == texturesCache.end())
                     {
                         cv::Mat texture = imreadUnicode(texturePath);
@@ -222,9 +222,9 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
                         texturesCache[textureKey] = texture;
                     }
 
-                    // 直接从缓存中加载方块材质
+                    // 直接从缓存中加载方块材质。
                     const cv::Mat texture = texturesCache[textureKey];
-                    // 复制方块材质至像素映射区域
+                    // 复制方块材质至像素映射区域。
                     texture.copyTo(ret(
                         cv::Range(row * 16, row * 16 + 16),
                         cv::Range(col * 16, col * 16 + 16)

@@ -20,28 +20,31 @@ namespace
 std::filesystem::path tryCreateHiddenTempDirIn(
     const std::filesystem::path& parent, const std::filesystem::path& anchorPath)
 {
+    std::filesystem::path hiddenName(".");
+    hiddenName += anchorPath.filename();
+    hiddenName += ".tmp";
+    const std::filesystem::path tempPath = parent / hiddenName;
+
     std::error_code ec;
-    for (int attempt = 0; attempt < 8; ++attempt)
+    if (std::filesystem::exists(tempPath, ec))
     {
-        std::filesystem::path hiddenName(".");
-        hiddenName += anchorPath.stem();
-        hiddenName += ("_" + generateUuid4() + ".tmp");
-        const std::filesystem::path tempPath = parent / hiddenName;
-
-        if (std::filesystem::exists(tempPath, ec))
-            continue;
-
-        // 隐藏文件夹。
-        if (std::filesystem::create_directories(tempPath, ec) && !ec)
-        {
-        #ifdef _WIN32
-            SetFileAttributesW(tempPath.wstring().c_str(), FILE_ATTRIBUTE_HIDDEN);
-        #elif defined(__APPLE__)
-            chflags(tempPath.c_str(), UF_HIDDEN);
-        #endif
-            return tempPath;
-        }
+        fprintf(
+            stderr,
+            "fs_utils::tryCreateHiddenTempDirIn() Target path '%s' has filesystem entity exists\n",
+            tempPath.string().c_str()
+        );
         return std::filesystem::path();
+    }
+
+    // 隐藏文件夹
+    if (std::filesystem::create_directories(tempPath, ec) && !ec)
+    {
+    #ifdef _WIN32
+        SetFileAttributesW(tempPath.wstring().c_str(), FILE_ATTRIBUTE_HIDDEN);
+    #elif defined(__APPLE__)
+        chflags(tempPath.c_str(), UF_HIDDEN);
+    #endif
+        return tempPath;
     }
     return std::filesystem::path();
 }
@@ -92,16 +95,9 @@ bool ensureDirectoryExists(const std::filesystem::path& dirPath)
 
 std::filesystem::path createUniqueHiddenTempDir(const std::filesystem::path& anchorPath)
 {
-#ifdef _WIN32
-    std::error_code ec;
-    const std::filesystem::path absAnchor = std::filesystem::absolute(anchorPath, ec);
-    const std::filesystem::path tempPath =
-        ec ? std::filesystem::path() : tryCreateHiddenTempDirIn(absAnchor.root_path(), anchorPath);
-#else
     const std::filesystem::path parent =
         anchorPath.has_parent_path() ? anchorPath.parent_path() : std::filesystem::current_path();
     const std::filesystem::path tempPath = tryCreateHiddenTempDirIn(parent, anchorPath);
-#endif
 
     if (!tempPath.empty())
         return tempPath;
@@ -146,13 +142,11 @@ bool moveFileReplacing(const std::filesystem::path& src, const std::filesystem::
 
     std::filesystem::remove_all(dst, ec);
 
-    ec.clear();
     std::filesystem::rename(src, dst, ec);
     if (!ec)
         return true;
 
     // 如果重命名失败，回退为复制 + 删除源文件。
-    ec.clear();
     if (std::filesystem::copy_file(src, dst, std::filesystem::copy_options::overwrite_existing, ec))
     {
         std::filesystem::remove(src, ec);
@@ -175,17 +169,25 @@ AsciiSafeAlias::AsciiSafeAlias(const std::filesystem::path& originalPath) : orig
     if (!std::filesystem::exists(originalPath_, ec))
         return;
 
-    const std::filesystem::path absOriginal = std::filesystem::absolute(originalPath_, ec);
+    const std::filesystem::path& absOriginal = std::filesystem::absolute(originalPath_, ec);
     if (ec)
         return;
 
-    ec.clear();
-    const std::filesystem::path temp      = std::filesystem::temp_directory_path(ec);
-    const std::filesystem::path candidate =
-        temp / originalPath_.stem() / (generateUuid4() + originalPath_.extension().string());
+    const std::filesystem::path& tempPath  = std::filesystem::temp_directory_path(ec);
+    if (ec)
+        return;
+    const std::filesystem::path& candidate =
+        tempPath / originalPath_.stem() / (generateUuid4() + originalPath_.extension().string());
 
-    ec.clear();
-    std::filesystem::create_symlink(absOriginal, candidate, ec);
+    if (std::filesystem::exists(candidate, ec));
+        std::filesystem::remove_all(candidate, ec);
+
+    if (std::filesystem::is_regular_file(absOriginal, ec))
+        std::filesystem::create_symlink(absOriginal, candidate, ec);
+    else if (std::filesystem::is_directory(absOriginal, ec))
+        std::filesystem::create_directory_symlink(absOriginal, candidate, ec);
+    else
+        return;
     if (!ec)
     {
         aliasPath_ = candidate;

@@ -89,7 +89,7 @@ void BaseFactory::reinitializeState()
 
 BlockDataPair BaseFactory::retrieveAppropriateBlock(const cv::Vec4b& color)
 {
-    // Alpha 通道值低于 128 的像素视为透明像素
+    // Alpha 通道值低于 128 的像素视为透明像素。
     if (color[3] < 128)
     {
         if (fallbackBlock_)
@@ -139,7 +139,7 @@ std::array<int, 3> BaseFactory::computePosition(int x, int y, int z, int xs, int
             ret[2] = x;
             break;
         default:
-            throw std::invalid_argument("BaseFactory::computePosition(): invalid surface direction");
+            throw std::invalid_argument("BaseFactory::computePosition() Invalid surface direction");
     }
     return ret;
 }

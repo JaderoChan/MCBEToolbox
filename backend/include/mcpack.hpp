@@ -1,10 +1,12 @@
 #pragma once
 
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "fs_utils.hpp"
 #include "version.hpp"
 
 class MCPack
@@ -63,8 +65,9 @@ public:
     bool pack() const;
 
 private:
-    std::string generateTempPath();
-    void        removeTempPath() const;
+    void generateTempPath();
+    void removeTempPath() const;
+    const std::filesystem::path& tempPath() const;
 
     int                   formatVersion_ = 2;
     std::filesystem::path filePath_;
@@ -75,9 +78,13 @@ private:
     Version               minVersion_ = Version(1, 21, 50);
 
     // 临时工作目录。
-    std::string tempPath_;
+    std::filesystem::path tempPath_;
+#ifdef _WIN32
+    // 临时工作目录别名。
+    std::unique_ptr<fs_utils::AsciiSafeAlias> tempPathAlias_;
+#endif // _WIN32
     // 临时工作目录下实际存放 mcpack 内容（functions/structures/manifest.json/pack_icon.png）的子目录，
     // 与压缩产物（直接位于 #tempPath_ 下）相互隔离。
-    std::string contentPath_;
+    std::filesystem::path contentPath_;
     bool        isOk_ = false;
 };

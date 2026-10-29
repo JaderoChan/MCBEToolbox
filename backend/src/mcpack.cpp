@@ -1,7 +1,6 @@
 #include "mcpack.hpp"
 
 #include <stdio.h>      // fprintf
-#include <filesystem>   // std::filesystem
 #include <fstream>      // std::ifstream, std::ofstream
 #include <system_error> // std::error_code
 
@@ -11,7 +10,6 @@
 #include <mz_zip_rw.h>       // mz_zip_writer_*
 #include <nlohmann/json.hpp> // nlohmann::json
 
-#include "fs_utils.hpp"
 #include "pack_icon_data.hpp"
 
 namespace
@@ -50,23 +48,20 @@ MCPack::MCPack(
         return;
     }
 
-    tempPath_ = generateTempPath();
+    generateTempPath();
     if (!isOk_)
         return;
+    contentPath_ = tempPath() / "content";
 
-    contentPath_ = (std::filesystem::path(tempPath_) / "content").string();
-
-    if (!fs_utils::ensureDirectoryExists(
-            std::filesystem::path(contentPath_) / "functions"  / fs_utils::pathFromUtf8(nameSpace_)) ||
-        !fs_utils::ensureDirectoryExists(
-            std::filesystem::path(contentPath_) / "structures" / fs_utils::pathFromUtf8(nameSpace_)))
+    if (!fs_utils::ensureDirectoryExists(getFunctionsPath()) ||
+        !fs_utils::ensureDirectoryExists(getStructuresPath()))
     {
         fprintf(stderr, "MCPack::MCPack() Failed to create the functions/structures directory\n");
         isOk_ = false;
         return;
     }
 
-    const std::filesystem::path tickJsonPath = std::filesystem::path(contentPath_) / "functions" / "tick.json";
+    const std::filesystem::path& tickJsonPath = contentPath_ / "functions" / "tick.json";
     std::ofstream tickJsonFile(tickJsonPath, std::ios::binary | std::ios::trunc);
     if (!tickJsonFile)
     {
@@ -85,12 +80,12 @@ MCPack::~MCPack()
 
 std::filesystem::path MCPack::getFunctionsPath() const
 {
-    return std::filesystem::path(contentPath_) / "functions" / fs_utils::pathFromUtf8(nameSpace_);
+    return contentPath_ / "functions" / fs_utils::pathFromUtf8(nameSpace_);
 }
 
 std::filesystem::path MCPack::getStructuresPath() const
 {
-    return std::filesystem::path(contentPath_) / "structures" / fs_utils::pathFromUtf8(nameSpace_);
+    return contentPath_ / "structures" / fs_utils::pathFromUtf8(nameSpace_);
 }
 
 bool MCPack::addFunction(std::string_view relativePath, const std::vector<std::string>& mcfunction) const
@@ -98,7 +93,7 @@ bool MCPack::addFunction(std::string_view relativePath, const std::vector<std::s
     if (!isOk_ || relativePath.empty())
         return false;
 
-    const std::filesystem::path path =
+    const std::filesystem::path& path =
         getFunctionsPath() / fs_utils::pathFromUtf8(std::string(relativePath) + ".mcfunction");
     if (!fs_utils::ensureDirectoryExists(path.parent_path()))
     {
@@ -113,7 +108,7 @@ bool MCPack::addFunction(std::string_view relativePath, const std::vector<std::s
         return false;
     }
 
-    for (const std::string& command : mcfunction)
+    for (const auto& command : mcfunction)
         file << command << '\n';
     file.close();
     return true;
@@ -124,7 +119,7 @@ bool MCPack::addTickFunction(std::string_view relativePath) const
     if (!isOk_ || relativePath.empty())
         return false;
 
-    const std::filesystem::path tickJsonPath = std::filesystem::path(contentPath_) / "functions" / "tick.json";
+    const std::filesystem::path& tickJsonPath = contentPath_ / "functions" / "tick.json";
 
     std::ifstream inFile(tickJsonPath, std::ios::binary);
     if (!inFile)
@@ -149,7 +144,7 @@ bool MCPack::addTickFunction(std::string_view relativePath) const
     if (!values.is_array())
         values = nlohmann::json::array();
 
-    const std::string entry = nameSpace_ + "/" + std::string(relativePath);
+    const std::string& entry = nameSpace_ + "/" + std::string(relativePath);
     for (const auto& value : values)
     {
         if (value.is_string() && value.get<std::string>() == entry)
@@ -192,7 +187,7 @@ bool MCPack::pack() const
         })}
     };
 
-    const std::filesystem::path manifestPath = std::filesystem::path(contentPath_) / "manifest.json";
+    const std::filesystem::path& manifestPath = contentPath_ / "manifest.json";
     std::ofstream manifestFile(manifestPath, std::ios::binary | std::ios::trunc);
     if (!manifestFile)
     {
@@ -203,7 +198,7 @@ bool MCPack::pack() const
     manifestFile << manifest.dump(4);
     manifestFile.close();
 
-    const std::filesystem::path iconPath = std::filesystem::path(contentPath_) / "pack_icon.png";
+    const std::filesystem::path& iconPath = contentPath_ / "pack_icon.png";
     std::ofstream iconFile(iconPath, std::ios::binary | std::ios::trunc);
     if (!iconFile)
     {
@@ -214,10 +209,10 @@ bool MCPack::pack() const
     iconFile.write(reinterpret_cast<const char*>(DEFAULT_PACK_ICON_PNG), DEFAULT_PACK_ICON_PNG_SIZE);
     iconFile.close();
 
-    const std::filesystem::path functionsRootPath       = std::filesystem::path(contentPath_) / "functions";
-    const std::filesystem::path functionsNameSpacePath  = getFunctionsPath();
-    const std::filesystem::path structuresRootPath      = std::filesystem::path(contentPath_) / "structures";
-    const std::filesystem::path structuresNameSpacePath = getStructuresPath();
+    const std::filesystem::path& functionsRootPath       = contentPath_ / "functions";
+    const std::filesystem::path& functionsNameSpacePath  = getFunctionsPath();
+    const std::filesystem::path& structuresRootPath      = contentPath_ / "structures";
+    const std::filesystem::path& structuresNameSpacePath = getStructuresPath();
 
     std::error_code ec;
     if (isDirectoryEmptyOfFiles(functionsNameSpacePath))
@@ -225,8 +220,8 @@ bool MCPack::pack() const
     if (isDirectoryEmptyOfFiles(structuresNameSpacePath))
         std::filesystem::remove_all(structuresRootPath, ec);
 
-    const std::filesystem::path zipPath     = filePath_;
-    const std::filesystem::path tempZipPath = std::filesystem::path(tempPath_) / zipPath.filename();
+    const std::filesystem::path& zipPath     = filePath_;
+    const std::filesystem::path& tempZipPath = tempPath() / zipPath.filename();
 
     void* writer = mz_zip_writer_create();
     if (!writer)
@@ -239,8 +234,8 @@ bool MCPack::pack() const
     mz_zip_writer_set_compress_method(writer, MZ_COMPRESS_METHOD_DEFLATE);
     mz_zip_writer_set_compress_level(writer, MZ_COMPRESS_LEVEL_DEFAULT);
 
-    const std::string tempZipPathUtf8  = tempZipPath.u8string();
-    const std::string contentPathUtf8  = std::filesystem::path(contentPath_).u8string();
+    const std::string& tempZipPathUtf8  = tempZipPath.u8string();
+    const std::string& contentPathUtf8  = contentPath_.u8string();
 
     int32_t err = mz_zip_writer_open_file(writer, tempZipPathUtf8.c_str(), 0, 0);
     if (err != MZ_OK)
@@ -270,14 +265,25 @@ bool MCPack::pack() const
     return ok;
 }
 
-std::string MCPack::generateTempPath()
+void MCPack::generateTempPath()
 {
-    const std::filesystem::path tempPath = fs_utils::createUniqueHiddenTempDir(filePath_);
-    isOk_ = !tempPath.empty();
-    return tempPath.string();
+    tempPath_      = fs_utils::createUniqueHiddenTempDir(filePath_);
+#ifdef _WIN32
+    tempPathAlias_ = std::make_unique<fs_utils::AsciiSafeAlias>(tempPath_);
+#endif // _WIN32
+    isOk_          = !tempPath_.empty() && !tempPathAlias_->path().empty();
 }
 
 void MCPack::removeTempPath() const
 {
     fs_utils::removeDirectoryRecursive(tempPath_);
+}
+
+const std::filesystem::path& MCPack::tempPath() const
+{
+#ifdef _WIN32
+    return tempPathAlias_->path();
+#else
+    return tempPath_;
+#endif // _WIN32
 }

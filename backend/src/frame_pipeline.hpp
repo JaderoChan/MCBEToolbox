@@ -41,7 +41,7 @@ bool runFramePipeline(
     ThreadPool threadPool(numThreads);
     const std::size_t windowSize = static_cast<std::size_t>(numThreads) * windowSizeFactor;
 
-    // 消费窗口中最早的一个任务结果
+    // 消费窗口中最早的一个任务结果。
     auto consumeOne = [&]() -> bool
     {
         if (shouldStop.load(std::memory_order_relaxed))
