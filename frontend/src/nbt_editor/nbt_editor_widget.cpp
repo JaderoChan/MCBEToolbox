@@ -266,6 +266,8 @@ void NbtEditorWidget::parseSnbt()
     try
     {
         tag = nbt::Tag::fromSnbt(dialog.text().toStdString());
+        if (!tag.isCompound())
+            throw std::runtime_error("nbt::Tag::fromSnbt(): root tag is not a compound");
     }
     catch (std::exception& e)
     {
