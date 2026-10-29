@@ -35,6 +35,8 @@ public:
     explicit NbtFileInfoDialog(QWidget* parent = nullptr)
         : MyDialog(parent)
     {
+        setMinimumWidth(320);
+
         // Endian
         endianLabel_       = new QLabel(this);
         littleEndianRadio_ = new QRadioButton(this);
@@ -80,6 +82,9 @@ public:
         containerLayout->addWidget(compressedRadio_,   1, 2);
         containerLayout->addWidget(filePathLabel_,     2, 0);
         containerLayout->addWidget(filePathWidget,     2, 1, 1, 2);
+        containerLayout->setColumnStretch(0, 0);
+        containerLayout->setColumnStretch(1, 1);
+        containerLayout->setColumnStretch(2, 1);
 
         // Button
         confirmButton_ = new QPushButton(this);
