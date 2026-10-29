@@ -178,21 +178,15 @@ AsciiSafeAlias::AsciiSafeAlias(const std::filesystem::path& originalPath) : orig
     const std::filesystem::path absOriginal = std::filesystem::absolute(originalPath_, ec);
     if (ec)
         return;
-    const std::filesystem::path root = absOriginal.root_path();
-    const std::filesystem::path candidate = root / (generateUuid4() + originalPath_.extension().string());
+
+    ec.clear();
+    const std::filesystem::path temp      = std::filesystem::temp_directory_path(ec);
+    const std::filesystem::path candidate =
+        temp / originalPath_.stem() / (generateUuid4() + originalPath_.extension().string());
 
     ec.clear();
     std::filesystem::create_symlink(absOriginal, candidate, ec);
     if (!ec)
-    {
-        aliasPath_ = candidate;
-        ok_        = true;
-        return;
-    }
-
-    // 如果创建符号链接失败，回退为复制一份临时文件。
-    ec.clear();
-    if (std::filesystem::copy_file(absOriginal, candidate, ec) && !ec)
     {
         aliasPath_ = candidate;
         ok_        = true;
