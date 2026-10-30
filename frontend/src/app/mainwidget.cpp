@@ -29,11 +29,9 @@ MainWidget::MainWidget(QWidget* parent)
     sidebarWidget_->setCurrentIndex(0);
 
     // Stacked widget
-    auto* wgt = new BlockListFilterWidget(getAppConfiguration().blockEntries, this);
-
     stackedWidget_ = new QStackedWidget(this);
     stackedWidget_->setContentsMargins(0, 0, 0, 0);
-    stackedWidget_->addWidget(wgt); // TODO
+    stackedWidget_->addWidget(new BlockListFilterWidget(getAppConfiguration().blockEntries, this)); // TODO
     stackedWidget_->addWidget(new QWidget(this)); // TODO
     stackedWidget_->addWidget(new NbtEditorWidget(this));
     stackedWidget_->addWidget(new QWidget(this)); // TODO
