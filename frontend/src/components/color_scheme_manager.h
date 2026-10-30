@@ -26,7 +26,7 @@ public:
     /** 设置程序颜色模式。 */
     void        setColorScheme(ColorScheme colorScheme);
     /** 获取程序颜色模式。 */
-    ColorScheme colorScheme()  const;
+    ColorScheme colorScheme()       const;
     /** 获取实际加载的颜色模式（不包含 #COLOR_SCHEME_AUTO）。 */
     ColorScheme loadedColorScheme() const;
 

@@ -42,7 +42,7 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent* e) override;
-    void keyPressEvent(QKeyEvent* e) override;
+    void keyPressEvent(QKeyEvent* e)  override;
 
     void lineNumberAreaPaintEvent(QPaintEvent* e);
     int  lineNumberAreaWidth() const;
@@ -60,7 +60,7 @@ private:
 
     /** 返回光标附近匹配的括号/字符串引号的一对位置（文档字符下标）；如果未找到二者均为 -1。 */
     QPair<int, int> findMatchingBracket(int cursorPos) const;
-    QPair<int, int> findMatchingQuote(int cursorPos) const;
+    QPair<int, int> findMatchingQuote(int cursorPos)   const;
 
     LineNumberArea* lineNumberArea_ = nullptr;
 
