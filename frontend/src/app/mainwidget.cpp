@@ -11,7 +11,7 @@
 #include "block_list_filter_widget.h"
 
 MainWidget::MainWidget(QWidget* parent)
-    : MyWidget(parent)
+    : AdaptiveWidget(parent)
 {
     // Sidebar widget
     sidebarWidget_ = new SidebarWidget(this);

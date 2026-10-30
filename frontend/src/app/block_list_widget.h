@@ -5,14 +5,14 @@
 #include <qstring.h>
 
 #include <block.hpp>
-#include <components/mywidget.h>
+#include <components/adaptive_widget.h>
 
 class QLayout;
 class QScrollArea;
 class BlockListItemWidget;
 
 /** 以流式网格布局形式（列宽自适应列表）显示方块信息的控件，支持对方块进行单选/多选。 */
-class BlockListWidget : public MyWidget
+class BlockListWidget : public AdaptiveWidget
 {
     Q_OBJECT
 

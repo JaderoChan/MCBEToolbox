@@ -6,7 +6,7 @@
 
 #include <mcnbt/mcnbt.hpp>
 
-#include <components/mywidget.h>
+#include <components/adaptive_widget.h>
 #include "nbt_tree_view.h"
 
 class QLabel;
@@ -16,7 +16,7 @@ class QStandardItem;
 class CodeTextEdit;
 
 /** 单个 NBT 文件的显示/编辑页面，主要职责是作为 #NbtTreeView 的父控件扩展其功能。。 */
-class NbtEditorTabPage : public MyWidget
+class NbtEditorTabPage : public AdaptiveWidget
 {
     Q_OBJECT
 

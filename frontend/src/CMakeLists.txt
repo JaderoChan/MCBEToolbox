@@ -13,19 +13,26 @@ configure_file(
 set(
     HEADERS
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
+
     ./app/block_attribute_text.h
     ./app/block_list_filter_widget.h
     ./app/block_list_widget.h
+    ./app/factory_option_widget.h
+    ./app/fallback_block_selector.h
     ./app/logo_icon.h
     ./app/mainwidget.h
+    ./app/mcpack_option_widget.h
     ./app/settings.h
+    ./app/subtab_widget.h
+
+    ./components/adaptive_widget.h
     ./components/color_scheme_manager.h
     ./components/code_text_edit.h
     ./components/flow_grid_layout.h
     ./components/language_manager.h
-    ./components/mywidget.h
     ./components/sidebar_widget.h
     ./components/stylesheet_table.h
+
     ./nbt_editor/nbt_editor_tab_page.h
     ./nbt_editor/nbt_editor_widget.h
     ./nbt_editor/nbt_row_editor.h
@@ -33,6 +40,7 @@ set(
     ./nbt_editor/nbt_tree_view.h
     ./nbt_editor/nbt_utils.h
     ./nbt_editor/snbt_syntax_highlighter.h
+
     ./utils/debug_output.h
     ./utils/directory_scope.h
     ./utils/file_io.h
@@ -45,17 +53,23 @@ set(
     ./app/block_attribute_text.cpp
     ./app/block_list_filter_widget.cpp
     ./app/block_list_widget.cpp
+    ./app/factory_option_widget.cpp
+    ./app/fallback_block_selector.cpp
     ./app/logo_icon.cpp
     ./app/main.cpp
     ./app/mainwidget.cpp
+    ./app/mcpack_option_widget.cpp
     ./app/settings.cpp
+    ./app/subtab_widget.cpp
+
+    ./components/adaptive_widget.cpp
     ./components/color_scheme_manager.cpp
     ./components/code_text_edit.cpp
     ./components/flow_grid_layout.cpp
     ./components/language_manager.cpp
-    ./components/mywidget.cpp
     ./components/sidebar_widget.cpp
     ./components/stylesheet_table.cpp
+
     ./nbt_editor/nbt_editor_tab_page.cpp
     ./nbt_editor/nbt_editor_widget.cpp
     ./nbt_editor/nbt_row_editor.cpp
@@ -118,7 +132,7 @@ endif()
 
 # 指定为 GUI 应用程序。
 if(WIN32)
-    option(KEEP_TERMINAL "Keep terminal window" OFF)
+    option(KEEP_TERMINAL "Keep terminal window" ON)
     set_target_properties(
         ${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE $<NOT:$<BOOL:${KEEP_TERMINAL}>>
@@ -246,15 +260,7 @@ endif()
 #################
 
 # 复制运行时依赖文件至目标目录
-if(WIN32)
-    add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_RUNTIME_DLLS:${PROJECT_NAME}>
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-        COMMAND_EXPAND_LISTS
-    )
-endif()
+copy_runtime_dependencies(${PROJECT_NAME})
 
 # 复制语言文件至目标目录。
 if(WIN32 OR LINUX)

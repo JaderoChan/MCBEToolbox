@@ -1,11 +1,11 @@
 #pragma once
 
-#include <components/mywidget.h>
+#include <components/adaptive_widget.h>
 
 class QStackedWidget;
 class SidebarWidget;
 
-class MainWidget : public MyWidget
+class MainWidget : public AdaptiveWidget
 {
 public:
     explicit MainWidget(QWidget* parent = nullptr);

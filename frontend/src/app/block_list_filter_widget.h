@@ -3,7 +3,7 @@
 #include <qlist.h>
 
 #include <block.hpp>
-#include <components/mywidget.h>
+#include <components/adaptive_widget.h>
 
 class QCheckBox;
 class QComboBox;
@@ -13,7 +13,7 @@ class QVariantAnimation;
 class BlockListWidget;
 
 /** 作为 #BlockListWidget 的父控件，扩展一些功能。 */
-class BlockListFilterWidget : public MyWidget
+class BlockListFilterWidget : public AdaptiveWidget
 {
 public:
     explicit BlockListFilterWidget(const BlockEntryMap& entries, QWidget* parent = nullptr);

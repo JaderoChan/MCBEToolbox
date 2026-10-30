@@ -4,14 +4,14 @@
 
 #include <mcnbt/mcnbt.hpp>
 
-#include <components/mywidget.h>
+#include <components/adaptive_widget.h>
 
 class QLineEdit;
 class QToolButton;
 class QValidator;
 
 /** #NbtTreeView 的行内编辑控件，提供键/值的文本编辑与确认/取消功能。 */
-class NbtRowEditor : public MyWidget
+class NbtRowEditor : public AdaptiveWidget
 {
     Q_OBJECT
 

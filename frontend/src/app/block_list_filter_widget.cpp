@@ -32,7 +32,7 @@ constexpr int FILTER_PANEL_ANIM_DURATION_MS = 200;
 } // namespace
 
 BlockListFilterWidget::BlockListFilterWidget(const BlockEntryMap& entries, QWidget* parent)
-    : MyWidget(parent)
+    : AdaptiveWidget(parent)
 {
     // 构建顶部工具栏 UI。
     selectAllButton_     = new QPushButton(this);

@@ -25,13 +25,13 @@ constexpr int ITEM_SECONDARY_ALPHA = 96;
 
 } // namespace
 
-class BlockListItemWidget : public MyWidget
+class BlockListItemWidget : public AdaptiveWidget
 {
     Q_OBJECT
 
 public:
     explicit BlockListItemWidget(const BlockEntryPair& entry, QWidget* parent = nullptr)
-        : MyWidget(parent), entry_(entry)
+        : AdaptiveWidget(parent), entry_(entry)
     {
         if (entry_.second)
         {
@@ -95,7 +95,7 @@ protected:
     {
         if (e->button() == Qt::LeftButton)
             pressed_ = true;
-        MyWidget::mousePressEvent(e);
+        AdaptiveWidget::mousePressEvent(e);
     }
 
     void mouseReleaseEvent(QMouseEvent* e) override
@@ -103,7 +103,7 @@ protected:
         if (pressed_ && e->button() == Qt::LeftButton && rect().contains(e->pos()))
             emit clicked();
         pressed_ = false;
-        MyWidget::mouseReleaseEvent(e);
+        AdaptiveWidget::mouseReleaseEvent(e);
     }
 
     void paintEvent(QPaintEvent*) override
@@ -226,7 +226,7 @@ private:
 };
 
 BlockListWidget::BlockListWidget(const BlockEntryMap& entries, QWidget* parent)
-    : MyWidget(parent), entries_(entries)
+    : AdaptiveWidget(parent), entries_(entries)
 {
     gridContainer_ = new QWidget();
     gridLayout_    = new FlowGridLayout(ITEM_SPACING, ITEM_SPACING, ITEM_MIN_SIZE, ITEM_MAX_SIZE, gridContainer_);
@@ -379,7 +379,7 @@ void BlockListWidget::keyPressEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Shift)
         shiftPressed_ = true;
-    MyWidget::keyPressEvent(e);
+    AdaptiveWidget::keyPressEvent(e);
 }
 
 void BlockListWidget::keyReleaseEvent(QKeyEvent* e)
@@ -390,7 +390,7 @@ void BlockListWidget::keyReleaseEvent(QKeyEvent* e)
         rangeSelectEnd_   = -1;
         shiftPressed_     = false;
     }
-    MyWidget::keyReleaseEvent(e);
+    AdaptiveWidget::keyReleaseEvent(e);
 }
 
 void BlockListWidget::rebuildBlocks()

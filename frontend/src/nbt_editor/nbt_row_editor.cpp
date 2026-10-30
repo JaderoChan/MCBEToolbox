@@ -85,7 +85,7 @@ QValidator* makeTagTypeValidator(nbt::TagType type, QObject* parent = nullptr)
 } // namespace
 
 NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
-    : type_(type), isNamingTag_(isNamingTag), MyWidget(parent)
+    : type_(type), isNamingTag_(isNamingTag), AdaptiveWidget(parent)
 {
     constexpr int EDIT_MIN_WIDTH = 120;
     constexpr int EDIT_MAX_WIDTH = 600;

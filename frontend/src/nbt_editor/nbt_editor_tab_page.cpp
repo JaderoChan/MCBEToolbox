@@ -27,13 +27,13 @@ namespace
 {
 
 // 用于配置保存 NBT 文件信息的对话框。
-class NbtFileInfoDialog : public MyDialog
+class NbtFileInfoDialog : public AdaptiveDialog
 {
     Q_OBJECT
 
 public:
     explicit NbtFileInfoDialog(QWidget* parent = nullptr)
-        : MyDialog(parent)
+        : AdaptiveDialog(parent)
     {
         setMinimumWidth(320);
 
@@ -177,7 +177,7 @@ private:
 } // namespace
 
 NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
-    : MyWidget(parent)
+    : AdaptiveWidget(parent)
 {
     // 构建顶部工具栏 UI。
     auto* toolbarWidget = new QWidget(this);

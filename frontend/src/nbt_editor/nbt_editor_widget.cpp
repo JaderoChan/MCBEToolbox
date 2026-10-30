@@ -26,11 +26,11 @@ namespace
 {
 
 // 用于输入 SNBT 文本进行解析的对话框。
-class SnbtInputDialog : public MyDialog
+class SnbtInputDialog : public AdaptiveDialog
 {
 public:
     explicit SnbtInputDialog(QWidget* parent = nullptr)
-        : MyDialog(parent)
+        : AdaptiveDialog(parent)
     {
         textEdit_ = new CodeTextEdit(this);
         textEdit_->setContextMenuPolicy(Qt::NoContextMenu);
@@ -80,7 +80,7 @@ private:
 } // namespace
 
 NbtEditorWidget::NbtEditorWidget(QWidget* parent)
-    : MyWidget(parent)
+    : AdaptiveWidget(parent)
 {
     // 构建顶部工具栏 UI。
     auto* toolbarWidget = new QWidget(this);
@@ -170,7 +170,7 @@ void NbtEditorWidget::updateColor(ColorSchemeManager::ColorScheme /* loaded */)
 bool NbtEditorWidget::eventFilter(QObject* obj, QEvent* e)
 {
     if (obj != tabWidget_)
-        return MyWidget::eventFilter(obj, e);
+        return AdaptiveWidget::eventFilter(obj, e);
 
     if (e->type() == QEvent::DragEnter)
     {
@@ -213,7 +213,7 @@ bool NbtEditorWidget::eventFilter(QObject* obj, QEvent* e)
         }
     }
 
-    return MyWidget::eventFilter(obj, e);
+    return AdaptiveWidget::eventFilter(obj, e);
 }
 
 void NbtEditorWidget::newNbt()
