@@ -1,8 +1,11 @@
 #include "app_configuration.h"
 
+#include <stdio.h>
+
 #include <qsettings.h>
 
 #include <app_defines.h>
+#include <utils/directory_scope.h>
 
 ConfigurationData loadConfiguration()
 {
@@ -13,6 +16,20 @@ ConfigurationData loadConfiguration()
         .value<ColorSchemeManager::ColorScheme>();
     config.language    = qsettings.value(QStringLiteral("Language"),    LanguageManager::LANGUAGE_AUTO)
         .value<LanguageManager::Language>();
+
+    try
+    {
+        DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
+        config.blockEntries = parseBlockEntriesFromFile(APP_BLOCK_ENTRIES_FILEPATH);
+    }
+    catch (std::exception& e)
+    {
+        fprintf(
+            stderr,
+            "loadConfiguration() Failed to parse block entries from file '%s'\n",
+            APP_BLOCK_ENTRIES_FILEPATH
+        );
+    }
 
     return config;
 }
