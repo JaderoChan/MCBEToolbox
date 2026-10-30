@@ -165,7 +165,7 @@ bool BlockImageFactory::generateBlockVideo(
 }
 
 cv::Mat BlockImageFactory::generateBlockImageHelper(
-    ImageOStream&   stream,
+    ImageOStream&    stream,
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageMap,

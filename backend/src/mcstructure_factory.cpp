@@ -164,7 +164,7 @@ MCStructureFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& 
 }
 
 nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
-    ImageOStream&   stream,
+    ImageOStream&    stream,
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageMap,

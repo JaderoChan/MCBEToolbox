@@ -147,7 +147,7 @@ MCFunctionFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& s
 }
 
 MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
-    ImageOStream&   stream,
+    ImageOStream&    stream,
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageMap,
