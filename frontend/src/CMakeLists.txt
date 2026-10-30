@@ -12,6 +12,7 @@ configure_file(
 # 头文件（可用于在 Visual Studio 等 IDE 的项目文件树中显示头文件）
 set(
     HEADERS
+
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
 
     ./app/block_attribute_text.h
@@ -50,6 +51,7 @@ set(
 # 源文件
 set(
     SRCS
+
     ./app/block_attribute_text.cpp
     ./app/block_list_filter_widget.cpp
     ./app/block_list_widget.cpp
