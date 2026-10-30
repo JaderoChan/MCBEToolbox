@@ -18,6 +18,6 @@ ConfigurationData loadConfiguration();
 
 void saveConfiguration(const ConfigurationData& config);
 
-ConfigurationData& appConfiguration();
+ConfigurationData& getAppConfiguration();
 
 void setAppConfiguration(ConfigurationData config);

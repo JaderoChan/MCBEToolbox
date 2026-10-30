@@ -31,7 +31,7 @@ MainWidget::MainWidget(QWidget* parent)
     // Stacked widget
     DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
     static const BlockEntryMap& entries = parseBlockEntriesFromFile(APP_BLOCK_ENTRIES_FILEPATH);
-    auto* wgt = new BlockListFilterWidget(appConfiguration().blockEntries, this);
+    auto* wgt = new BlockListFilterWidget(getAppConfiguration().blockEntries, this);
 
     stackedWidget_ = new QStackedWidget(this);
     stackedWidget_->setContentsMargins(0, 0, 0, 0);

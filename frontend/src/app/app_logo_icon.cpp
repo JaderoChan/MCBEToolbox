@@ -1,6 +1,6 @@
-#include "logo_icon.h"
+#include "app_logo_icon.h"
 
-static QIcon createLogoIcon()
+static QIcon createAppLogoIcon()
 {
     QIcon icon;
 
@@ -15,13 +15,13 @@ static QIcon createLogoIcon()
     return icon;
 }
 
-const QIcon& getLogoIcon()
+const QIcon& getAppLogoIcon()
 {
-    static const auto& icon = createLogoIcon();
+    static const auto& icon = createAppLogoIcon();
     return icon;
 }
 
-QPixmap getLogoPixmap(int extent)
+QPixmap getAppLogoPixmap(int extent)
 {
-    return getLogoIcon().pixmap(extent);
+    return getAppLogoIcon().pixmap(extent);
 }

@@ -7,7 +7,7 @@
 
 #include <app_defines.h>
 #include "app_configuration.h"
-#include "logo_icon.h"
+#include "app_logo_icon.h"
 #include "mainwidget.h"
 
 int main(int argc, char* argv[])
@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     a.setApplicationName(APP_TITLE);
     a.setApplicationVersion(APP_VERSION);
 #ifndef Q_OS_MAC
-    a.setWindowIcon(getLogoIcon());
+    a.setWindowIcon(getAppLogoIcon());
 #else
     // 启用长按键重复功能。
     QSettings(QSettings::NativeFormat, QSettings::UserScope, QStringLiteral(APP_BUNDLE_IDENTIFIER))
@@ -52,8 +52,8 @@ int main(int argc, char* argv[])
     setAppConfiguration(loadConfiguration());
 
     // 设置语言与色彩主题。
-    LanguageManager::instance().setLanguage(appConfiguration().language);
-    ColorSchemeManager::instance().setColorScheme(appConfiguration().colorScheme);
+    LanguageManager::instance().setLanguage(getAppConfiguration().language);
+    ColorSchemeManager::instance().setColorScheme(getAppConfiguration().colorScheme);
 
     MainWidget w;
     w.show();

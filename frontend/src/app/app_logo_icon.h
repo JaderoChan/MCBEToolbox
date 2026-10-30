@@ -4,7 +4,7 @@
 #include <qpixmap.h>
 
 /** 获取程序的 Logo 图标。 */
-const QIcon& getLogoIcon();
+const QIcon& getAppLogoIcon();
 
 /** 获取程序的 Logo 图像。 */
-QPixmap getLogoPixmap(int extent = 1024);
+QPixmap getAppLogoPixmap(int extent = 1024);
