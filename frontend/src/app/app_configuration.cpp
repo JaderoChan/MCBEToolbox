@@ -42,13 +42,19 @@ void saveConfiguration(const ConfigurationData& config)
     qsettings.setValue(QStringLiteral("Language"),    config.language);
 }
 
-ConfigurationData& getAppConfiguration()
+static ConfigurationData AppConfig;
+
+const ConfigurationData& getAppConfiguration()
 {
-    static ConfigurationData config;
-    return config;
+    return AppConfig;
+}
+
+ConfigurationData& getAppConfigurationRef()
+{
+    return AppConfig;
 }
 
 void setAppConfiguration(ConfigurationData config)
 {
-    getAppConfiguration() = std::move(config);
+    AppConfig = std::move(config);
 }
