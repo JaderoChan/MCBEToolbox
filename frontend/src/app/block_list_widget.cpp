@@ -6,7 +6,7 @@
 #include <qpixmap.h>
 #include <qscrollarea.h>
 
-#include <config.h>
+#include <app_defines.h>
 #include <components/flow_grid_layout.h>
 #include <utils/directory_scope.h>
 #include "block_attribute_text.h"

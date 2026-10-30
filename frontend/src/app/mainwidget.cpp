@@ -4,10 +4,11 @@
 #include <qstackedwidget.h>
 
 #include <block.hpp>
-#include <config.h>
+#include <app_defines.h>
 #include <components/sidebar_widget.h>
 #include <nbt_editor/nbt_editor_widget.h>
 #include <utils/directory_scope.h>
+#include "app_configuration.h"
 #include "block_list_filter_widget.h"
 
 MainWidget::MainWidget(QWidget* parent)
@@ -30,7 +31,7 @@ MainWidget::MainWidget(QWidget* parent)
     // Stacked widget
     DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
     static const BlockEntryMap& entries = parseBlockEntriesFromFile(APP_BLOCK_ENTRIES_FILEPATH);
-    auto* wgt = new BlockListFilterWidget(entries, this);
+    auto* wgt = new BlockListFilterWidget(appConfiguration().blockEntries, this);
 
     stackedWidget_ = new QStackedWidget(this);
     stackedWidget_->setContentsMargins(0, 0, 0, 0);

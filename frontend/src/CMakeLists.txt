@@ -2,10 +2,10 @@
 # 收集源文件 #
 #############
 
-# 配置 config 头文件。
+# 配置 app_defines 头文件。
 configure_file(
-    "${CMAKE_TEMPLATES_DIR}/config.h.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
+    "${CMAKE_TEMPLATES_DIR}/app_defines.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/include/app_defines.h"
     @ONLY
 )
 
@@ -13,8 +13,9 @@ configure_file(
 set(
     HEADERS
 
-    "${CMAKE_CURRENT_BINARY_DIR}/include/config.h"
+    "${CMAKE_CURRENT_BINARY_DIR}/include/app_defines.h"
 
+    ./app/app_configuration.h
     ./app/block_attribute_text.h
     ./app/block_list_filter_widget.h
     ./app/block_list_widget.h
@@ -24,7 +25,6 @@ set(
     ./app/logo_icon.h
     ./app/mainwidget.h
     ./app/mcpack_option_widget.h
-    ./app/settings.h
     ./app/tabbed_page_widget.h
 
     ./components/adaptive_widget.h
@@ -53,6 +53,7 @@ set(
 set(
     SRCS
 
+    ./app/app_configuration.cpp
     ./app/block_attribute_text.cpp
     ./app/block_list_filter_widget.cpp
     ./app/block_list_widget.cpp
@@ -63,7 +64,6 @@ set(
     ./app/main.cpp
     ./app/mainwidget.cpp
     ./app/mcpack_option_widget.cpp
-    ./app/settings.cpp
     ./app/tabbed_page_widget.cpp
 
     ./components/adaptive_widget.cpp

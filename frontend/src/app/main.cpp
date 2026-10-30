@@ -5,10 +5,10 @@
 
 #include <easy_translate.hpp>
 
-#include <config.h>
+#include <app_defines.h>
+#include "app_configuration.h"
 #include "logo_icon.h"
 #include "mainwidget.h"
-#include "settings.h"
 
 int main(int argc, char* argv[])
 {
@@ -48,11 +48,12 @@ int main(int argc, char* argv[])
         a.setFont(font);
     }
 
-    // 设置语言
-    {
-        const auto& settings = loadSettings();
-        LanguageManager::instance().setLanguage(settings.language);
-    }
+    // 加载程序设置。
+    setAppConfiguration(loadConfiguration());
+
+    // 设置语言与色彩主题。
+    LanguageManager::instance().setLanguage(appConfiguration().language);
+    ColorSchemeManager::instance().setColorScheme(appConfiguration().colorScheme);
 
     MainWidget w;
     w.show();

@@ -5,7 +5,7 @@
 
 #include <easy_translate.hpp>
 
-#include <config.h>
+#include <app_defines.h>
 #include <utils/debug_output.h>
 #include <utils/directory_scope.h>
 
