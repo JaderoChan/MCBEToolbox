@@ -25,7 +25,7 @@ set(
     ./app/mainwidget.h
     ./app/mcpack_option_widget.h
     ./app/settings.h
-    ./app/subtab_widget.h
+    ./app/tabbed_page_widget.h
 
     ./components/adaptive_widget.h
     ./components/color_scheme_manager.h
@@ -64,7 +64,7 @@ set(
     ./app/mainwidget.cpp
     ./app/mcpack_option_widget.cpp
     ./app/settings.cpp
-    ./app/subtab_widget.cpp
+    ./app/tabbed_page_widget.cpp
 
     ./components/adaptive_widget.cpp
     ./components/color_scheme_manager.cpp
