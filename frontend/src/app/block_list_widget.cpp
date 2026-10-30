@@ -323,6 +323,23 @@ void BlockListWidget::unselectAll()
     emit selectionChanged();
 }
 
+void BlockListWidget::scrollTo(int index)
+{
+    if (index < 0 || index >= items_.size())
+        return;
+
+    scrollArea_->ensureWidgetVisible(std::next(items_.begin(), index).value());
+}
+
+void BlockListWidget::scrollTo(const QString& blockId)
+{
+    const auto it = items_.find(blockId);
+    if (it == items_.end())
+        return;
+
+    scrollArea_->ensureWidgetVisible(it.value());
+}
+
 void BlockListWidget::setMinimumVersion(const Version& version)
 {
     if (minimumVersion_ != version)

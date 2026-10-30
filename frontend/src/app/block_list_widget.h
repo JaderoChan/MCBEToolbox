@@ -30,6 +30,11 @@ public:
     void selectAll();
     void unselectAll();
 
+    /** \p index 越界时不做任何事。 */
+    void scrollTo(int index);
+    /** \p blockId 不存在时不做任何事。 */
+    void scrollTo(const QString& blockId);
+
     /** 通过给定的版本解析出合适的 BlockDataMap，并以此重建视图。 */
     void    setMinimumVersion(const Version& version);
     Version minimumVersion() const;
