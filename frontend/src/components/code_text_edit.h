@@ -36,9 +36,9 @@ public:
     void setShowWhitespace(bool enabled);
     bool showWhitespace() const;
 
-    QColor color(ColorRole role) const;
     void   setColor(ColorRole role, const QColor& color);
     void   resetColor(ColorRole role);
+    QColor color(ColorRole role) const;
 
 protected:
     void resizeEvent(QResizeEvent* e) override;

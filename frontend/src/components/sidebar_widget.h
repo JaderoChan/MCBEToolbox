@@ -38,10 +38,10 @@ public:
      * @{
      */
 
-    void     setEntryIcon(int index, const QIcon&    icon);
-    void     setEntryText(int index, const QString&  text);
-    void     setEntryToolTip(int index, const QString& text);
-    void     setEntryData(int index, const QVariant& data);
+    void setEntryIcon(int index, const QIcon& icon);
+    void setEntryText(int index, const QString& text);
+    void setEntryToolTip(int index, const QString& text);
+    void setEntryData(int index, const QVariant& data);
     QIcon    entryIcon(int index)    const;
     QString  entryText(int index)    const;
     QString  entryToolTip(int index) const;
