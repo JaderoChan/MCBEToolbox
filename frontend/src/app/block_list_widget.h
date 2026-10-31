@@ -17,7 +17,7 @@ class BlockListWidget : public AdaptiveWidget
     Q_OBJECT
 
 public:
-    explicit BlockListWidget(const BlockEntryMap& entries, QWidget* parent = nullptr);
+    explicit BlockListWidget(BlockDataMap blocks, QWidget* parent = nullptr);
 
     void select(const QString& blockId);
     void select(const QList<QString>& blockIds);
@@ -35,24 +35,21 @@ public:
     /** \p blockId 不存在时不做任何事。 */
     void scrollTo(const QString& blockId);
 
-    /** 通过给定的版本解析出合适的 BlockDataMap，并以此重建视图。 */
-    void    setMinimumVersion(const Version& version);
-    Version minimumVersion() const;
-
     void setMultiSelectEnabled(bool enabled);
     bool multiSelectEnabled() const;
 
     void excludeBlocks(const BlockAttributes& attributes, BlockAttributeFilterMode filterMode);
     void appendBlocks(const BlockAttributes& attributes, BlockAttributeFilterMode filterMode);
 
-    const BlockDataMap& blocks() const;
+    void setBlocks(BlockDataMap blocks);
+    const BlockDataMap& blocks()    const;
     const BlockDataMap& selecteds() const;
 
 signals:
     void selectionChanged();
 
 protected:
-    void keyPressEvent(QKeyEvent* e) override;
+    void keyPressEvent(QKeyEvent* e)   override;
     void keyReleaseEvent(QKeyEvent* e) override;
 
 private:
@@ -61,11 +58,9 @@ private:
     void setItemSelected(const QString& blockId, bool selected);
     void onSelectedsChanged();
 
-    const BlockEntryMap& entries_;
-    BlockDataMap         blocks_;
-    BlockDataMap         selecteds_;
-    Version              minimumVersion_     = Version(1, 21, 50, 7);
-    bool                 multiSelectEnabled_ = true;
+    BlockDataMap blocks_;
+    BlockDataMap selecteds_;
+    bool         multiSelectEnabled_ = true;
 
     QScrollArea* scrollArea_    = nullptr;
     QWidget*     gridContainer_ = nullptr;

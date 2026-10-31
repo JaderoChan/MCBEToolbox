@@ -9,6 +9,7 @@
 #include <app_defines.h>
 #include <components/flow_grid_layout.h>
 #include <utils/directory_scope.h>
+#include "app_configuration.h"
 #include "block_attribute_text.h"
 
 namespace
@@ -30,16 +31,15 @@ class BlockListItemWidget : public AdaptiveWidget
     Q_OBJECT
 
 public:
-    explicit BlockListItemWidget(const BlockEntryPair& entry, QWidget* parent = nullptr)
-        : AdaptiveWidget(parent), entry_(entry)
+    explicit BlockListItemWidget(BlockDataPair block, QWidget* parent = nullptr)
+        : AdaptiveWidget(parent), block_(std::move(block))
     {
-        if (entry_.second)
+        if (block.second)
         {
             DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
-            const auto& baseBlock   = entry_.second->baseBlock;
             const auto& texturePath = QStringLiteral("%1/%2")
                 .arg(APP_BLOCK_TEXTURES_DIRPATH)
-                .arg(QString::fromStdString(baseBlock.surfaceData.side.first));
+                .arg(QString::fromStdString(block.second->surfaceData.side.first));
             textureRaw_ = QPixmap(texturePath);
         }
 
@@ -51,9 +51,9 @@ public:
         updateText();
     }
 
-    const BlockEntryPair& entry() const
+    const BlockDataPair& block() const
     {
-        return entry_;
+        return block_;
     }
 
     void setSelected(bool selected)
@@ -161,10 +161,9 @@ protected:
             textureRect.left(), textureRect.bottom() + ITEM_INNER_GAP,
             textureRect.width(), colorBarHeight
         );
-        if (entry_.second)
+        if (block_.second)
         {
-            const auto& baseBlock = entry_.second->baseBlock;
-            const auto& color     = baseBlock.surfaceData.side.second;
+            const auto& color = block_.second->surfaceData.side.second;
             painter.setPen(Qt::NoPen);
             painter.setBrush(QColor(color.r, color.g, color.b));
             painter.drawRect(colorBarRect);
@@ -190,43 +189,46 @@ protected:
     {
         (void)loaded;
 
-        if (entry_.second)
-        {
-            const auto& localizationNames = entry_.second->localizationNames;
-            auto it = localizationNames.find(easytr::currentLanguage());
-            if (it != localizationNames.end())
-                name_ = QString::fromStdString(it->second);
-            else
-                name_ = QString::fromStdString(entry_.second->name);
+        if (getAppConfiguration().blockEntries.count(std::string(block_.first)) == 0)
+            return;
 
-            auto attributesText = makeBlockAttributesText(entry_.second->baseBlock.attributes);
-            attributesText = QFontMetrics(font()).elidedText(attributesText, Qt::ElideRight, 480);
-            const auto& tooltipText = QStringLiteral("%1: %2\n%3: %4\n%5: %6\n%7: %8")
-                .arg(EASYTR("Block Name")).arg(name_)
-                .arg(EASYTR("Block ID")).arg(entry_.second->baseBlock.id)
-                .arg(EASYTR("Block Attributes")).arg(attributesText)
-                .arg(EASYTR("Minimum Version")).arg(QString::fromStdString(entry_.second->minVersion.toString())
-            );
-            setToolTip(tooltipText);
-        }
+        const auto& entry             = getAppConfiguration().blockEntries.at(std::string(block_.first));
+        const auto& localizationNames = entry.localizationNames;
+        auto it = localizationNames.find(easytr::currentLanguage());
+        if (it != localizationNames.end()) name_ = QString::fromStdString(it->second);
+        else                               name_ = QString::fromStdString(entry.name);
+
+        QString attributesText;
+        if (block_.second) attributesText = makeBlockAttributesText(block_.second->attributes);
+        else               attributesText = makeBlockAttributesText(BLOCK_ATTRI_NONE);
+        attributesText = QFontMetrics(font()).elidedText(attributesText, Qt::ElideRight, 480);
+
+        const auto& tooltipText = QStringLiteral("%1: %2\n%3: %4\n%5: %6\n%7: %8")
+            .arg(EASYTR("Block Name")).arg(name_)
+            .arg(EASYTR("Block ID")).arg(QString::fromStdString(std::string(block_.first)))
+            .arg(EASYTR("Block Attributes")).arg(attributesText)
+            .arg(EASYTR("Minimum Version")).arg(QString::fromStdString(entry.minVersion.toString())
+        );
+
+        setToolTip(tooltipText);
 
         update();
     }
 
 private:
-    BlockEntryPair entry_;
-    QString        name_;
-    QPixmap        textureRaw_;
-    QPixmap        textureScaled_;
-    int            textureScaledSize_ = -1;
+    BlockDataPair block_;
+    QString       name_;
+    QPixmap       textureRaw_;
+    QPixmap       textureScaled_;
+    int           textureScaledSize_ = -1;
 
     bool selected_ = false;
     bool hovered_  = false;
     bool pressed_  = false;
 };
 
-BlockListWidget::BlockListWidget(const BlockEntryMap& entries, QWidget* parent)
-    : AdaptiveWidget(parent), entries_(entries)
+BlockListWidget::BlockListWidget(BlockDataMap blocks, QWidget* parent)
+    : AdaptiveWidget(parent), blocks_(std::move(blocks))
 {
     gridContainer_ = new QWidget();
     gridLayout_    = new FlowGridLayout(ITEM_SPACING, ITEM_SPACING, ITEM_MIN_SIZE, ITEM_MAX_SIZE, gridContainer_);
@@ -340,20 +342,6 @@ void BlockListWidget::scrollTo(const QString& blockId)
     scrollArea_->ensureWidgetVisible(it.value());
 }
 
-void BlockListWidget::setMinimumVersion(const Version& version)
-{
-    if (minimumVersion_ != version)
-    {
-        minimumVersion_ = version;
-        rebuildBlocks();
-    }
-}
-
-Version BlockListWidget::minimumVersion() const
-{
-    return minimumVersion_;
-}
-
 void BlockListWidget::setMultiSelectEnabled(bool enabled)
 {
     if (multiSelectEnabled_ != enabled)
@@ -380,6 +368,12 @@ void BlockListWidget::appendBlocks(const BlockAttributes& attributes, BlockAttri
     ::appendBlocks(selecteds_, blocks_, attributes, filterMode);
     onSelectedsChanged();
     emit selectionChanged();
+}
+
+void BlockListWidget::setBlocks(BlockDataMap blocks)
+{
+    blocks_ = std::move(blocks);
+    rebuildBlocks();
 }
 
 const BlockDataMap& BlockListWidget::blocks() const
@@ -412,10 +406,8 @@ void BlockListWidget::keyReleaseEvent(QKeyEvent* e)
 
 void BlockListWidget::rebuildBlocks()
 {
-    blocks_    = resolveBlockEntries(entries_, minimumVersion_);
     selecteds_ = blocks_;
     rebuildItems();
-
     emit selectionChanged();
 }
 
@@ -427,13 +419,9 @@ void BlockListWidget::rebuildItems()
     int index = 0;
     for (const auto& [id, block] : blocks_)
     {
-        const auto& sid = std::string(id);
-        const auto& qid = QString::fromStdString(sid);
+        const auto& qid = QString::fromStdString(std::string(id));
 
-        const auto  entryIt = entries_.find(sid);
-        const auto* entry   = entryIt != entries_.end() ? &entryIt->second : nullptr;
-
-        auto* item = new BlockListItemWidget(BlockEntryPair(id, entry), gridContainer_);
+        auto* item = new BlockListItemWidget({id, block}, gridContainer_);
         item->setSelected(selecteds_.count(id) > 0);
 
         connect(item, &BlockListItemWidget::clicked, this, [this, qid, item, index]()
@@ -452,7 +440,7 @@ void BlockListWidget::rebuildItems()
                     const auto& begin = std::min(rangeSelectStart_, rangeSelectEnd_);
                     const auto& end   = std::max(rangeSelectStart_, rangeSelectEnd_);
                     if (startIsSelected_) unselectRange(begin, end);
-                    else                selectRange(begin,   end);
+                    else                  selectRange(begin,   end);
                 }
             }
             else

@@ -16,7 +16,7 @@ class BlockListWidget;
 class BlockListFilterWidget : public AdaptiveWidget
 {
 public:
-    explicit BlockListFilterWidget(const BlockEntryMap& entries, QWidget* parent = nullptr);
+    explicit BlockListFilterWidget(BlockDataMap blocks, QWidget* parent = nullptr);
 
     BlockListWidget* blockListWidget() const;
 
