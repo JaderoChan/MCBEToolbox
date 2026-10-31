@@ -30,6 +30,7 @@ ConfigurationData loadConfiguration()
             APP_BLOCK_ENTRIES_FILEPATH
         );
     }
+    config.baseBlocks = resolveBlockEntries(config.blockEntries);
 
     return config;
 }

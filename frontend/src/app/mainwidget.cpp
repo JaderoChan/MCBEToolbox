@@ -31,7 +31,7 @@ MainWidget::MainWidget(QWidget* parent)
     // Stacked widget
     stackedWidget_ = new QStackedWidget(this);
     stackedWidget_->setContentsMargins(0, 0, 0, 0);
-    stackedWidget_->addWidget(new BlockListFilterWidget(getAppConfiguration().blockEntries, this)); // TODO
+    stackedWidget_->addWidget(new BlockListFilterWidget(getAppConfiguration().baseBlocks, this)); // TODO
     stackedWidget_->addWidget(new QWidget(this)); // TODO
     stackedWidget_->addWidget(new NbtEditorWidget(this));
     stackedWidget_->addWidget(new QWidget(this)); // TODO

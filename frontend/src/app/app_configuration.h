@@ -12,6 +12,7 @@ struct ConfigurationData
     LanguageManager::Language       language;
 
     BlockEntryMap blockEntries;
+    BlockDataMap  baseBlocks;
 };
 
 ConfigurationData loadConfiguration();
