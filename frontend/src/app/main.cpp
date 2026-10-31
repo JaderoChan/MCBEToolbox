@@ -10,6 +10,8 @@
 #include "app_logo_icon.h"
 #include "mainwidget.h"
 
+#include "fallback_block_selector.h"
+
 int main(int argc, char* argv[])
 {
     qRegisterMetaType<LanguageManager::Language>("Language");
@@ -57,6 +59,9 @@ int main(int argc, char* argv[])
 
     MainWidget w;
     w.show();
+
+    FallbackBlockSelector w2(getAppConfiguration().baseBlocks);
+    w2.show();
 
     int ret = a.exec();
 
