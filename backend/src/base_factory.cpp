@@ -94,7 +94,7 @@ BlockDataPair BaseFactory::retrieveAppropriateBlock(const cv::Vec4b& color)
     {
         if (fallbackBlock_)
             return *fallbackBlock_;
-        return {"", nullptr};
+        return {std::string_view(), nullptr};
     }
     else
     {
