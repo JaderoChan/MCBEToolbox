@@ -17,5 +17,6 @@
         <file>icons/app/nbt_editor_dark.svg</file>
         <file>icons/app/settings_light.svg</file>
         <file>icons/app/settings_dark.svg</file>
+        <file>icons/app/minecraft_icon.png</file>
     </qresource>
 </RCC>
