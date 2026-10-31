@@ -302,9 +302,9 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     mainLayout->addWidget(stackedWidget_);
     mainLayout->addWidget(stateBarWidget);
 
-    updateButtonState();
     updateText();
     updateColor();
+    updateButtonState();
 }
 
 NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWidget* parent)

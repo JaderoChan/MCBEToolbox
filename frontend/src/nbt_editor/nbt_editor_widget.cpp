@@ -147,9 +147,9 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
 
     addActions({newAction, openAction, saveAction, saveAsAction, closeAction});
 
-    updateButtonState();
     updateText();
     updateColor();
+    updateButtonState();
 }
 
 void NbtEditorWidget::updateText(LanguageManager::Language /* loaded */)
