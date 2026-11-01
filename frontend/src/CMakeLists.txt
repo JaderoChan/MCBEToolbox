@@ -18,8 +18,8 @@ set(
     ./app/app_configuration.h
     ./app/app_logo_icon.h
     ./app/block_attribute_text.h
-    ./app/block_list_filter_widget.h
     ./app/block_list_widget.h
+    ./app/extended_block_list_widget.h
     ./app/factory_option_widget.h
     ./app/fallback_block_selector.h
     ./app/image_grid_progress_bar.h
@@ -56,8 +56,8 @@ set(
     ./app/app_configuration.cpp
     ./app/app_logo_icon.cpp
     ./app/block_attribute_text.cpp
-    ./app/block_list_filter_widget.cpp
     ./app/block_list_widget.cpp
+    ./app/extended_block_list_widget.cpp
     ./app/factory_option_widget.cpp
     ./app/fallback_block_selector.cpp
     ./app/image_grid_progress_bar.cpp

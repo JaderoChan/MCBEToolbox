@@ -13,10 +13,10 @@ class QVariantAnimation;
 class BlockListWidget;
 
 /** 作为 #BlockListWidget 的父控件，扩展一些功能。 */
-class BlockListFilterWidget : public AdaptiveWidget
+class ExtendedBlockListWidget : public AdaptiveWidget
 {
 public:
-    explicit BlockListFilterWidget(BlockDataMap blocks, QWidget* parent = nullptr);
+    explicit ExtendedBlockListWidget(BlockDataMap blocks, QWidget* parent = nullptr);
 
     BlockListWidget* blockListWidget() const;
 

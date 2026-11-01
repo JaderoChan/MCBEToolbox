@@ -1,4 +1,4 @@
-#include "block_list_filter_widget.h"
+#include "extended_block_list_widget.h"
 
 #include <qcheckbox.h>
 #include <qcombobox.h>
@@ -31,7 +31,7 @@ constexpr int FILTER_PANEL_ANIM_DURATION_MS = 200;
 
 } // namespace
 
-BlockListFilterWidget::BlockListFilterWidget(BlockDataMap blocks, QWidget* parent)
+ExtendedBlockListWidget::ExtendedBlockListWidget(BlockDataMap blocks, QWidget* parent)
     : AdaptiveWidget(parent)
 {
     // 构建顶部工具栏 UI。
@@ -112,24 +112,24 @@ BlockListFilterWidget::BlockListFilterWidget(BlockDataMap blocks, QWidget* paren
 
     connect(selectAllButton_,    &QPushButton::clicked, blockListWidget_, &BlockListWidget::selectAll);
     connect(unselectAllButton_,  &QPushButton::clicked, blockListWidget_, &BlockListWidget::unselectAll);
-    connect(filterToggleButton_, &QPushButton::toggled, this,             &BlockListFilterWidget::toggleFilterPanel);
+    connect(filterToggleButton_, &QPushButton::toggled, this,             &ExtendedBlockListWidget::toggleFilterPanel);
     connect(excludeButton_,      &QPushButton::clicked, this,             [this]() { applyFilter(false); });
     connect(supplementButton_,   &QPushButton::clicked, this,             [this]() { applyFilter(true);  });
     connect(
         blockListWidget_, &BlockListWidget::selectionChanged,
-        this, &BlockListFilterWidget::updateSelectionCountLabel
+        this, &ExtendedBlockListWidget::updateSelectionCountLabel
     );
 
     updateText();
     updateSelectionCountLabel();
 }
 
-BlockListWidget* BlockListFilterWidget::blockListWidget() const
+BlockListWidget* ExtendedBlockListWidget::blockListWidget() const
 {
     return blockListWidget_;
 }
 
-void BlockListFilterWidget::updateText(LanguageManager::Language loaded)
+void ExtendedBlockListWidget::updateText(LanguageManager::Language loaded)
 {
     (void)loaded;
 
@@ -157,7 +157,7 @@ void BlockListFilterWidget::updateText(LanguageManager::Language loaded)
     updateSelectionCountLabel();
 }
 
-BlockAttributes BlockListFilterWidget::checkedAttributes() const
+BlockAttributes ExtendedBlockListWidget::checkedAttributes() const
 {
     BlockAttributes attributes = BLOCK_ATTRI_NONE;
     for (const auto* checkBox : attributeCheckBoxes_)
@@ -168,7 +168,7 @@ BlockAttributes BlockListFilterWidget::checkedAttributes() const
     return attributes;
 }
 
-void BlockListFilterWidget::applyFilter(bool supplement)
+void ExtendedBlockListWidget::applyFilter(bool supplement)
 {
     const auto mode       = static_cast<BlockAttributeFilterMode>(filterModeCombo_->currentData().toInt());
     const auto attributes = checkedAttributes();
@@ -177,7 +177,7 @@ void BlockListFilterWidget::applyFilter(bool supplement)
     else            blockListWidget_->excludeBlocks(attributes, mode);
 }
 
-void BlockListFilterWidget::updateSelectionCountLabel()
+void ExtendedBlockListWidget::updateSelectionCountLabel()
 {
     selectionCountLabel_->setText(
         QStringLiteral("%1: %2 / %3")
@@ -187,7 +187,7 @@ void BlockListFilterWidget::updateSelectionCountLabel()
     );
 }
 
-void BlockListFilterWidget::toggleFilterPanel(bool expand)
+void ExtendedBlockListWidget::toggleFilterPanel(bool expand)
 {
     const int targetHeight = expand ? filterPanel_->sizeHint().height() : 0;
 

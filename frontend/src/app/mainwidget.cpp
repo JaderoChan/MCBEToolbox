@@ -3,13 +3,13 @@
 #include <qlayout.h>
 #include <qstackedwidget.h>
 
-#include <block.hpp>
 #include <app_defines.h>
+#include <block.hpp>
 #include <components/sidebar_widget.h>
 #include <nbt_editor/nbt_editor_widget.h>
 #include <utils/directory_scope.h>
 #include "app_configuration.h"
-#include "block_list_filter_widget.h"
+#include "extended_block_list_widget.h"
 
 MainWidget::MainWidget(QWidget* parent)
     : AdaptiveWidget(parent)
@@ -31,7 +31,7 @@ MainWidget::MainWidget(QWidget* parent)
     // Stacked widget
     stackedWidget_ = new QStackedWidget(this);
     stackedWidget_->setContentsMargins(0, 0, 0, 0);
-    stackedWidget_->addWidget(new BlockListFilterWidget(getAppConfiguration().baseBlocks, this)); // TODO
+    stackedWidget_->addWidget(new ExtendedBlockListWidget(getAppConfiguration().baseBlocks, this)); // TODO
     stackedWidget_->addWidget(new QWidget(this)); // TODO
     stackedWidget_->addWidget(new NbtEditorWidget(this));
     stackedWidget_->addWidget(new QWidget(this)); // TODO
