@@ -21,12 +21,12 @@ public:
     BlockListWidget* blockListWidget() const;
 
 protected:
-    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override;
+    void refreshText() override;
 
 private:
     BlockAttributes checkedAttributes() const;
     void            applyFilter(bool supplement);
-    void            updateSelectionCountLabel();
+    void            refreshSelectionCountLabel();
     void            toggleFilterPanel(bool expand);
 
     QPushButton*       selectAllButton_       = nullptr;

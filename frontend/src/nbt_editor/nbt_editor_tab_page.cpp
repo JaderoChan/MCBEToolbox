@@ -106,7 +106,7 @@ public:
         mainLayout->addWidget(containerWidget);
         mainLayout->addWidget(buttonWidget);
 
-        updateText();
+        refreshText();
     }
 
     void setBigEndian(bool bigEndian)
@@ -135,7 +135,7 @@ public:
     QString filePath() const { return filePathEdit_->text(); }
 
 protected:
-    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override
+    void refreshText() override
     {
         setWindowTitle(EASYTR("Save NBT Options"));
         endianLabel_->setText(EASYTR("Endianness:"));
@@ -255,8 +255,8 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
 
     // NBT 视图。
     nbtView_ = new NbtTreeView(this);
-    connect(nbtView_, &NbtTreeView::selectedItemChanged, this, &NbtEditorTabPage::updateButtonState);
-    connect(nbtView_, &NbtTreeView::tagChanged, this, [this]() { needUpdateSnbt_ = true; updateButtonState(); });
+    connect(nbtView_, &NbtTreeView::selectedItemChanged, this, &NbtEditorTabPage::refreshButtonState);
+    connect(nbtView_, &NbtTreeView::tagChanged, this, [this]() { needUpdateSnbt_ = true; refreshButtonState(); });
 
     // SNBT 页面。
     snbtWidget_ = new CodeTextEdit(this);
@@ -302,9 +302,9 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     mainLayout->addWidget(stackedWidget_);
     mainLayout->addWidget(stateBarWidget);
 
-    updateText();
-    updateColor();
-    updateButtonState();
+    refreshText();
+    refreshColor();
+    refreshButtonState();
 }
 
 NbtEditorTabPage* NbtEditorTabPage::createFromFile(const QString& filePath, QWidget* parent)
@@ -428,7 +428,7 @@ void NbtEditorTabPage::saveNbtAs()
     saveNbt(fileInfo);
 }
 
-void NbtEditorTabPage::updateText(LanguageManager::Language /* loaded */)
+void NbtEditorTabPage::refreshText()
 {
     renameButton_->setText(EASYTR("Rename"));
     editButton_->setText(EASYTR("Edit"));
@@ -446,10 +446,10 @@ void NbtEditorTabPage::updateText(LanguageManager::Language /* loaded */)
     addButtons_[nbt::TT_LONG_ARRAY]->setToolTip(EASYTR("Add Long Array Tag"));
     addButtons_[nbt::TT_LIST]->setToolTip(EASYTR("Add List Tag"));
     addButtons_[nbt::TT_COMPOUND]->setToolTip(EASYTR("Add Compound Tag"));
-    updateStateBarText();
+    refreshStateBarText();
 }
 
-void NbtEditorTabPage::updateColor(ColorSchemeManager::ColorScheme /* loaded */)
+void NbtEditorTabPage::refreshColor()
 {
     for (auto& button : {renameButton_, editButton_, removeButton_, snbtButton_})
         button->setStyleSheet(getToolButtonStyleSheet());
@@ -500,10 +500,10 @@ void NbtEditorTabPage::togglePage()
         stackedWidget_->setCurrentIndex(0);
     }
 
-    updateButtonState();
+    refreshButtonState();
 }
 
-void NbtEditorTabPage::updateButtonState()
+void NbtEditorTabPage::refreshButtonState()
 {
     // 先全部禁用。
     for (auto& button : {renameButton_, editButton_, removeButton_, snbtButton_})
@@ -551,7 +551,7 @@ void NbtEditorTabPage::updateButtonState()
     }
 }
 
-void NbtEditorTabPage::updateStateBarText()
+void NbtEditorTabPage::refreshStateBarText()
 {
     if (fileInfo_.valid)
     {
@@ -573,7 +573,7 @@ void NbtEditorTabPage::setFileInfo(NbtFileInfo fileInfo)
 {
     const bool pathChanged = fileInfo_.filePath != fileInfo.filePath;
     fileInfo_ = std::move(fileInfo);
-    updateStateBarText();
+    refreshStateBarText();
     if (pathChanged)
         emit filePathChanged(fileInfo_.filePath);
 }

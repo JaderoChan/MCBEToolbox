@@ -38,7 +38,7 @@ protected:
     void paintEvent(QPaintEvent*) override;
 
 private:
-    void updateToolTip();
+    void refreshToolTip();
 
     QPixmap image_;
     int     gridRows_   = 10;

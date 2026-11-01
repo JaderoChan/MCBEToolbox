@@ -136,7 +136,7 @@ NbtRowEditor::NbtRowEditor(nbt::TagType type, bool isNamingTag, QWidget* parent)
     validator_ = makeTagTypeValidator(type_, this);
     if (validator_) valueEdit_->setValidator(validator_);
 
-    updateText();
+    refreshText();
 }
 
 nbt::TagType NbtRowEditor::type() const
@@ -243,7 +243,7 @@ bool NbtRowEditor::eventFilter(QObject* obj, QEvent* e)
     return QWidget::eventFilter(obj, e);
 }
 
-void NbtRowEditor::updateText(LanguageManager::Language /* loaded */)
+void NbtRowEditor::refreshText()
 {
     confirmButton_->setToolTip(EASYTR("Confirm"));
     cancelButton_->setToolTip(EASYTR("Cancel"));

@@ -92,7 +92,7 @@ signals:
     void expandedChanged(bool expanded);
 
 private:
-    void updateToggleIcon();
+    void refreshToggleIcon();
     void animateWidthTo(int targetWidth);
     void applyEntrySize();
 

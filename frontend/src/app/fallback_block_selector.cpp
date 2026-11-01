@@ -41,7 +41,7 @@ public:
         mainLayout->addWidget(widget_);
         mainLayout->addWidget(buttonWidget);
 
-        updateText();
+        refreshText();
     }
 
     BlockDataPair selected() const
@@ -62,7 +62,7 @@ public:
     }
 
 protected:
-    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override
+    void refreshText() override
     {
         setWindowTitle(EASYTR("Select Custom Fallback Block"));
         confirmButton_->setText(EASYTR("Confirm"));
@@ -104,7 +104,7 @@ FallbackBlockSelector::FallbackBlockSelector(BlockDataMap blocks, QWidget* paren
         if (dialog.exec() == QDialog::Accepted)
         {
             customBlock_ = std::move(dialog.selected());
-            updateCustomButtonTextIcon();
+            refreshCustomButtonTextIcon();
         }
     });
 
@@ -122,8 +122,8 @@ FallbackBlockSelector::FallbackBlockSelector(BlockDataMap blocks, QWidget* paren
     mainLayout->addWidget(customButtonWidget);
     mainLayout->addStretch();
 
-    updateText();
-    updateButtonState();
+    refreshText();
+    refreshButtonState();
 
     setSelectedCustomBlock(DEFAULT_CUSTOM_BLOCK_ID);
 }
@@ -131,7 +131,7 @@ FallbackBlockSelector::FallbackBlockSelector(BlockDataMap blocks, QWidget* paren
 void FallbackBlockSelector::setMode(Mode mode)
 {
     mode_ = mode;
-    updateButtonState();
+    refreshButtonState();
 }
 
 FallbackBlockSelector::Mode FallbackBlockSelector::mode() const
@@ -168,7 +168,7 @@ void FallbackBlockSelector::setSelectedCustomBlock(const QString& blockId)
         return;
 
     customBlock_ = {it->first, it->second};
-    updateCustomButtonTextIcon();
+    refreshCustomButtonTextIcon();
 }
 
 BlockDataPair FallbackBlockSelector::fallbackBlock() const
@@ -182,15 +182,15 @@ BlockDataPair FallbackBlockSelector::fallbackBlock() const
     }
 }
 
-void FallbackBlockSelector::updateText(LanguageManager::Language loaded)
+void FallbackBlockSelector::refreshText()
 {
     noneBlockButton_->setText(EASYTR("None Block"));
     airBlockButton_->setText(EASYTR("Air Block"));
     customBlockSelectorButton_->setText(QStringLiteral("..."));
-    updateCustomButtonTextIcon();
+    refreshCustomButtonTextIcon();
 }
 
-void FallbackBlockSelector::updateButtonState()
+void FallbackBlockSelector::refreshButtonState()
 {
     switch (mode_)
     {
@@ -209,7 +209,7 @@ void FallbackBlockSelector::updateButtonState()
     customBlockSelectorButton_->setVisible(mode_ == CustomBlockMode);
 }
 
-void FallbackBlockSelector::updateCustomButtonTextIcon()
+void FallbackBlockSelector::refreshCustomButtonTextIcon()
 {
     if (blocks_.count(customBlock_.first) > 0)
     {

@@ -5,48 +5,48 @@ AdaptiveWidget::AdaptiveWidget(QWidget* parent)
 {
     connect(
         &LanguageManager::instance(), &LanguageManager::loadedLanguageChanged,
-        this, &AdaptiveWidget::updateText
+        this, &AdaptiveWidget::refreshText
     );
     connect(
         &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, &AdaptiveWidget::updateColor
+        this, &AdaptiveWidget::refreshColor
     );
 }
 
-void AdaptiveWidget::updateText(LanguageManager::Language /* loaded */) {}
+void AdaptiveWidget::refreshText() {}
 
-void AdaptiveWidget::updateColor(ColorSchemeManager::ColorScheme /* loaded */) {}
+void AdaptiveWidget::refreshColor() {}
 
 AdaptiveMainWindow::AdaptiveMainWindow(QWidget* parent)
     : QMainWindow(parent)
 {
     connect(
         &LanguageManager::instance(), &LanguageManager::loadedLanguageChanged,
-        this, &AdaptiveMainWindow::updateText
+        this, &AdaptiveMainWindow::refreshText
     );
     connect(
         &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, &AdaptiveMainWindow::updateColor
+        this, &AdaptiveMainWindow::refreshColor
     );
 }
 
-void AdaptiveMainWindow::updateText(LanguageManager::Language /* loaded */) {}
+void AdaptiveMainWindow::refreshText() {}
 
-void AdaptiveMainWindow::updateColor(ColorSchemeManager::ColorScheme /* loaded */) {}
+void AdaptiveMainWindow::refreshColor() {}
 
 AdaptiveDialog::AdaptiveDialog(QWidget* parent)
     : QDialog(parent)
 {
     connect(
         &LanguageManager::instance(), &LanguageManager::loadedLanguageChanged,
-        this, &AdaptiveDialog::updateText
+        this, &AdaptiveDialog::refreshText
     );
     connect(
         &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, &AdaptiveDialog::updateColor
+        this, &AdaptiveDialog::refreshColor
     );
 }
 
-void AdaptiveDialog::updateText(LanguageManager::Language /* loaded */) {}
+void AdaptiveDialog::refreshText() {}
 
-void AdaptiveDialog::updateColor(ColorSchemeManager::ColorScheme /* loaded */) {}
+void AdaptiveDialog::refreshColor() {}

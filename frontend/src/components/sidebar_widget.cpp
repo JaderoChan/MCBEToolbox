@@ -594,7 +594,7 @@ SidebarWidget::SidebarWidget(QWidget* parent)
     });
 
     toggleEntry_ = new SidebarEntryWidget(true, this);
-    updateToggleIcon();
+    refreshToggleIcon();
     mainLayout_->addWidget(toggleEntry_);
     connect(toggleEntry_, &SidebarEntryWidget::clicked, this, &SidebarWidget::toggle);
 
@@ -602,7 +602,7 @@ SidebarWidget::SidebarWidget(QWidget* parent)
 
     connect(
         &ColorSchemeManager::instance(), &ColorSchemeManager::loadedColorSchemeChanged,
-        this, &SidebarWidget::updateToggleIcon
+        this, &SidebarWidget::refreshToggleIcon
     );
 
     setFixedWidth(expandedWidth_);
@@ -865,7 +865,7 @@ void SidebarWidget::setCurrentIndex(int index)
     emit currentIndexChanged(currentIndex_);
 }
 
-void SidebarWidget::updateToggleIcon()
+void SidebarWidget::refreshToggleIcon()
 {
     const bool dark = ColorSchemeManager::instance().loadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
     QPixmap toggleIcon;

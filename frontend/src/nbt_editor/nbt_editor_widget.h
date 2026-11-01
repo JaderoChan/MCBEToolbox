@@ -15,10 +15,8 @@ public:
     explicit NbtEditorWidget(QWidget* parent = nullptr);
 
 protected:
-    void updateText(
-        LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override;
-    void updateColor(
-        ColorSchemeManager::ColorScheme loaded = ColorSchemeManager::instance().loadedColorScheme()) override;
+    void refreshText() override;
+    void refreshColor() override;
 
     bool eventFilter(QObject* obj, QEvent* e) override;
 
@@ -31,7 +29,7 @@ private:
 
     void addPage(NbtEditorTabPage* page, const QString& title);
     void removePage(int index);
-    void updateButtonState();
+    void refreshButtonState();
 
     void onFilesDropped(const QStringList& filePaths);
 

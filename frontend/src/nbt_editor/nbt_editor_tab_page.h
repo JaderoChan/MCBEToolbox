@@ -39,10 +39,8 @@ signals:
     void filePathChanged(const QString& filePath);
 
 protected:
-    void updateText(
-        LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override;
-    void updateColor(
-        ColorSchemeManager::ColorScheme loaded = ColorSchemeManager::instance().loadedColorScheme()) override;
+    void refreshText() override;
+    void refreshColor() override;
 
 private:
     // 有关 NBT 文件的更多信息可以参见 https://wiki.bedrock.dev/nbt/nbt-in-depth。
@@ -63,8 +61,8 @@ private:
     static NbtFileInfo popupDialogForFileInfo(const NbtFileInfo& defaultValue = NbtFileInfo());
 
     void togglePage();
-    void updateButtonState();
-    void updateStateBarText();
+    void refreshButtonState();
+    void refreshStateBarText();
 
     void setFileInfo(NbtFileInfo fileInfo);
     void saveNbt(const NbtFileInfo& fileInfo);

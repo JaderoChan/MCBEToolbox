@@ -48,7 +48,7 @@ public:
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         setCursor(Qt::PointingHandCursor);
 
-        updateText();
+        refreshText();
     }
 
     const BlockDataPair& block() const
@@ -185,10 +185,8 @@ protected:
         }
     }
 
-    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override
+    void refreshText() override
     {
-        (void)loaded;
-
         if (getAppConfiguration().blockEntries.count(std::string(block_.first)) == 0)
             return;
 

@@ -36,11 +36,11 @@ public:
     BlockDataPair fallbackBlock() const;
 
 protected:
-    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override;
+    void refreshText() override;
 
 private:
-    void updateButtonState();
-    void updateCustomButtonTextIcon();
+    void refreshButtonState();
+    void refreshCustomButtonTextIcon();
 
     Mode mode_ = NoneBlockMode;
 

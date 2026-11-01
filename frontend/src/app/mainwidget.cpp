@@ -47,11 +47,11 @@ MainWidget::MainWidget(QWidget* parent)
     connect(sidebarWidget_, &SidebarWidget::currentIndexChanged, stackedWidget_, &QStackedWidget::setCurrentIndex);
 
     resize(1080, 720);
-    updateText();
-    updateColor();
+    refreshText();
+    refreshColor();
 }
 
-void MainWidget::updateText(LanguageManager::Language loaded)
+void MainWidget::refreshText()
 {
     setWindowTitle(EASYTR(APP_TITLE));
     sidebarWidget_->setEntryText(0, EASYTR("Pixel-Art Generator"));
@@ -64,9 +64,9 @@ void MainWidget::updateText(LanguageManager::Language loaded)
     sidebarWidget_->setEntryToolTip(3, EASYTR("Settings"));
 }
 
-void MainWidget::updateColor(ColorSchemeManager::ColorScheme loaded)
+void MainWidget::refreshColor()
 {
-    if (loaded == ColorSchemeManager::COLOR_SCHEME_DARK)
+    if (ColorSchemeManager::instance().loadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK)
     {
         auto palette      = qApp->palette();
         const auto& color = palette.brush(QPalette::Window).color().lighter(135);

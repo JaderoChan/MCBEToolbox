@@ -117,11 +117,11 @@ ExtendedBlockListWidget::ExtendedBlockListWidget(BlockDataMap blocks, QWidget* p
     connect(supplementButton_,   &QPushButton::clicked, this,             [this]() { applyFilter(true);  });
     connect(
         blockListWidget_, &BlockListWidget::selectionChanged,
-        this, &ExtendedBlockListWidget::updateSelectionCountLabel
+        this, &ExtendedBlockListWidget::refreshSelectionCountLabel
     );
 
-    updateText();
-    updateSelectionCountLabel();
+    refreshText();
+    refreshSelectionCountLabel();
 }
 
 BlockListWidget* ExtendedBlockListWidget::blockListWidget() const
@@ -129,10 +129,8 @@ BlockListWidget* ExtendedBlockListWidget::blockListWidget() const
     return blockListWidget_;
 }
 
-void ExtendedBlockListWidget::updateText(LanguageManager::Language loaded)
+void ExtendedBlockListWidget::refreshText()
 {
-    (void)loaded;
-
     selectAllButton_->setText(EASYTR("Select All"));
     unselectAllButton_->setText(EASYTR("Select None"));
     filterToggleButton_->setText(EASYTR("Filter"));
@@ -154,7 +152,7 @@ void ExtendedBlockListWidget::updateText(LanguageManager::Language loaded)
     }
     filterModeCombo_->setCurrentIndex(currentIndex);
 
-    updateSelectionCountLabel();
+    refreshSelectionCountLabel();
 }
 
 BlockAttributes ExtendedBlockListWidget::checkedAttributes() const
@@ -177,7 +175,7 @@ void ExtendedBlockListWidget::applyFilter(bool supplement)
     else            blockListWidget_->excludeBlocks(attributes, mode);
 }
 
-void ExtendedBlockListWidget::updateSelectionCountLabel()
+void ExtendedBlockListWidget::refreshSelectionCountLabel()
 {
     selectionCountLabel_->setText(
         QStringLiteral("%1: %2 / %3")

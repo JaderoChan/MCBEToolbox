@@ -55,7 +55,7 @@ public:
         mainLayout->addWidget(buttonWidget);
         resize(600, 480);
 
-        updateText();
+        refreshText();
     }
 
     QString text() const
@@ -64,7 +64,7 @@ public:
     }
 
 protected:
-    void updateText(LanguageManager::Language loaded = LanguageManager::instance().loadedLanguage()) override
+    void refreshText() override
     {
         setWindowTitle(EASYTR("Parse SNBT"));
         confirmButton_->setText(EASYTR("Confirm"));
@@ -117,7 +117,7 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     tabWidget_->setAcceptDrops(true);
     tabWidget_->installEventFilter(this);
     connect(tabWidget_, &QTabWidget::tabCloseRequested, this, &NbtEditorWidget::removePage);
-    connect(tabWidget_, &QTabWidget::currentChanged,    this, &NbtEditorWidget::updateButtonState);
+    connect(tabWidget_, &QTabWidget::currentChanged,    this, &NbtEditorWidget::refreshButtonState);
 
     // 主布局。
     auto* mainLayout = new QVBoxLayout(this);
@@ -147,12 +147,12 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
 
     addActions({newAction, openAction, saveAction, saveAsAction, closeAction});
 
-    updateText();
-    updateColor();
-    updateButtonState();
+    refreshText();
+    refreshColor();
+    refreshButtonState();
 }
 
-void NbtEditorWidget::updateText(LanguageManager::Language /* loaded */)
+void NbtEditorWidget::refreshText()
 {
     newButton_->setText(EASYTR("New"));
     openButton_->setText(EASYTR("Open"));
@@ -161,7 +161,7 @@ void NbtEditorWidget::updateText(LanguageManager::Language /* loaded */)
     parseSnbtButton_->setText(EASYTR("Parse SNBT"));
 }
 
-void NbtEditorWidget::updateColor(ColorSchemeManager::ColorScheme /* loaded */)
+void NbtEditorWidget::refreshColor()
 {
     for (auto& button : {newButton_, openButton_, saveButton_, saveAsButton_, parseSnbtButton_})
         button->setStyleSheet(getToolButtonStyleSheet());
@@ -290,7 +290,7 @@ void NbtEditorWidget::addPage(NbtEditorTabPage* page, const QString& title)
 {
     const int index = tabWidget_->addTab(page, title);
     tabWidget_->setTabToolTip(index, title);
-    connect(page->nbtView(), &NbtTreeView::tagChanged,   this, &NbtEditorWidget::updateButtonState);
+    connect(page->nbtView(), &NbtTreeView::tagChanged,   this, &NbtEditorWidget::refreshButtonState);
     connect(page->nbtView(), &NbtTreeView::filesDropped, this, &NbtEditorWidget::onFilesDropped);
     connect(page, &NbtEditorTabPage::filePathChanged, this, [this, page](const QString& filePath)
     {
@@ -311,7 +311,7 @@ void NbtEditorWidget::removePage(int index)
     }
 }
 
-void NbtEditorWidget::updateButtonState()
+void NbtEditorWidget::refreshButtonState()
 {
     auto*      page    = currentPage();
     const bool enabled = page && page->hasValidRootTag();
