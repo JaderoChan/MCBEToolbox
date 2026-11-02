@@ -52,5 +52,5 @@ private:
     QToolButton*  customBlockSelectorButton_ = nullptr;
 
     BlockDataMap  customBlocks_;
-    BlockDataPair selectedCustomBlock_ = {std::string_view(), nullptr}; // 空方块
+    BlockDataPair selectedCustomBlock_ = {std::string_view(), nullptr}; ///< 空方块
 };
