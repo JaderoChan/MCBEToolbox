@@ -22,8 +22,17 @@ bool imwriteUnicode(const std::filesystem::path& path, const cv::Mat& image, con
         return false;
 
 #ifdef _WIN32
-    std::unique_ptr<fs_utils::AsciiSafeAlias> alias = std::make_unique<fs_utils::AsciiSafeAlias>(path);
-    return cv::imwrite(alias->path().string(), image, params);
+    const std::filesystem::path& parentDir =
+        path.has_parent_path() ? path.parent_path() : std::filesystem::current_path();
+    std::unique_ptr<fs_utils::AsciiSafeAlias> alias = std::make_unique<fs_utils::AsciiSafeAlias>(parentDir);
+    if (!alias->ok())
+        return cv::imwrite(path.string(), image, params);
+
+    const std::filesystem::path& tempFilePath =
+        alias->path() / (fs_utils::generateUuid4() + path.extension().string());
+    if (!cv::imwrite(tempFilePath.string(), image, params))
+        return false;
+    return fs_utils::moveFileReplacing(tempFilePath, path);
 #else
     return cv::imwrite(path.string(), image, params);
 #endif // _WIN32

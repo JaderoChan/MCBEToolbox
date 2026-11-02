@@ -176,10 +176,9 @@ AsciiSafeAlias::AsciiSafeAlias(const std::filesystem::path& originalPath) : orig
     const std::filesystem::path& tempPath  = std::filesystem::temp_directory_path(ec);
     if (ec)
         return;
-    const std::filesystem::path& candidate =
-        tempPath / originalPath_.stem() / (generateUuid4() + originalPath_.extension().string());
+    const std::filesystem::path& candidate = tempPath / (generateUuid4() + originalPath_.extension().string());
 
-    if (std::filesystem::exists(candidate, ec));
+    if (std::filesystem::exists(candidate, ec))
         std::filesystem::remove_all(candidate, ec);
 
     if (std::filesystem::is_regular_file(absOriginal, ec))

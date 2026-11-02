@@ -214,7 +214,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
                     // 如果当前材质还未被加载则将其加载至缓存中。
                     if (texturesCache.find(textureKey) == texturesCache.end())
                     {
-                        cv::Mat texture = imreadUnicode(texturePath);
+                        cv::Mat texture = cv::imread(texturePath.string());
                         if (!texture.empty())
                             texture = convertColorToBgra(texture);
                         if (texture.empty())
