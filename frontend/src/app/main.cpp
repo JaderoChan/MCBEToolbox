@@ -10,7 +10,13 @@
 #include "app_logo_icon.h"
 #include "mainwidget.h"
 
+// 仅供测试，Release 阶段移除。
+#include <qfileinfo.h>
+#include <qpushbutton.h>
+
+#include <utils/debug_output.h>
 #include "fallback_block_selector.h"
+#include "output_file_selector.h"
 
 int main(int argc, char* argv[])
 {
@@ -60,8 +66,35 @@ int main(int argc, char* argv[])
     MainWidget w;
     w.show();
 
+    // 仅供测试，Release 阶段移除。
     FallbackBlockSelector w2(getAppConfiguration().baseBlocks);
     w2.show();
+
+    OutputFileSelector w3;
+    const QString   filePath("C:/path/to/input.png");
+    const QFileInfo fileInfo(filePath);
+    w3.setInputFilePath(filePath);
+    w3.setCustomOutputDirectoryPath(fileInfo.path());
+    w3.setCustomOutputFilePath(
+        fileInfo.path() + QStringLiteral("/") + fileInfo.completeBaseName() + QStringLiteral(".mp4"));
+    w3.setOutputFileExtension(QStringLiteral("mp4"));
+    w3.show();
+
+    QPushButton outputDebugInfoButton(QStringLiteral("Output Debug Info"));
+    outputDebugInfoButton.show();
+    QObject::connect(&outputDebugInfoButton, &QPushButton::clicked, qApp, [&w2, &w3]()
+    {
+        const auto& fallbackBlock  = w2.fallbackBlock();
+        const auto& outputFilePath = w3.outputFilePath();
+        debugOut(
+            qDebug(),
+            "Fallback Block: %1",
+            fallbackBlock.first == std::string_view()
+            ? "None Block"
+            : QString::fromStdString(std::string(fallbackBlock.first))
+        );
+        debugOut(qDebug(), "Output File Path: %1", outputFilePath);
+    });
 
     int ret = a.exec();
 
