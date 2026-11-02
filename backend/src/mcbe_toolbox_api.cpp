@@ -21,9 +21,9 @@ bool isStreamReady(const ImageOStream& stream)
     return stream.isOpened() && !stream.isEnd();
 }
 
-// 便利函数：将 FactoryOptionBase 中各工厂通用的选项应用到给定工厂实例上。
+// 便利函数：将 GeneratorCommonOption 中各工厂通用的选项应用到给定工厂实例上。
 template <typename Factory>
-void applyBaseFactoryOptions(Factory& factory, const FactoryOptionBase& option)
+void applyBaseFactoryOptions(Factory& factory, const GeneratorCommonOption& option)
 {
     if (option.needUpdateBlocks) factory.setBlocks(option.blocks);
     factory.setDesiredSurface(option.desiredSurface);
@@ -42,7 +42,7 @@ void configureMCPack(MCPack& pack, const MCPackOption& packOption)
 } // namespace
 
 FactoryResult generateBlockImage(
-    ImageOStream& stream, BlockImageFactory& factory, const FactoryOptionBlockImage& option)
+    ImageOStream& stream, BlockImageFactory& factory, const BlockImageGeneratorOption& option)
 {
     if (!isStreamReady(stream))
         return {false, {}};
@@ -104,7 +104,7 @@ FactoryResult generateBlockImage(
 }
 
 FactoryResult generateMCStructurePack(
-    ImageOStream& stream, MCStructureFactory& factory, const FactoryOptionMCPack& option)
+    ImageOStream& stream, MCStructureFactory& factory, const MCPackGeneratorOption& option)
 {
     if (!isStreamReady(stream))
         return {false, {}};
@@ -168,7 +168,7 @@ FactoryResult generateMCStructurePack(
 }
 
 FactoryResult generateMCFucntionPack(
-    ImageOStream& stream, MCFunctionFactory& factory, const FactoryOptionMCPack& option)
+    ImageOStream& stream, MCFunctionFactory& factory, const MCPackGeneratorOption& option)
 {
     if (!isStreamReady(stream))
         return {false, {}};

@@ -19,7 +19,7 @@
  * 此外为 #MCStructureFactory 与 #MCFunctionFactory 提供额外的 MC Pack 处理。
  */
 
-struct FactoryOptionBase
+struct GeneratorCommonOption
 {
     bool                          needUpdateBlocks;
     BlockDataMap                  blocks;
@@ -37,7 +37,7 @@ struct FactoryResult
     BaseFactory::BlockUsageMap usage;
 };
 
-struct FactoryOptionBlockImage : public FactoryOptionBase
+struct BlockImageGeneratorOption : public GeneratorCommonOption
 {
     bool                  generateVideo;
     std::filesystem::path textureDirPath;
@@ -53,7 +53,7 @@ struct MCPackOption
     Version     minVersion;
 };
 
-struct FactoryOptionMCPack : public FactoryOptionBase
+struct MCPackGeneratorOption : public GeneratorCommonOption
 {
     bool         auxFunctionEnabled;
     bool         detachFileEnabled;
@@ -61,11 +61,12 @@ struct FactoryOptionMCPack : public FactoryOptionBase
 };
 
 FactoryResult generateBlockImage(
-    ImageOStream& stream, BlockImageFactory& factory, const FactoryOptionBlockImage& option);
+    ImageOStream& stream, BlockImageFactory& factory, const BlockImageGeneratorOption& option);
 
 FactoryResult generateMCStructurePack(
-    ImageOStream& stream, MCStructureFactory& factory, const FactoryOptionMCPack& option);
+    ImageOStream& stream, MCStructureFactory& factory, const MCPackGeneratorOption& option);
 
 FactoryResult generateMCFucntionPack(
-    ImageOStream& stream, MCFunctionFactory& factory, const FactoryOptionMCPack& option);
+    ImageOStream& stream, MCFunctionFactory& factory, const MCPackGeneratorOption& option);
+
 
