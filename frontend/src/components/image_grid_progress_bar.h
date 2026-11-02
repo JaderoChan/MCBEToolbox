@@ -3,7 +3,7 @@
 #include <qcolor.h>
 #include <qpixmap.h>
 
-#include <components/adaptive_widget.h>
+#include "adaptive_widget.h"
 
 /** 将图片分割成指定大小网格并依次点亮的风格化进度条。 */
 class ImageGridProgressBar : public AdaptiveWidget

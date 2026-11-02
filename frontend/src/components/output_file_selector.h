@@ -2,7 +2,7 @@
 
 #include <qstring.h>
 
-#include <components/adaptive_widget.h>
+#include "adaptive_widget.h"
 
 class QHBoxLayout;
 class QLineEdit;

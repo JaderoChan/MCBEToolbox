@@ -4,7 +4,7 @@
 #include <qlist.h>
 #include <qstring.h>
 
-#include <components/adaptive_widget.h>
+#include "adaptive_widget.h"
 
 class QButtonGroup;
 class QHBoxLayout;

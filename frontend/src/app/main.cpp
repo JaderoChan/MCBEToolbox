@@ -15,8 +15,9 @@
 #include <qpushbutton.h>
 
 #include <utils/debug_output.h>
+#include <components/output_file_selector.h>
+#include "block_usage_widget.h"
 #include "fallback_block_selector.h"
-#include "output_file_selector.h"
 
 int main(int argc, char* argv[])
 {

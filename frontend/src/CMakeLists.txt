@@ -23,19 +23,19 @@ set(
     ./app/extended_block_list_widget.h
     ./app/factory_option_widget.h
     ./app/fallback_block_selector.h
-    ./app/image_grid_progress_bar.h
     ./app/mainwidget.h
     ./app/mcpack_option_widget.h
-    ./app/output_file_selector.h
-    ./app/tabbed_page_widget.h
 
     ./components/adaptive_widget.h
     ./components/color_scheme_manager.h
     ./components/code_text_edit.h
     ./components/flow_grid_layout.h
+    ./components/image_grid_progress_bar.h
     ./components/language_manager.h
+    ./components/output_file_selector.h
     ./components/sidebar_widget.h
     ./components/stylesheet_table.h
+    ./components/tabbed_page_widget.h
 
     ./nbt_editor/nbt_editor_tab_page.h
     ./nbt_editor/nbt_editor_widget.h
@@ -63,20 +63,20 @@ set(
     ./app/extended_block_list_widget.cpp
     ./app/factory_option_widget.cpp
     ./app/fallback_block_selector.cpp
-    ./app/image_grid_progress_bar.cpp
     ./app/main.cpp
     ./app/mainwidget.cpp
     ./app/mcpack_option_widget.cpp
-    ./app/output_file_selector.cpp
-    ./app/tabbed_page_widget.cpp
 
     ./components/adaptive_widget.cpp
     ./components/color_scheme_manager.cpp
     ./components/code_text_edit.cpp
     ./components/flow_grid_layout.cpp
+    ./components/image_grid_progress_bar.cpp
     ./components/language_manager.cpp
+    ./components/output_file_selector.cpp
     ./components/sidebar_widget.cpp
     ./components/stylesheet_table.cpp
+    ./components/tabbed_page_widget.cpp
 
     ./nbt_editor/nbt_editor_tab_page.cpp
     ./nbt_editor/nbt_editor_widget.cpp
