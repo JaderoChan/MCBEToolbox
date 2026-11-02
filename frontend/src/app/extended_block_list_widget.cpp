@@ -31,7 +31,7 @@ constexpr int FILTER_PANEL_ANIM_DURATION_MS = 200;
 
 } // namespace
 
-ExtendedBlockListWidget::ExtendedBlockListWidget(BlockDataMap blocks, QWidget* parent)
+ExtendedBlockListWidget::ExtendedBlockListWidget(QWidget* parent)
     : AdaptiveWidget(parent)
 {
     // 构建顶部工具栏 UI。
@@ -94,7 +94,7 @@ ExtendedBlockListWidget::ExtendedBlockListWidget(BlockDataMap blocks, QWidget* p
     filterPanelLayout->addLayout(filterActionLayout);
 
     // 主布局。
-    blockListWidget_ = new BlockListWidget(std::move(blocks), this);
+    blockListWidget_ = new BlockListWidget(this);
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -127,6 +127,17 @@ ExtendedBlockListWidget::ExtendedBlockListWidget(BlockDataMap blocks, QWidget* p
 BlockListWidget* ExtendedBlockListWidget::blockListWidget() const
 {
     return blockListWidget_;
+}
+
+void ExtendedBlockListWidget::setBlocks(BlockDataMap blocks)
+{
+    blockListWidget_->setBlocks(std::move(blocks));
+    refreshSelectionCountLabel();
+}
+
+const BlockDataMap& ExtendedBlockListWidget::blocks() const
+{
+    return blockListWidget_->blocks();
 }
 
 void ExtendedBlockListWidget::refreshText()

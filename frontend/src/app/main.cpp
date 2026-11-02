@@ -67,7 +67,10 @@ int main(int argc, char* argv[])
     w.show();
 
     // 仅供测试，Release 阶段移除。
-    FallbackBlockSelector w2(getAppConfiguration().baseBlocks);
+    constexpr const char* DEFAULT_CUSTOM_BLOCK_ID = "minecraft:glass_group:glass";
+    FallbackBlockSelector w2;
+    w2.setCustomBlocks(getAppConfiguration().baseBlocks);
+    w2.setSelectedCustomBlock(DEFAULT_CUSTOM_BLOCK_ID);
     w2.show();
 
     OutputFileSelector w3;

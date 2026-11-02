@@ -17,7 +17,7 @@ class BlockListWidget : public AdaptiveWidget
     Q_OBJECT
 
 public:
-    explicit BlockListWidget(BlockDataMap blocks, QWidget* parent = nullptr);
+    explicit BlockListWidget(QWidget* parent = nullptr);
 
     void select(const QString& blockId);
     void select(const QList<QString>& blockIds);

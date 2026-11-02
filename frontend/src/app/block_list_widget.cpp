@@ -225,8 +225,8 @@ private:
     bool pressed_  = false;
 };
 
-BlockListWidget::BlockListWidget(BlockDataMap blocks, QWidget* parent)
-    : AdaptiveWidget(parent), blocks_(std::move(blocks))
+BlockListWidget::BlockListWidget(QWidget* parent)
+    : AdaptiveWidget(parent)
 {
     gridContainer_ = new QWidget();
     gridLayout_    = new FlowGridLayout(ITEM_SPACING, ITEM_SPACING, ITEM_MIN_SIZE, ITEM_MAX_SIZE, gridContainer_);
@@ -239,8 +239,6 @@ BlockListWidget::BlockListWidget(BlockDataMap blocks, QWidget* parent)
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->addWidget(scrollArea_);
-
-    rebuildBlocks();
 }
 
 void BlockListWidget::select(const QString& blockId)

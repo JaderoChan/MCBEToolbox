@@ -13,8 +13,6 @@ class FallbackBlockSelector : public AdaptiveWidget
 {
     Q_OBJECT
 
-    static constexpr const char* DEFAULT_CUSTOM_BLOCK_ID = "minecraft:glass_group:glass";
-
 public:
     enum Mode
     {
@@ -23,13 +21,16 @@ public:
         CustomBlockMode
     };
 
-    explicit FallbackBlockSelector(BlockDataMap blocks, QWidget* parent = nullptr);
+    explicit FallbackBlockSelector(QWidget* parent = nullptr);
 
     void setMode(Mode mode);
     Mode mode() const;
 
     void setModeButtonVisible(Mode mode, bool visible);
     bool modeButtonVisible(Mode mode) const;
+
+    void setCustomBlocks(BlockDataMap blocks);
+    const BlockDataMap& customBlocks() const;
 
     void setSelectedCustomBlock(const QString& blockId);
 
@@ -50,6 +51,6 @@ private:
     QToolButton*  customBlockButton_         = nullptr;
     QToolButton*  customBlockSelectorButton_ = nullptr;
 
-    BlockDataMap  blocks_;
-    BlockDataPair customBlock_ = {std::string_view(), nullptr}; // 空方块
+    BlockDataMap  customBlocks_;
+    BlockDataPair selectedCustomBlock_ = {std::string_view(), nullptr}; // 空方块
 };

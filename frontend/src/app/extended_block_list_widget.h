@@ -16,9 +16,12 @@ class BlockListWidget;
 class ExtendedBlockListWidget : public AdaptiveWidget
 {
 public:
-    explicit ExtendedBlockListWidget(BlockDataMap blocks, QWidget* parent = nullptr);
+    explicit ExtendedBlockListWidget(QWidget* parent = nullptr);
 
     BlockListWidget* blockListWidget() const;
+
+    void setBlocks(BlockDataMap blocks);
+    const BlockDataMap& blocks() const;
 
 protected:
     void refreshText() override;

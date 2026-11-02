@@ -19,10 +19,11 @@ public:
     explicit CustomBlockSelectorDialog(BlockDataMap blocks, QWidget* parent = nullptr)
         : AdaptiveDialog(parent)
     {
-        widget_        = new BlockListWidget(std::move(blocks), this);
+        widget_        = new BlockListWidget(this);
         confirmButton_ = new QPushButton(this);
         cancelButton_  = new QPushButton(this);
 
+        widget_->setBlocks(std::move(blocks));
         widget_->setMultiSelectEnabled(false);
 
         confirmButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
@@ -77,8 +78,8 @@ private:
     QPushButton*     cancelButton_  = nullptr;
 };
 
-FallbackBlockSelector::FallbackBlockSelector(BlockDataMap blocks, QWidget* parent)
-    : AdaptiveWidget(parent), blocks_(std::move(blocks))
+FallbackBlockSelector::FallbackBlockSelector(QWidget* parent)
+    : AdaptiveWidget(parent)
 {
     buttonGroup_               = new QButtonGroup(this);
     noneBlockButton_           = new QToolButton(this);
@@ -99,11 +100,11 @@ FallbackBlockSelector::FallbackBlockSelector(BlockDataMap blocks, QWidget* paren
     connect(customBlockButton_, &QToolButton::clicked, this, [this]() { setMode(CustomBlockMode); });
     connect(customBlockSelectorButton_, &QToolButton::clicked, this, [this]()
     {
-        CustomBlockSelectorDialog dialog(blocks_);
-        dialog.setSelected(QString::fromStdString(std::string(customBlock_.first)));
+        CustomBlockSelectorDialog dialog(customBlocks_);
+        dialog.setSelected(QString::fromStdString(std::string(selectedCustomBlock_.first)));
         if (dialog.exec() == QDialog::Accepted)
         {
-            customBlock_ = std::move(dialog.selected());
+            selectedCustomBlock_ = std::move(dialog.selected());
             refreshCustomButtonTextIcon();
         }
     });
@@ -124,8 +125,6 @@ FallbackBlockSelector::FallbackBlockSelector(BlockDataMap blocks, QWidget* paren
 
     refreshText();
     refreshButtonState();
-
-    setSelectedCustomBlock(DEFAULT_CUSTOM_BLOCK_ID);
 }
 
 void FallbackBlockSelector::setMode(Mode mode)
@@ -164,13 +163,24 @@ bool FallbackBlockSelector::modeButtonVisible(Mode mode) const
     }
 }
 
+void FallbackBlockSelector::setCustomBlocks(BlockDataMap blocks)
+{
+    customBlocks_ = std::move(blocks);
+    refreshCustomButtonTextIcon();
+}
+
+const BlockDataMap& FallbackBlockSelector::customBlocks() const
+{
+    return customBlocks_;
+}
+
 void FallbackBlockSelector::setSelectedCustomBlock(const QString& blockId)
 {
-    auto it = blocks_.find(blockId.toStdString());
-    if (it == blocks_.end())
+    auto it = customBlocks_.find(blockId.toStdString());
+    if (it == customBlocks_.end())
         return;
 
-    customBlock_ = {it->first, it->second};
+    selectedCustomBlock_ = {it->first, it->second};
     refreshCustomButtonTextIcon();
 }
 
@@ -180,7 +190,7 @@ BlockDataPair FallbackBlockSelector::fallbackBlock() const
     {
         case NoneBlockMode:   return {std::string_view(), nullptr};
         case AirBlockMode:    return AIR_BLOCK_DATA_PAIR;
-        case CustomBlockMode: return customBlock_;
+        case CustomBlockMode: return selectedCustomBlock_;
         default:              return {std::string_view(), nullptr};
     }
 }
@@ -214,9 +224,9 @@ void FallbackBlockSelector::refreshButtonState()
 
 void FallbackBlockSelector::refreshCustomButtonTextIcon()
 {
-    if (blocks_.count(customBlock_.first) > 0)
+    if (customBlocks_.count(selectedCustomBlock_.first) > 0)
     {
-        const auto& textureFileName = blocks_.at(customBlock_.first)->surfaceData.side.first;
+        const auto& textureFileName = customBlocks_.at(selectedCustomBlock_.first)->surfaceData.side.first;
         DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
         const auto& texturePath = QStringLiteral("%1/%2")
             .arg(APP_BLOCK_TEXTURES_DIRPATH)
@@ -229,7 +239,7 @@ void FallbackBlockSelector::refreshCustomButtonTextIcon()
     }
 
     const auto& entries = getAppConfiguration().blockEntries;
-    const auto& blockId = std::string(customBlock_.first);
+    const auto& blockId = std::string(selectedCustomBlock_.first);
     if (entries.count(blockId) > 0)
     {
         const auto& localizationNames = entries.at(blockId).localizationNames;
