@@ -127,7 +127,7 @@ void OutputFileSelector::setOutputFileExtension(QString extension)
         outputFileExtension_ = std::move(extension);
 }
 
-QString OutputFileSelector::outputFileExtension() const
+const QString& OutputFileSelector::outputFileExtension() const
 {
     return outputFileExtension_;
 }

@@ -34,7 +34,7 @@ public:
     const QString& customOutputFilePath()      const;
 
     void setOutputFileExtension(QString extension);
-    QString outputFileExtension() const;
+    const QString& outputFileExtension() const;
 
     QString outputFilePath() const;
 
