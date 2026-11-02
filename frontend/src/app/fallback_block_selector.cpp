@@ -130,8 +130,11 @@ FallbackBlockSelector::FallbackBlockSelector(BlockDataMap blocks, QWidget* paren
 
 void FallbackBlockSelector::setMode(Mode mode)
 {
-    mode_ = mode;
-    refreshButtonState();
+    if (mode_ != mode)
+    {
+        mode_ = mode;
+        refreshButtonState();
+    }
 }
 
 FallbackBlockSelector::Mode FallbackBlockSelector::mode() const
