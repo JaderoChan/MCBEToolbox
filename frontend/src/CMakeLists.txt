@@ -19,12 +19,14 @@ set(
     ./app/app_logo_icon.h
     ./app/block_attribute_text.h
     ./app/block_list_widget.h
+    ./app/block_usage_widget.h
     ./app/extended_block_list_widget.h
     ./app/factory_option_widget.h
     ./app/fallback_block_selector.h
     ./app/image_grid_progress_bar.h
     ./app/mainwidget.h
     ./app/mcpack_option_widget.h
+    ./app/output_file_selector.h
     ./app/tabbed_page_widget.h
 
     ./components/adaptive_widget.h
@@ -57,6 +59,7 @@ set(
     ./app/app_logo_icon.cpp
     ./app/block_attribute_text.cpp
     ./app/block_list_widget.cpp
+    ./app/block_usage_widget.cpp
     ./app/extended_block_list_widget.cpp
     ./app/factory_option_widget.cpp
     ./app/fallback_block_selector.cpp
@@ -64,6 +67,7 @@ set(
     ./app/main.cpp
     ./app/mainwidget.cpp
     ./app/mcpack_option_widget.cpp
+    ./app/output_file_selector.cpp
     ./app/tabbed_page_widget.cpp
 
     ./components/adaptive_widget.cpp
