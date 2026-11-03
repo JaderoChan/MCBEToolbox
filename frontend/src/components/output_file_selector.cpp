@@ -97,7 +97,7 @@ void OutputFileSelector::setCustomOutputFilePath(QString filePath)
     if (customOutputFilePath_ != filePath)
     {
         customOutputFilePath_ = std::move(filePath);
-        if (mode_ == ToCustomDirectoryMode)
+        if (mode_ == ToCustomFileMode)
         {
             const bool old = customFilePathInputer_->blockSignals(true);
             customFilePathInputer_->setText(customOutputFilePath_);
