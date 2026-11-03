@@ -239,7 +239,7 @@ void FallbackBlockSelector::refreshCustomButtonTextIcon()
     }
 
     const auto& entries = getAppConfiguration().blockEntries;
-    const auto& blockId = std::string(selectedCustomBlock_.first);
+    const auto  blockId = std::string(selectedCustomBlock_.first);
     if (entries.count(blockId) > 0)
     {
         const auto& localizationNames = entries.at(blockId).localizationNames;
