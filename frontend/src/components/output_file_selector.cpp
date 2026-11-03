@@ -134,7 +134,7 @@ const QString& OutputFileSelector::outputFileExtension() const
 
 QString OutputFileSelector::outputFilePath() const
 {
-    const auto& info = QFileInfo(inputFilePath_);
+    const auto info = QFileInfo(inputFilePath_);
     switch (mode_)
     {
         case ToSourceDirectoryMode:
@@ -211,7 +211,7 @@ void OutputFileSelector::onCustomFilePathSelectorClicked()
 {
     if (mode_ == ToCustomDirectoryMode)
     {
-        const auto& path = QFileDialog::getExistingDirectory(
+        const auto path = QFileDialog::getExistingDirectory(
             this,
             EASYTR("Select Output Directory"),
             customOutputDirectoryPath_
@@ -221,7 +221,7 @@ void OutputFileSelector::onCustomFilePathSelectorClicked()
     }
     else if (mode_ == ToCustomFileMode)
     {
-        const auto& path = QFileDialog::getSaveFileName(
+        const auto path = QFileDialog::getSaveFileName(
             this,
             EASYTR("Select Output File Path"),
             customOutputFilePath_,

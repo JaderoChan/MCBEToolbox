@@ -109,7 +109,7 @@ QString makeTextFromTag(const nbt::Tag& tag)
 
 nbt::Tag parseTextToTag(nbt::TagType type, const QString& text, bool& ok)
 {
-    const auto& trimmed = text.trimmed();
+    const auto trimmed = text.trimmed();
     switch (type)
     {
         case nbt::TT_BYTE:   return nbt::Tag(static_cast<int8_t>(trimmed.toLongLong(&ok)));

@@ -177,7 +177,7 @@ void CodeTextEdit::lineNumberAreaPaintEvent(QPaintEvent* e)
 void CodeTextEdit::resizeEvent(QResizeEvent* e)
 {
     QPlainTextEdit::resizeEvent(e);
-    const auto& cr = contentsRect();
+    const auto cr = contentsRect();
     lineNumberArea_->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
@@ -259,7 +259,7 @@ QPair<int, int> CodeTextEdit::findMatchingBracket(int cursorPos) const
     static const QString openers = QStringLiteral("{[(");
     static const QString closers = QStringLiteral("}])");
 
-    const auto& text = toPlainText();
+    const auto text = toPlainText();
 
     auto tryFrom = [&](int pos) -> QPair<int, int>
     {
@@ -307,7 +307,7 @@ QPair<int, int> CodeTextEdit::findMatchingBracket(int cursorPos) const
 
 QPair<int, int> CodeTextEdit::findMatchingQuote(int cursorPos) const
 {
-    const auto& text = toPlainText();
+    const auto text = toPlainText();
 
     int   start     = -1;
     QChar quoteChar = QLatin1Char('\0');

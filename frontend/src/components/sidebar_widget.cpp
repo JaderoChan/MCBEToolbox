@@ -514,7 +514,7 @@ protected:
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing);
 
-        const auto& highlight = palette().color(QPalette::Highlight);
+        const auto highlight = palette().color(QPalette::Highlight);
 
         if (selected_ || hovered_)
         {
@@ -552,7 +552,7 @@ protected:
             if (textRect.width() > 0)
             {
                 painter.setPen(palette().color(QPalette::WindowText));
-                const auto& elided = fontMetrics().elidedText(text_, Qt::ElideRight, textRect.width());
+                const auto elided = fontMetrics().elidedText(text_, Qt::ElideRight, textRect.width());
                 painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, elided);
             }
         }

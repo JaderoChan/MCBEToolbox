@@ -44,7 +44,7 @@ void NbtTreeView::setRootName(QString rootName)
     if (model_->rowCount() > 0)
     {
         auto* rootItem = model_->item(0);
-        const auto& text = rootName_ + QStringLiteral(": ");
+        const auto text = rootName_ + QStringLiteral(": ");
         rootItem->setText(text);
         rootItem->setToolTip(text);
         rootItem->setData(rootName_, TagKeyRole);
@@ -140,8 +140,8 @@ bool NbtTreeView::addItem(QStandardItem* parentItem, nbt::Tag value, const QStri
     }
     else if (parentTag->isCompound())
     {
-        const auto& stdKey = key.toStdString();
-        auto&       target = (*parentTag)[stdKey];
+        const auto stdKey = key.toStdString();
+        auto&      target = (*parentTag)[stdKey];
         if (!target.isEnd())
             return false;
         target = std::move(value);
@@ -217,18 +217,18 @@ bool NbtTreeView::changeItemKey(QStandardItem* item, const QString& newKey)
     }
 
     // 如果新名称已存在则返回 false。
-    const auto& stdNewKey = newKey.toStdString();
+    const auto stdNewKey = newKey.toStdString();
     if (parentTag->contains(stdNewKey))
         return false;
 
     // 更改 Tag 中的名称。
-    auto        tag       = std::move(*itemTag(item));
-    const auto& valueText = nbt_utils::makeTextFromTag(tag);
+    auto       tag       = std::move(*itemTag(item));
+    const auto valueText = nbt_utils::makeTextFromTag(tag);
     parentTag->erase(itemTagKey(item).toString().toStdString());
     parentTag->insert(stdNewKey, std::move(tag));
 
     // 更改 Item 名称，并将其按照 Tag 顺序重新排列。
-    const auto& text = QStringLiteral("%1: %2").arg(newKey).arg(valueText);
+    const auto text = QStringLiteral("%1: %2").arg(newKey).arg(valueText);
     item->setText(text);
     item->setToolTip(text);
     item->setData(newKey, TagKeyRole);
@@ -262,7 +262,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
             case nbt::TT_BYTE_ARRAY:
             {
                 if (!newValue.isByte()) return false;
-                const auto& i = itemTagIndex(item).toULongLong();
+                const auto i = itemTagIndex(item).toULongLong();
                 parentTag->getByteArray()[static_cast<std::size_t>(i)] = newValue.getByte();
                 text = QStringLiteral("[%1]: %2").arg(i).arg(newValue.getByte());
                 break;
@@ -270,7 +270,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
             case nbt::TT_INT_ARRAY:
             {
                 if (!newValue.isInt()) return false;
-                const auto& i = itemTagIndex(item).toULongLong();
+                const auto i = itemTagIndex(item).toULongLong();
                 parentTag->getIntArray()[static_cast<std::size_t>(i)] = newValue.getInt();
                 text = QStringLiteral("[%1]: %2").arg(i).arg(newValue.getInt());
                 break;
@@ -278,7 +278,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
             case nbt::TT_LONG_ARRAY:
             {
                 if (!newValue.isLong()) return false;
-                const auto& i = itemTagIndex(item).toULongLong();
+                const auto i = itemTagIndex(item).toULongLong();
                 parentTag->getLongArray()[static_cast<std::size_t>(i)] = newValue.getLong();
                 text = QStringLiteral("[%1]: %2").arg(i).arg(newValue.getLong());
                 break;
@@ -305,8 +305,8 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
     }
     else if (parentTag->isCompound())
     {
-        const auto& key    = itemTagKey(item).toString();
-        auto&       target = parentTag->at(key.toStdString());
+        const auto key    = itemTagKey(item).toString();
+        auto&      target = parentTag->at(key.toStdString());
         target = std::move(newValue);
 
         auto*     parentItem = item->parent();
@@ -371,8 +371,8 @@ bool NbtTreeView::invokeEditItemKey(QStandardItem* item)
     if (!tag)
         return false;
 
-    const auto& keyText   = itemTagKey(item).toString();
-    const auto& valueText = nbt_utils::makeTextFromTag(*tag);
+    const auto keyText   = itemTagKey(item).toString();
+    const auto valueText = nbt_utils::makeTextFromTag(*tag);
 
     beginRowEdit(item, tag->type(), true, keyText, valueText, true, RowEditType::Modify);
     return true;
@@ -400,7 +400,7 @@ bool NbtTreeView::invokeEditItemValue(QStandardItem* item)
         valueText = nbt_utils::makeTextFromTag(*tag);
     }
 
-    const auto& keyText = isNamingTag(item) ? itemTagKey(item).toString() : QString();
+    const auto keyText = isNamingTag(item) ? itemTagKey(item).toString() : QString();
     beginRowEdit(item, type, isNamingTag(item), keyText, valueText, false, RowEditType::Modify);
     return true;
 }
@@ -412,7 +412,7 @@ QStandardItem* NbtTreeView::rootItem() const
 
 QStandardItem* NbtTreeView::selectedItem() const
 {
-    const auto& indexes = selectionModel()->selectedIndexes();
+    const auto indexes = selectionModel()->selectedIndexes();
     if (indexes.isEmpty())
         return nullptr;
     return model_->itemFromIndex(indexes.first());
@@ -548,12 +548,12 @@ nbt::Tag* NbtTreeView::itemTag(const QStandardItem* item)
 
     if (isNamingTag(item))
     {
-        const auto& key = itemTagKey(item).toString();
+        const auto key = itemTagKey(item).toString();
         return &parentTag->at(key.toStdString());
     }
     else
     {
-        const auto& index = itemTagIndex(item).toULongLong();
+        const auto index = itemTagIndex(item).toULongLong();
         return &parentTag->at(static_cast<std::size_t>(index));
     }
 }
@@ -575,7 +575,7 @@ QStandardItem* NbtTreeView::createArrayItem(nbt::Tag* parentArrayTag, qulonglong
 {
     auto* item = new QStandardItem();
     item->setIcon(nbt_utils::getTagTypeIcon(nbt_utils::getArrayElementTagType(parentArrayTag->type())));
-    const auto& text = QStringLiteral("[%1]: %2")
+    const auto text = QStringLiteral("[%1]: %2")
         .arg(index)
         .arg(nbt_utils::makeArrayElementText(*parentArrayTag, index));
     item->setText(text);
@@ -589,7 +589,7 @@ QStandardItem* NbtTreeView::createItem(bool isNamingTag, const QString& key, qul
 {
     auto* item = new QStandardItem();
     item->setIcon(nbt_utils::getTagTypeIcon(value.type()));
-    const auto& text = isNamingTag
+    const auto text = isNamingTag
         ? QStringLiteral("%1: %2").arg(key).arg(nbt_utils::makeTextFromTag(value))
         : QStringLiteral("[%1]: %2").arg(index).arg(nbt_utils::makeTextFromTag(value));
     item->setText(text);
@@ -719,19 +719,19 @@ void NbtTreeView::updateElementItemData(QStandardItem* parentItem, qulonglong be
     if (!parentTag || (!parentTag->isArray() && !parentTag->isList()))
         return;
 
-    const bool  blocked          = model_->blockSignals(true);
-    const auto& parentModelIndex = parentItem->index();
+    const bool blocked          = model_->blockSignals(true);
+    const auto parentModelIndex = parentItem->index();
     for (qulonglong row = begin; row < end; ++row)
     {
-        const auto& index      = row + offset;
-        const auto& modelIndex = model_->index(row, 0, parentModelIndex);
+        const auto index      = row + offset;
+        const auto modelIndex = model_->index(row, 0, parentModelIndex);
 
         QString valueText;
         if (parentTag->isArray())
             valueText = nbt_utils::makeArrayElementText(*parentTag, index);
         else if (parentTag->isList())
             valueText = nbt_utils::makeTextFromTag((*parentTag)[static_cast<std::size_t>(index)]);
-        const auto& text = QStringLiteral("[%1]: %2").arg(index).arg(valueText);
+        const auto text = QStringLiteral("[%1]: %2").arg(index).arg(valueText);
 
         model_->setData(modelIndex, text,  Qt::DisplayRole);
         model_->setData(modelIndex, text,  Qt::ToolTipRole);
@@ -783,11 +783,11 @@ void NbtTreeView::endRowEdit(bool confirm)
 
     if (confirm)
     {
-        const auto& keyText   = editor_->keyText();
-        const auto& valueText = editor_->valueText();
+        const auto keyText   = editor_->keyText();
+        const auto valueText = editor_->valueText();
 
         bool ok = true;
-        const auto& value = editor_->valueEditable()
+        const auto value = editor_->valueEditable()
             ? nbt_utils::parseTextToTag(editor_->type(), valueText, ok)
             : nbt::Tag(editor_->type());
 

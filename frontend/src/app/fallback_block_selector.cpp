@@ -228,7 +228,7 @@ void FallbackBlockSelector::refreshCustomButtonTextIcon()
     {
         const auto& textureFileName = customBlocks_.at(selectedCustomBlock_.first)->surfaceData.side.first;
         DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
-        const auto& texturePath = QStringLiteral("%1/%2")
+        const auto  texturePath = QStringLiteral("%1/%2")
             .arg(APP_BLOCK_TEXTURES_DIRPATH)
             .arg(QString::fromStdString(textureFileName));
         customBlockButton_->setIcon(QIcon(texturePath));

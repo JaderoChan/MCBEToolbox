@@ -152,7 +152,7 @@ protected:
 private slots:
     void browseFilePath()
     {
-        const auto& filePath = QFileDialog::getSaveFileName(this, EASYTR("Select File"), filePathEdit_->text());
+        const auto filePath = QFileDialog::getSaveFileName(this, EASYTR("Select File"), filePathEdit_->text());
         if (!filePath.isEmpty())
             filePathEdit_->setText(filePath);
     }
@@ -580,7 +580,7 @@ void NbtEditorTabPage::setFileInfo(NbtFileInfo fileInfo)
 
 void NbtEditorTabPage::saveNbt(const NbtFileInfo& fileInfo)
 {
-    const auto& rootName = nbtView_->rootName();
+    const auto  rootName = nbtView_->rootName();
     const auto& rootTag  = nbtView_->rootTag();
     if (!rootTag.isCompound() || !fileInfo.valid)
         return;

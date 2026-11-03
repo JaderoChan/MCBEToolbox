@@ -20,7 +20,7 @@ void ColorKdTree::rebuild(const BlockDataMap& blocks, SurfaceDirection desiredSu
 
     for (const auto& [id, block] : blocks)
     {
-        const auto& textureColor = block->surfaceData.get(desiredSurface);
+        const auto textureColor = block->surfaceData.get(desiredSurface);
         cloud_.pts.push_back(textureColor.second);
         blockDataVec_.emplace_back(id, block);
     }

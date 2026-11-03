@@ -205,7 +205,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
 
             if (block)
             {
-                const auto& surface = block->surfaceData.get(desiredSurface_);
+                const auto surface = block->surfaceData.get(desiredSurface_);
                 if (!surface.first.empty())
                 {
                     const std::filesystem::path texturePath = createTexturePath(surface.first);

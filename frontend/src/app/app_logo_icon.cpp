@@ -17,7 +17,7 @@ static QIcon createAppLogoIcon()
 
 const QIcon& getAppLogoIcon()
 {
-    static const auto& icon = createAppLogoIcon();
+    static const auto icon = createAppLogoIcon();
     return icon;
 }
 

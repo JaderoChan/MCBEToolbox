@@ -25,7 +25,7 @@ public:
 
     State validate(QString& input, int&) const override
     {
-        const auto& trimmed = input.trimmed();
+        const auto trimmed = input.trimmed();
         if (trimmed.isEmpty() || trimmed == QStringLiteral("-"))
             return Intermediate;
 
@@ -34,7 +34,7 @@ public:
             return Invalid;
 
         bool ok = false;
-        const auto& value = trimmed.toLongLong(&ok);
+        const auto value = trimmed.toLongLong(&ok);
         if (!ok || value < min_ || value > max_)
             return Invalid;
         return Acceptable;

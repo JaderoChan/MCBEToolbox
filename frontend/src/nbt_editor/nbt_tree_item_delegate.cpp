@@ -18,8 +18,8 @@ void NbtTreeItemDelegate::paint(
 {
     QStyledItemDelegate::paint(painter, option, index);
 
-    const auto& isCompoundSummary = index.data(NbtTreeView::IsCompoundSummaryRole);
-    const auto& summaryValue      = index.data(NbtTreeView::SummaryValueRole);
+    const auto isCompoundSummary = index.data(NbtTreeView::IsCompoundSummaryRole);
+    const auto summaryValue      = index.data(NbtTreeView::SummaryValueRole);
     if (!isCompoundSummary.isValid() || !summaryValue.isValid())
         return;
 
@@ -30,7 +30,7 @@ void NbtTreeItemDelegate::paint(
     const auto  textRect   = s->subElementRect(QStyle::SE_ItemViewItemText, &opt, opt.widget);
     const auto  textMargin = s->pixelMetric(QStyle::PM_FocusFrameHMargin, &opt, opt.widget) + 1;
 
-    const auto& summary = QStringLiteral("%1 %2")
+    const auto summary = QStringLiteral("%1 %2")
         .arg(summaryValue.toULongLong())
         .arg(isCompoundSummary.toBool() ? EASYTR("entries") : EASYTR("elements"));
 
@@ -40,7 +40,7 @@ void NbtTreeItemDelegate::paint(
 
     QFont summaryFont = opt.font;
     summaryFont.setItalic(true);
-    const auto& summaryColor = opt.palette.color(QPalette::Disabled, QPalette::Text);
+    const auto summaryColor = opt.palette.color(QPalette::Disabled, QPalette::Text);
 
     painter->save();
     painter->setFont(summaryFont);

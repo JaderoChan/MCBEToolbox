@@ -37,7 +37,7 @@ public:
         if (block.second)
         {
             DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
-            const auto& texturePath = QStringLiteral("%1/%2")
+            const auto texturePath = QStringLiteral("%1/%2")
                 .arg(APP_BLOCK_TEXTURES_DIRPATH)
                 .arg(QString::fromStdString(block.second->surfaceData.side.first));
             textureRaw_ = QPixmap(texturePath);
@@ -111,10 +111,10 @@ protected:
         QPainter painter(this);
         painter.setRenderHint(QPainter::Antialiasing);
 
-        const auto& highlight     = palette().color(QPalette::Highlight);
-        const auto& margins       = contentsMargins();
-        const auto& effectiveRect = rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
-        const auto& cardRect      = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+        const auto highlight     = palette().color(QPalette::Highlight);
+        const auto margins       = contentsMargins();
+        const auto effectiveRect = rect().adjusted(margins.left(), margins.top(), -margins.right(), -margins.bottom());
+        const auto cardRect      = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
 
         if (selected_ || hovered_)
         {
@@ -163,7 +163,7 @@ protected:
         );
         if (block_.second)
         {
-            const auto& color = block_.second->surfaceData.side.second;
+            const auto color = block_.second->surfaceData.side.second;
             painter.setPen(Qt::NoPen);
             painter.setBrush(QColor(color.r, color.g, color.b));
             painter.drawRect(colorBarRect);
@@ -179,7 +179,7 @@ protected:
             f.setPointSizeF(f.pointSizeF() * 0.8);
             painter.setFont(f);
             painter.setPen(palette().color(QPalette::WindowText));
-            const auto& elided = QFontMetrics(f).elidedText(name_, Qt::ElideRight, textRect.width());
+            const auto elided = QFontMetrics(f).elidedText(name_, Qt::ElideRight, textRect.width());
             painter.drawText(textRect, Qt::AlignCenter, elided);
             painter.setFont(font());
         }
@@ -201,7 +201,7 @@ protected:
         else               attributesText = makeBlockAttributesText(BLOCK_ATTRI_NONE);
         attributesText = QFontMetrics(font()).elidedText(attributesText, Qt::ElideRight, 480);
 
-        const auto& tooltipText = QStringLiteral("%1: %2\n%3: %4\n%5: %6\n%7: %8")
+        const auto tooltipText = QStringLiteral("%1: %2\n%3: %4\n%5: %6\n%7: %8")
             .arg(EASYTR("Block Name")).arg(name_)
             .arg(EASYTR("Block ID")).arg(QString::fromStdString(std::string(block_.first)))
             .arg(EASYTR("Block Attributes")).arg(attributesText)
@@ -274,7 +274,7 @@ void BlockListWidget::selectRange(int start, int end)
     auto it = items_.begin();
     for (; start <= end; ++start)
     {
-        const auto& id = std::next(it, start).key().toStdString();
+        const auto id = std::next(it, start).key().toStdString();
         std::next(it, start).value()->setSelected(true);
         if (selecteds_.find(std::string_view(id)) == selecteds_.end())
             selecteds_[std::string_view(id)] = blocks_[std::string_view(id)];
@@ -291,7 +291,7 @@ void BlockListWidget::unselectRange(int start, int end)
     auto it = items_.begin();
     for (; start <= end; ++start)
     {
-        const auto& id = std::next(it, start).key().toStdString();
+        const auto id = std::next(it, start).key().toStdString();
         std::next(it, start).value()->setSelected(false);
         if (selecteds_.find(std::string_view(id)) != selecteds_.end())
             selecteds_.erase(std::string_view(id));
@@ -415,7 +415,7 @@ void BlockListWidget::rebuildItems()
     int index = 0;
     for (const auto& [id, block] : blocks_)
     {
-        const auto& qid = QString::fromStdString(std::string(id));
+        const auto qid = QString::fromStdString(std::string(id));
 
         auto* item = new BlockListItemWidget({id, block}, gridContainer_);
         item->setSelected(selecteds_.count(id) > 0);
@@ -433,8 +433,8 @@ void BlockListWidget::rebuildItems()
                 else
                 {
                     rangeSelectEnd_ = index;
-                    const auto& begin = std::min(rangeSelectStart_, rangeSelectEnd_);
-                    const auto& end   = std::max(rangeSelectStart_, rangeSelectEnd_);
+                    const auto begin = std::min(rangeSelectStart_, rangeSelectEnd_);
+                    const auto end   = std::max(rangeSelectStart_, rangeSelectEnd_);
                     if (startIsSelected_) unselectRange(begin, end);
                     else                  selectRange(begin,   end);
                 }
@@ -453,8 +453,8 @@ void BlockListWidget::rebuildItems()
 
 void BlockListWidget::setItemSelected(const QString& blockId, bool selected)
 {
-    const auto& id      = blockId.toStdString();
-    const auto  blockIt = blocks_.find(std::string_view(id));
+    const auto id      = blockId.toStdString();
+    const auto blockIt = blocks_.find(std::string_view(id));
     if (blockIt == blocks_.end())
         return;
 
@@ -483,8 +483,8 @@ void BlockListWidget::onSelectedsChanged()
 
     for (auto it = items_.constBegin(); it != items_.constEnd(); ++it)
     {
-        const auto& id       = it.key().toStdString();
-        const bool  selected = selecteds_.find(std::string_view(id)) != selecteds_.end();
+        const auto id       = it.key().toStdString();
+        const bool selected = selecteds_.find(std::string_view(id)) != selecteds_.end();
         it.value()->setSelected(selected);
     }
 }
