@@ -25,7 +25,7 @@ struct Rgb
      * @param uppercase 使用大写的十六进制字符
      * @param prefixed  以井号 '#' 作为字符串前缀
      */
-    std::string toHex(const Rgb& rgb, bool uppercase = true, bool prefixed = true) const;
+    std::string toHex(bool uppercase = true, bool prefixed = true) const;
 
     unsigned char r = 0, g = 0, b = 0;
 };

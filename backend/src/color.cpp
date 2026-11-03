@@ -53,14 +53,14 @@ static inline char intToHexChar(int i, bool uppercase)
     throw std::invalid_argument("Rgb::toHex() invalid integer for hex character");
 }
 
-std::string Rgb::toHex(const Rgb& rgb, bool uppercase, bool prefixed) const
+std::string Rgb::toHex(bool uppercase, bool prefixed) const
 {
     std::string hex(6, '0');
-    hex[0] = intToHexChar(rgb.r / 16, uppercase);
-    hex[1] = intToHexChar(rgb.r % 16, uppercase);
-    hex[2] = intToHexChar(rgb.g / 16, uppercase);
-    hex[3] = intToHexChar(rgb.g % 16, uppercase);
-    hex[4] = intToHexChar(rgb.b / 16, uppercase);
-    hex[5] = intToHexChar(rgb.b % 16, uppercase);
+    hex[0] = intToHexChar(r / 16, uppercase);
+    hex[1] = intToHexChar(r % 16, uppercase);
+    hex[2] = intToHexChar(g / 16, uppercase);
+    hex[3] = intToHexChar(g % 16, uppercase);
+    hex[4] = intToHexChar(b / 16, uppercase);
+    hex[5] = intToHexChar(b % 16, uppercase);
     return prefixed ? ("#" + hex) : hex;
 }
