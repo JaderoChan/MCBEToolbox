@@ -1,8 +1,5 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include <qicon.h>
 #include <qstring.h>
 
@@ -39,41 +36,27 @@ public:
     void setBlockUsage(BlockUsageType usage);
     const BlockUsageType& blockUsage() const;
 
-    void sort(SortMode mode = IdAscendingSortMode);
+    void setSortMode(SortMode mode);
     SortMode sortMode() const;
+    void sort();
 
     QString toMarkdown() const;
+
+signals:
+    void sortModeChanged(SortMode mode);
 
 protected:
     void refreshText() override;
 
 private:
-    /** 单行缓存数据，避免重排序/刷新文本时重复查找方块与用量信息。 */
-    struct RowData
-    {
-        std::string      programId; ///< 程序用方块 ID
-        const BlockData* block = nullptr;
-        std::size_t      usage = 0;
-    };
-
     void rebuildTableWidget();
-    void rebuildRows();
-    void sortRows();
-    void populateTable();
     void updateHeaderLabels();
-
-    const std::string& rawBlockId(const RowData& row) const;
-    QString displayBlockId(const RowData& row)        const;
-    QString localizedBlockName(const RowData& row)    const;
-    QString colorHexText(const RowData& row)          const;
-    QIcon   blockIcon(const RowData& row)             const;
-    QIcon   colorPreviewIcon(const RowData& row)      const;
+    QIcon colorPreviewIcon(Rgb color);
 
     BlockDataMap     blocks_;
     SurfaceDirection surfaceDirection_ = SURFACE_DIRECTION_UP;
     BlockUsageType   blockUsage_;
 
-    SortMode             sortMode_    = IdAscendingSortMode;
-    QTableWidget*        tableWidget_ = nullptr;
-    std::vector<RowData> rows_;
+    SortMode         sortMode_    = IdAscendingSortMode;
+    QTableWidget*    tableWidget_ = nullptr;
 };
