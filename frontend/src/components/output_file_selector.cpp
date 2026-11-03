@@ -157,7 +157,7 @@ void OutputFileSelector::refreshText()
     toSourceDirectoryButton_->setText(EASYTR("Output to Input File Directory"));
     toCustomDirectoryButton_->setText(EASYTR("Output to Custom Directory"));
     toCustomFileButton_->setText(EASYTR("Output to Custom File"));
-    customFilePathInputer_->setPlaceholderText(EASYTR("Please input the file/directory path:"));
+    customFilePathInputer_->setPlaceholderText(EASYTR("Please input the file/directory path"));
     customFilePathSelector_->setText(QStringLiteral("..."));
 }
 
