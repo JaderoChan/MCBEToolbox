@@ -116,7 +116,7 @@ void ExtendedBlockUsageWidget::onExportButtonClicked()
         this,
         EASYTR("Saved to:"),
         markdownTitle_ + QStringLiteral(".md"),
-        QStringLiteral("%1 (*.md);; %2 (*)").arg(EASYTR("Markdown File")).arg(EASYTR("All File"))
+        QStringLiteral("%1 (*.md);; %2 (*)").arg(EASYTR("Markdown File")).arg(EASYTR("All Files"))
     );
     if (filePath.isEmpty())
         return;

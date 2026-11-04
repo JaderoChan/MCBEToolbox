@@ -231,7 +231,7 @@ void NbtEditorWidget::openNbt()
             QString(),
             QStringLiteral("%1 (*.dat *.mcstructure *.nbt *.schem *.schematic);;%2 (*)")
                 .arg(EASYTR("NBT File"))
-                .arg(EASYTR("All File"))
+                .arg(EASYTR("All Files"))
         );
     if (filePath.isEmpty())
         return;
