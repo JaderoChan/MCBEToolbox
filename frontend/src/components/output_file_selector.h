@@ -36,6 +36,10 @@ public:
     void setOutputFileExtension(QString extension);
     const QString& outputFileExtension() const;
 
+    /** \p filter 为未翻译的原始文本，内部在 refreshText() 时将自动应用本地化文本。 */
+    void setOutputFileFilter(QString filter);
+    const QString& outputFileFilter() const;
+
     QString outputFilePath() const;
 
 protected:
@@ -60,4 +64,5 @@ private:
     QString customOutputDirectoryPath_;
     QString customOutputFilePath_;
     QString outputFileExtension_;
+    QString outputFileFilter_;
 };

@@ -74,8 +74,7 @@ OutputFileSelector::Mode OutputFileSelector::mode() const
 
 void OutputFileSelector::setInputFilePath(QString filePath)
 {
-    if (inputFilePath_ != filePath)
-        inputFilePath_ = std::move(filePath);
+    inputFilePath_ = std::move(filePath);
 }
 
 void OutputFileSelector::setCustomOutputDirectoryPath(QString dirPath)
@@ -123,13 +122,22 @@ const QString& OutputFileSelector::customOutputFilePath() const
 
 void OutputFileSelector::setOutputFileExtension(QString extension)
 {
-    if (outputFileExtension_ != extension)
-        outputFileExtension_ = std::move(extension);
+    outputFileExtension_ = std::move(extension);
 }
 
 const QString& OutputFileSelector::outputFileExtension() const
 {
     return outputFileExtension_;
+}
+
+void OutputFileSelector::setOutputFileFilter(QString filter)
+{
+    outputFileFilter_ = std::move(filter);
+}
+
+const QString& OutputFileSelector::outputFileFilter() const
+{
+    return outputFileFilter_;
 }
 
 QString OutputFileSelector::outputFilePath() const
@@ -223,9 +231,9 @@ void OutputFileSelector::onCustomFilePathSelectorClicked()
     {
         const auto path = QFileDialog::getSaveFileName(
             this,
-            EASYTR("Select Output File Path"),
+            EASYTR("Select Output File"),
             customOutputFilePath_,
-            QStringLiteral("(*.%1);;%2 (*)").arg(outputFileExtension_).arg(EASYTR("All File"))
+            QString::fromStdString(EASYTR(outputFileFilter_.toStdString()))
         );
         if (!path.isEmpty())
             setCustomOutputFilePath(path);
