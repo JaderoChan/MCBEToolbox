@@ -90,7 +90,7 @@ FallbackBlockSelector::FallbackBlockSelector(QWidget* parent)
     buttonGroup_->setExclusive(true);
     for (auto& button : {noneBlockButton_, airBlockButton_, customBlockButton_})
     {
-        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         button->setCheckable(true);
         buttonGroup_->addButton(button);
     }
