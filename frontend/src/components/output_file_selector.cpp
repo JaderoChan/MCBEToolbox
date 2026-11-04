@@ -165,7 +165,10 @@ void OutputFileSelector::refreshText()
     toSourceDirectoryButton_->setText(EASYTR("Output to Input File Directory"));
     toCustomDirectoryButton_->setText(EASYTR("Output to Custom Directory"));
     toCustomFileButton_->setText(EASYTR("Output to Custom File"));
-    customFilePathInputer_->setPlaceholderText(EASYTR("Please input the file/directory path"));
+    if (mode_ == ToCustomDirectoryMode)
+        customFilePathInputer_->setPlaceholderText(EASYTR("Please input the directory path"));
+    else if (mode_ == ToCustomFileMode)
+        customFilePathInputer_->setPlaceholderText(EASYTR("Please input the file path"));
     customFilePathSelector_->setText(QStringLiteral("..."));
 }
 
@@ -187,6 +190,7 @@ void OutputFileSelector::refreshUiState()
             layout()->addWidget(customFilePathWidget_);
             const bool old = customFilePathInputer_->blockSignals(true);
             customFilePathInputer_->setText(customOutputDirectoryPath_);
+            customFilePathInputer_->setPlaceholderText(EASYTR("Please input the directory path"));
             customFilePathInputer_->blockSignals(old);
             break;
         }
@@ -197,6 +201,7 @@ void OutputFileSelector::refreshUiState()
             layout()->addWidget(customFilePathWidget_);
             const bool old = customFilePathInputer_->blockSignals(true);
             customFilePathInputer_->setText(customOutputFilePath_);
+            customFilePathInputer_->setPlaceholderText(EASYTR("Please input the file path"));
             customFilePathInputer_->blockSignals(old);
             break;
         }
