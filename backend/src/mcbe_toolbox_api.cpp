@@ -103,7 +103,7 @@ FactoryResult generateBlockImage(
     return {ok, usage};
 }
 
-FactoryResult generateMCStructurePack(
+FactoryResult generateStructurePack(
     ImageOStream& stream, MCStructureFactory& factory, const MCPackGeneratorOption& option)
 {
     if (!isStreamReady(stream))
@@ -138,7 +138,7 @@ FactoryResult generateMCStructurePack(
             std::ofstream ofs(path, std::ios::binary | std::ios::trunc);
             if (!ofs)
             {
-                fprintf(stderr, "generateMCStructurePack() Failed to create the file '%s'\n", path.string().c_str());
+                fprintf(stderr, "generateStructurePack() Failed to create the file '%s'\n", path.string().c_str());
                 ok = false;
             }
             else
@@ -149,7 +149,7 @@ FactoryResult generateMCStructurePack(
                 }
                 catch (const std::exception& e)
                 {
-                    fprintf(stderr, "generateMCStructurePack() Failed to dump the mcstructure: %s\n", e.what());
+                    fprintf(stderr, "generateStructurePack() Failed to dump the mcstructure: %s\n", e.what());
                     ok = false;
                 }
             }
@@ -167,7 +167,7 @@ FactoryResult generateMCStructurePack(
     return {ok, usage};
 }
 
-FactoryResult generateMCFucntionPack(
+FactoryResult generateFucntionPack(
     ImageOStream& stream, MCFunctionFactory& factory, const MCPackGeneratorOption& option)
 {
     if (!isStreamReady(stream))

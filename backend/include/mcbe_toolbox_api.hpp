@@ -68,9 +68,9 @@ FactoryResult generateBlockImage(
  * @throw cv::Exception OpenCV 内部读写图像/视频时在特殊情况下可能抛出异常（例如目标扩展名无可用编码器）。
  * @throw std::exception NBT 序列化失败时可能抛出异常。
  */
-FactoryResult generateMCStructurePack(
+FactoryResult generateStructurePack(
     ImageOStream& stream, MCStructureFactory& factory, const MCPackGeneratorOption& option);
 
 /** @throw cv::Exception OpenCV 内部读写图像/视频时在特殊情况下可能抛出异常（例如目标扩展名无可用编码器）。 */
-FactoryResult generateMCFucntionPack(
+FactoryResult generateFucntionPack(
     ImageOStream& stream, MCFunctionFactory& factory, const MCPackGeneratorOption& option);
