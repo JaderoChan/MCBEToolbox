@@ -9,7 +9,8 @@
 #include <nbt_editor/nbt_editor_widget.h>
 #include <utils/directory_scope.h>
 #include "app_configuration.h"
-#include "extended_block_list_widget.h"
+#include "block_image_generator_widget.h"
+#include "pixel_art_generator_widget.h"
 
 MainWidget::MainWidget(QWidget* parent)
     : AdaptiveWidget(parent)
@@ -31,10 +32,8 @@ MainWidget::MainWidget(QWidget* parent)
     // Stacked widget
     stackedWidget_ = new QStackedWidget(this);
     stackedWidget_->setContentsMargins(0, 0, 0, 0);
-    auto* blockListWidget = new ExtendedBlockListWidget(this);
-    blockListWidget->setBlocks(getAppConfiguration().baseBlocks);
-    stackedWidget_->addWidget(blockListWidget); // TODO
-    stackedWidget_->addWidget(new QWidget(this)); // TODO
+    stackedWidget_->addWidget(new PixelArtGeneratorWidget(this));
+    stackedWidget_->addWidget(new BlockImageGeneratorWidget(this));
     stackedWidget_->addWidget(new NbtEditorWidget(this));
     stackedWidget_->addWidget(new QWidget(this)); // TODO
     stackedWidget_->setCurrentIndex(0);
@@ -70,8 +69,8 @@ void MainWidget::refreshColor()
 {
     if (ColorSchemeManager::instance().loadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK)
     {
-        auto palette      = qApp->palette();
-        const auto& color = palette.brush(QPalette::Window).color().lighter(135);
+        auto palette     = qApp->palette();
+        const auto color = palette.brush(QPalette::Window).color().lighter(135);
         palette.setColor(QPalette::ColorRole::Window, color);
         sidebarWidget_->setPalette(palette);
 
@@ -82,8 +81,8 @@ void MainWidget::refreshColor()
     }
     else
     {
-        auto palette      = qApp->palette();
-        const auto& color = palette.brush(QPalette::Window).color().darker(150);
+        auto palette     = qApp->palette();
+        const auto color = palette.brush(QPalette::Window).color().darker(150);
         palette.setColor(QPalette::ColorRole::Window, color);
         sidebarWidget_->setPalette(palette);
 

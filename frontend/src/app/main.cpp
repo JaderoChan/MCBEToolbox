@@ -10,15 +10,6 @@
 #include "app_logo_icon.h"
 #include "mainwidget.h"
 
-// 仅供测试，Release 阶段移除。
-#include <qfileinfo.h>
-#include <qpushbutton.h>
-
-#include <utils/debug_output.h>
-#include <components/output_file_selector.h>
-#include "block_usage_widget.h"
-#include "fallback_block_selector.h"
-
 int main(int argc, char* argv[])
 {
     qRegisterMetaType<LanguageManager::Language>("Language");
@@ -66,39 +57,6 @@ int main(int argc, char* argv[])
 
     MainWidget w;
     w.show();
-
-    // 仅供测试，Release 阶段移除。
-    constexpr const char* DEFAULT_CUSTOM_BLOCK_ID = "minecraft:glass_group:glass";
-    FallbackBlockSelector w2;
-    w2.setCustomBlocks(getAppConfiguration().baseBlocks);
-    w2.setSelectedCustomBlock(DEFAULT_CUSTOM_BLOCK_ID);
-    w2.show();
-
-    OutputFileSelector w3;
-    const QString   filePath("C:/path/to/input.png");
-    const QFileInfo fileInfo(filePath);
-    w3.setInputFilePath(filePath);
-    w3.setCustomOutputDirectoryPath(fileInfo.path());
-    w3.setCustomOutputFilePath(
-        fileInfo.path() + QStringLiteral("/") + fileInfo.completeBaseName() + QStringLiteral(".mp4"));
-    w3.setOutputFileExtension(QStringLiteral("mp4"));
-    w3.show();
-
-    QPushButton outputDebugInfoButton(QStringLiteral("Output Debug Info"));
-    outputDebugInfoButton.show();
-    QObject::connect(&outputDebugInfoButton, &QPushButton::clicked, qApp, [&w2, &w3]()
-    {
-        const auto& fallbackBlock  = w2.fallbackBlock();
-        const auto& outputFilePath = w3.outputFilePath();
-        debugOut(
-            qDebug(),
-            "Fallback Block: %1",
-            fallbackBlock.first == std::string_view()
-            ? "None Block"
-            : QString::fromStdString(std::string(fallbackBlock.first))
-        );
-        debugOut(qDebug(), "Output File Path: %1", outputFilePath);
-    });
 
     int ret = a.exec();
 
