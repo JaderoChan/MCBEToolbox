@@ -122,7 +122,7 @@ FactoryResult generateStructurePack(
     if (option.detachFileEnabled)
     {
         ok = factory.generateDetachMCStructure(stream, pack.getStructuresPath(), option.numThreads);
-        if (option.auxFunctionEnabled)
+        if (option.assistFunctionEnabled)
         {
             // TODO
         }
@@ -154,7 +154,7 @@ FactoryResult generateStructurePack(
                 }
             }
 
-            if (option.auxFunctionEnabled)
+            if (option.assistFunctionEnabled)
             {
                 // TODO
             }
@@ -186,7 +186,7 @@ FactoryResult generateFucntionPack(
     if (option.detachFileEnabled)
     {
         ok = factory.generateDetachMCFunction(stream, pack.getFunctionsPath(), option.numThreads);
-        if (option.auxFunctionEnabled)
+        if (option.assistFunctionEnabled)
         {
             // TODO
         }
@@ -195,7 +195,7 @@ FactoryResult generateFucntionPack(
     {
         const MCFunctionFactory::MCFunction& mcfunction = factory.generateSingleMCFunction(stream, true);
         ok = !mcfunction.empty() && pack.addFunction(option.packOption.name, mcfunction);
-        if (option.auxFunctionEnabled)
+        if (option.assistFunctionEnabled)
         {
             // TODO
         }

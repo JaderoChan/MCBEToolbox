@@ -55,7 +55,7 @@ struct MCPackOption
 
 struct MCPackGeneratorOption : public GeneratorCommonOption
 {
-    bool         auxFunctionEnabled;
+    bool         assistFunctionEnabled;
     bool         detachFileEnabled;
     MCPackOption packOption;
 };
