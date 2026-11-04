@@ -26,8 +26,8 @@ public:
         widget_->setBlocks(std::move(blocks));
         widget_->setMultiSelectEnabled(false);
 
-        confirmButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-        cancelButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        confirmButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        cancelButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         connect(confirmButton_, &QPushButton::clicked, this, &CustomBlockSelectorDialog::accept);
         connect(cancelButton_,  &QPushButton::clicked, this, &CustomBlockSelectorDialog::reject);
 
@@ -95,6 +95,7 @@ FallbackBlockSelector::FallbackBlockSelector(QWidget* parent)
         buttonGroup_->addButton(button);
     }
     customBlockButton_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    customBlockSelectorButton_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
 
     connect(noneBlockButton_,   &QToolButton::clicked, this, [this]() { setMode(NoneBlockMode);   });
     connect(airBlockButton_,    &QToolButton::clicked, this, [this]() { setMode(AirBlockMode);    });

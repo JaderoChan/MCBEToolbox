@@ -89,8 +89,8 @@ public:
         // Button
         confirmButton_ = new QPushButton(this);
         cancelButton_  = new QPushButton(this);
-        confirmButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-        cancelButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        confirmButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        cancelButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         connect(confirmButton_, &QPushButton::clicked, this, &QDialog::accept);
         connect(cancelButton_,  &QPushButton::clicked, this, &QDialog::reject);
 
@@ -191,10 +191,9 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     removeButton_ = new QToolButton(this);
     for (auto& button : {renameButton_, editButton_, removeButton_})
     {
-        button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         button->setFocusPolicy(Qt::ClickFocus);
         button->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        button->setFixedHeight(24);
 
         toolbarLayout->addWidget(button);
     }
@@ -221,7 +220,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     for (auto type : nbt_utils::getAddableTagTypes())
     {
         auto* button = new QToolButton(this);
-        button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         button->setFocusPolicy(Qt::ClickFocus);
         button->setToolButtonStyle(Qt::ToolButtonIconOnly);
         button->setIcon(nbt_utils::getTagTypeIcon(type));
@@ -242,10 +241,9 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
 
     // SNBT 按钮。
     snbtButton_ = new QToolButton(this);
-    snbtButton_->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    snbtButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     snbtButton_->setFocusPolicy(Qt::ClickFocus);
     snbtButton_->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    snbtButton_->setFixedHeight(24);
     snbtButton_->setCheckable(true);
     snbtButton_->setStyleSheet(getToolButtonStyleSheet());
 

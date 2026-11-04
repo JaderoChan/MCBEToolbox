@@ -38,8 +38,8 @@ public:
 
         confirmButton_ = new QPushButton(this);
         cancelButton_  = new QPushButton(this);
-        confirmButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-        cancelButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        confirmButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        cancelButton_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         connect(confirmButton_, &QPushButton::clicked, this, &QDialog::accept);
         connect(cancelButton_,  &QPushButton::clicked, this, &QDialog::reject);
 
@@ -95,10 +95,9 @@ NbtEditorWidget::NbtEditorWidget(QWidget* parent)
     parseSnbtButton_ = new QToolButton(this);
     for (auto& button : {newButton_, openButton_, saveButton_, saveAsButton_, parseSnbtButton_})
     {
-        button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         button->setFocusPolicy(Qt::ClickFocus);
         button->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        button->setFixedHeight(24);
 
         toolbarLayout->addWidget(button);
     }
