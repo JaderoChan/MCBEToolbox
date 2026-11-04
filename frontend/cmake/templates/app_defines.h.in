@@ -13,6 +13,7 @@
 #define APP_AUTHOR                  "@APP_AUTHOR@"
 #define APP_CONTACT_EMAIL           "@APP_CONTACT_EMAIL@"
 #define APP_COPYRIGHT_TEXT          "@APP_COPYRIGHT_TEXT@"
+#define APP_GITHUB_URL              "@APP_GITHUB_URL@"
 
 #define APP_LANGMAP_FILEPATH        "languages/language_mapping.json"
 #define APP_BLOCK_ENTRIES_FILEPATH  "data/block_entries.json"

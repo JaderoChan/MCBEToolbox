@@ -27,6 +27,7 @@ set(APP_VERSION                 "${APP_VERSION_MAJOR}.${APP_VERSION_MINOR}.${APP
 set(APP_AUTHOR                  "頔珞 JaderoChan")
 set(APP_CONTACT_EMAIL           "c_dl_cn@outlook.com")
 set(APP_COPYRIGHT_TEXT          "Copyright (c) 2026 JaderoChan")
+set(APP_GITHUB_URL              "https://github.com/JaderoChan/MCBEToolbox")
 
 ###############
 # 定义常用路径 #
