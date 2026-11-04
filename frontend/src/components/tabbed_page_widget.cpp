@@ -11,7 +11,6 @@ TabbedPageWidget::TabbedPageWidget(QWidget* parent)
     auto* headerContainer = new QWidget(this);
     headerLayout_ = new QHBoxLayout(headerContainer);
     headerLayout_->setContentsMargins(0, 0, 0, 0);
-    headerLayout_->setSpacing(2);
     headerLayout_->addStretch();
     headerLayout_->addStretch();
 
