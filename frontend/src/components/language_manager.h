@@ -24,6 +24,8 @@ public:
     static LanguageManager& instance();
     /** 获取系统语言；如果是不支持的语言返回 #FALLBACK_LANGUAGE。 */
     static Language         systemLanguage();
+    /** 获取语言对应的字符串 ID（#LANGUAGE_AUTO 返回空字符串）。 */
+    static QString          languageId(Language language);
 
     /** 设置程序语言。 */
     void     setLanguage(Language language);
@@ -46,8 +48,6 @@ private:
 
     LanguageManager(const LanguageManager&)           = delete;
     LanguageManager operator=(const LanguageManager&) = delete;
-
-    static QString languageId(Language language);
 
     void loadLanguage();
 

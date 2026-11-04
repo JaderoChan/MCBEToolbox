@@ -25,6 +25,16 @@ LanguageManager::Language LanguageManager::systemLanguage()
     }
 }
 
+QString LanguageManager::languageId(Language language)
+{
+    switch (language)
+    {
+        case LANGUAGE_EN: return QStringLiteral("EN");
+        case LANGUAGE_ZH: return QStringLiteral("ZH");
+        default:          return QStringLiteral("");
+    }
+}
+
 void LanguageManager::setLanguage(Language language)
 {
     if (language_ != language)
@@ -77,16 +87,6 @@ LanguageManager::LanguageManager()
     language_       = LANGUAGE_AUTO;
     loadedLanguage_ = systemLanguage();
     loadLanguage();
-}
-
-QString LanguageManager::languageId(Language language)
-{
-    switch (language)
-    {
-        case LANGUAGE_EN: return QStringLiteral("EN");
-        case LANGUAGE_ZH: return QStringLiteral("ZH");
-        default:          return QStringLiteral("");
-    }
 }
 
 void LanguageManager::loadLanguage()
