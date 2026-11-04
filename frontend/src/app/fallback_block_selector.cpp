@@ -90,6 +90,7 @@ FallbackBlockSelector::FallbackBlockSelector(QWidget* parent)
     buttonGroup_->setExclusive(true);
     for (auto& button : {noneBlockButton_, airBlockButton_, customBlockButton_})
     {
+        button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         button->setCheckable(true);
         buttonGroup_->addButton(button);
     }
@@ -113,15 +114,14 @@ FallbackBlockSelector::FallbackBlockSelector(QWidget* parent)
     auto* customButtonLayout = new QHBoxLayout(customButtonWidget);
     customButtonLayout->setContentsMargins(0, 0, 0, 0);
     customButtonLayout->setSpacing(1);
-    customButtonLayout->addWidget(customBlockButton_);
+    customButtonLayout->addWidget(customBlockButton_, 1);
     customButtonLayout->addWidget(customBlockSelectorButton_);
 
     auto* mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->addWidget(noneBlockButton_);
-    mainLayout->addWidget(airBlockButton_);
-    mainLayout->addWidget(customButtonWidget);
-    mainLayout->addStretch();
+    mainLayout->addWidget(noneBlockButton_,   1);
+    mainLayout->addWidget(airBlockButton_,    1);
+    mainLayout->addWidget(customButtonWidget, 1);
 
     refreshText();
     refreshButtonState();
