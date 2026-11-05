@@ -11,6 +11,7 @@
 
 #include <easy_translate.hpp>
 
+#include <components/no_wheel_focus_filter.h>
 #include "about_card_widget.h"
 
 SettingsWidget::SettingsWidget(QWidget* parent)
@@ -19,6 +20,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
     // 构造 UI 元素。
     languageLabel_       = new QLabel(this);
     languageCombo_       = new QComboBox(this);
+    QT_BAN_WHEEL_FOCUS(languageCombo_);
 
     colorSchemeLabel_    = new QLabel(this);
     colorSchemeAutoBtn_  = new QRadioButton(this);

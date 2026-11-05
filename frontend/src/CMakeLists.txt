@@ -40,6 +40,7 @@ set(
     ./components/flow_grid_layout.h
     ./components/image_grid_progress_bar.h
     ./components/language_manager.h
+    ./components/no_wheel_focus_filter.h
     ./components/output_file_selector.h
     ./components/sidebar_widget.h
     ./components/stylesheet_table.h
@@ -89,6 +90,7 @@ set(
     ./components/flow_grid_layout.cpp
     ./components/image_grid_progress_bar.cpp
     ./components/language_manager.cpp
+    ./components/no_wheel_focus_filter.cpp
     ./components/output_file_selector.cpp
     ./components/sidebar_widget.cpp
     ./components/stylesheet_table.cpp

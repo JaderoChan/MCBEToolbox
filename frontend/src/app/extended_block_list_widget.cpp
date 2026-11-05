@@ -8,6 +8,7 @@
 #include <qpushbutton.h>
 #include <qvariantanimation.h>
 
+#include <components/no_wheel_focus_filter.h>
 #include "block_attribute_text.h"
 #include "block_list_widget.h"
 
@@ -72,6 +73,7 @@ ExtendedBlockListWidget::ExtendedBlockListWidget(QWidget* parent)
     // 方块属性筛选模式。
     filterModeLabel_ = new QLabel(filterPanel_);
     filterModeCombo_ = new QComboBox(filterPanel_);
+    QT_BAN_WHEEL_FOCUS(filterModeCombo_);
     for (const auto mode : {BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY, BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL})
         filterModeCombo_->addItem(QString(), static_cast<int>(mode));
 

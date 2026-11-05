@@ -10,6 +10,8 @@
 #include <qspinbox.h>
 #include <qtoolbutton.h>
 
+#include <components/no_wheel_focus_filter.h>
+
 GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
     : AdaptiveWidget(parent)
 {
@@ -28,6 +30,7 @@ GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
 
     surfaceDirectionLabel_     = new QLabel(this);
     surfaceDirectionSelector_  = new QComboBox(this);
+    QT_BAN_WHEEL_FOCUS(surfaceDirectionSelector_);
 
     fallbackBlockLabel_        = new QLabel(this);
     fallbackBlockSelector_     = new FallbackBlockSelector(this);
@@ -40,6 +43,8 @@ GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
     maxFrameSizeLayout->setContentsMargins(0, 0, 0, 0);
     maxFrameSizeLayout->addWidget(maxFrameSizeWidthInputer_);
     maxFrameSizeLayout->addWidget(maxFrameSizeHeightInputer_);
+    QT_BAN_WHEEL_FOCUS(maxFrameSizeWidthInputer_);
+    QT_BAN_WHEEL_FOCUS(maxFrameSizeHeightInputer_);
 
     maxFrameCountLabel_        = new QLabel(this);
     maxFrameCountInputer_      = new QSpinBox(this);
@@ -50,9 +55,11 @@ GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
     maxFrameCountLayout->setSpacing(2);
     maxFrameCountLayout->addWidget(maxFrameCountInputer_,  1);
     maxFrameCountLayout->addWidget(maxFrameCountInfCheck_, 0);
+    QT_BAN_WHEEL_FOCUS(maxFrameCountInputer_);
 
     numThreadsLabel_           = new QLabel(this);
     numThreadsInputer_         = new QSpinBox(this);
+    QT_BAN_WHEEL_FOCUS(numThreadsInputer_);
 
     // 构造 Surface Direction ComboBox。
     surfaceDirectionSelector_->addItems({"", "", "", "", "", ""});

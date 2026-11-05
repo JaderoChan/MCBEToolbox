@@ -6,6 +6,7 @@
 #include <qlayout.h>
 #include <qtoolbutton.h>
 
+#include <components/no_wheel_focus_filter.h>
 #include <utils/debug_output.h>
 #include <utils/file_io.h>
 
@@ -15,6 +16,7 @@ ExtendedBlockUsageWidget::ExtendedBlockUsageWidget(QWidget* parent)
     comboBoxLabel_ = new QLabel(this);
 
     comboBox_ = new QComboBox(this);
+    QT_BAN_WHEEL_FOCUS(comboBox_);
     comboBox_->addItems({"", "", "", ""});
     comboBox_->setItemData(0, static_cast<int>(BlockUsageWidget::IdAscendingSortMode));
     comboBox_->setItemData(1, static_cast<int>(BlockUsageWidget::IdDescendingSortMode));
