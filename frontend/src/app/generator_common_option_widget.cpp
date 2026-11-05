@@ -1,5 +1,6 @@
 #include "generator_common_option_widget.h"
 
+#include <qcheckbox.h>
 #include <qcombobox.h>
 #include <qfiledialog.h>
 #include <qgridlayout.h>
@@ -42,6 +43,13 @@ GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
 
     maxFrameCountLabel_        = new QLabel(this);
     maxFrameCountInputer_      = new QSpinBox(this);
+    maxFrameCountInfCheck_     = new QCheckBox(this);
+    maxFrameCountWidget_       = new QWidget(this);
+    auto* maxFrameCountLayout  = new QHBoxLayout(maxFrameCountWidget_);
+    maxFrameCountLayout->setContentsMargins(0, 0, 0, 0);
+    maxFrameCountLayout->setSpacing(2);
+    maxFrameCountLayout->addWidget(maxFrameCountInputer_,  1);
+    maxFrameCountLayout->addWidget(maxFrameCountInfCheck_, 0);
 
     numThreadsLabel_           = new QLabel(this);
     numThreadsInputer_         = new QSpinBox(this);
@@ -58,8 +66,8 @@ GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
     // 主布局
     auto* mainLayout = new QGridLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setHorizontalSpacing(8);
-    mainLayout->setVerticalSpacing(8);
+    mainLayout->setHorizontalSpacing(12);
+    mainLayout->setVerticalSpacing(12);
     mainLayout->addWidget(inputFileLabel_,           0, 0);
     mainLayout->addWidget(inputFileWidget,           0, 1);
     mainLayout->addWidget(outputFileLabel_,          1, 0);
@@ -71,15 +79,25 @@ GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
     mainLayout->addWidget(maxFrameSizeLabel_,        4, 0);
     mainLayout->addWidget(maxFrameSizeWidget,        4, 1);
     mainLayout->addWidget(maxFrameCountLabel_,       5, 0);
-    mainLayout->addWidget(maxFrameCountInputer_,     5, 1);
+    mainLayout->addWidget(maxFrameCountWidget_,      5, 1);
     mainLayout->addWidget(numThreadsLabel_,          6, 0);
     mainLayout->addWidget(numThreadsInputer_,        6, 1);
     mainLayout->setColumnStretch(0, 0);
     mainLayout->setColumnStretch(1, 1);
 
     // Connections
-    connect(inputFileInputer_,  &QLineEdit::textChanged, this, &GeneratorCommonOptionWidget::setInputFilePath);
-    connect(inputFileSelector_, &QToolButton::clicked,   this, &GeneratorCommonOptionWidget::onInputFileSelectorClicked);
+    connect(
+        inputFileInputer_,      &QLineEdit::textChanged,
+        this,                   &GeneratorCommonOptionWidget::setInputFilePath
+    );
+    connect(
+        inputFileSelector_,     &QToolButton::clicked,
+        this,                   &GeneratorCommonOptionWidget::onInputFileSelectorClicked
+    );
+    connect(
+        maxFrameCountInfCheck_, &QCheckBox::toggled,
+        this,                   &GeneratorCommonOptionWidget::refreshUiState
+    );
 
     refreshText();
     refreshUiState();
@@ -155,7 +173,15 @@ void GeneratorCommonOptionWidget::setMaxFrameSize(const QSize& size)
 
 void GeneratorCommonOptionWidget::setMaxFrameCount(int count)
 {
-    maxFrameCountInputer_->setValue(count);
+    if (count == -1)
+    {
+        maxFrameCountInfCheck_->setChecked(true);
+        refreshUiState();
+    }
+    else
+    {
+        maxFrameCountInputer_->setValue(count);
+    }
 }
 
 void GeneratorCommonOptionWidget::setNumThreads(int num)
@@ -190,6 +216,8 @@ QSize GeneratorCommonOptionWidget::maxFrameSize() const
 
 int GeneratorCommonOptionWidget::maxFrameCount() const
 {
+    if (maxFrameCountInfCheck_->isChecked())
+        return -1;
     return maxFrameCountInputer_->value();
 }
 
@@ -227,6 +255,7 @@ void GeneratorCommonOptionWidget::refreshText()
     fallbackBlockLabel_->setText(EASYTR("Fallback Block"));
     maxFrameSizeLabel_->setText(EASYTR("Max Frame Size"));
     maxFrameCountLabel_->setText(EASYTR("Max Frame Count"));
+    maxFrameCountInfCheck_->setText(EASYTR("No Limit"));
     numThreadsLabel_->setText(EASYTR("Number of Threads"));
 }
 
@@ -256,25 +285,27 @@ void GeneratorCommonOptionWidget::refreshUiState()
     if (mode_ == ImageMode)
     {
         maxFrameCountLabel_->setVisible(false);
-        maxFrameCountInputer_->setVisible(false);
+        maxFrameCountWidget_->setVisible(false);
         numThreadsLabel_->setVisible(false);
         numThreadsInputer_->setVisible(false);
 
         mainLayout->removeWidget(maxFrameCountLabel_);
-        mainLayout->removeWidget(maxFrameCountInputer_);
+        mainLayout->removeWidget(maxFrameCountWidget_);
         mainLayout->removeWidget(numThreadsLabel_);
         mainLayout->removeWidget(numThreadsInputer_);
     }
     else if (mode_ == VideoMode)
     {
         maxFrameCountLabel_->setVisible(true);
-        maxFrameCountInputer_->setVisible(true);
+        maxFrameCountWidget_->setVisible(true);
         numThreadsLabel_->setVisible(true);
         numThreadsInputer_->setVisible(true);
 
         mainLayout->addWidget(maxFrameCountLabel_,   5, 0);
-        mainLayout->addWidget(maxFrameCountInputer_, 5, 1);
+        mainLayout->addWidget(maxFrameCountWidget_,  5, 1);
         mainLayout->addWidget(numThreadsLabel_,      6, 0);
         mainLayout->addWidget(numThreadsInputer_,    6, 1);
     }
+
+    maxFrameCountInputer_->setDisabled(maxFrameCountInfCheck_->isChecked());
 }

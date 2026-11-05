@@ -39,9 +39,9 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
     auto* packNameWidget          = new QWidget(this);
     auto* packNameLayout          = new QHBoxLayout(packNameWidget);
     packNameLayout->setContentsMargins(0, 0, 0, 0);
-    packNameLayout->setSpacing(1);
-    packNameLayout->addWidget(packNameInputer_);
-    packNameLayout->addWidget(packNameAutoFillCheck_);
+    packNameLayout->setSpacing(2);
+    packNameLayout->addWidget(packNameInputer_,       1);
+    packNameLayout->addWidget(packNameAutoFillCheck_, 0);
 
     packDescriptionLabel_         = new QLabel(this);
     packDescriptionInputer_       = new QLineEdit(this);
@@ -49,9 +49,9 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
     auto* packDescriptionWidget   = new QWidget(this);
     auto* packDescriptionLayout   = new QHBoxLayout(packDescriptionWidget);
     packDescriptionLayout->setContentsMargins(0, 0, 0, 0);
-    packDescriptionLayout->setSpacing(1);
-    packDescriptionLayout->addWidget(packDescriptionInputer_);
-    packDescriptionLayout->addWidget(packDescriptionAutoFillCheck_);
+    packDescriptionLayout->setSpacing(2);
+    packDescriptionLayout->addWidget(packDescriptionInputer_,       1);
+    packDescriptionLayout->addWidget(packDescriptionAutoFillCheck_, 0);
 
     packNamespaceLabel_           = new QLabel(this);
     packNamespaceInputer_         = new QLineEdit(this);
@@ -76,8 +76,8 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
     // 主布局
     auto* mainLayout = new QGridLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setHorizontalSpacing(8);
-    mainLayout->setVerticalSpacing(8);
+    mainLayout->setHorizontalSpacing(12);
+    mainLayout->setVerticalSpacing(12);
     mainLayout->addWidget(packTypeLabel_,              0, 0);
     mainLayout->addWidget(packTypeWidget,              0, 1);
     mainLayout->addWidget(packNameLabel_,              1, 0);

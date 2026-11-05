@@ -4,6 +4,7 @@
 #include <components/output_file_selector.h>
 #include "fallback_block_selector.h"
 
+class QCheckBox;
 class QComboBox;
 class QLabel;
 class QLineEdit;
@@ -41,6 +42,7 @@ public:
 
     void setSurfaceDirection(SurfaceDirection surfaceDirection);
     void setMaxFrameSize(const QSize& size);
+    /** 如果传入 -1 则不限制帧数。 */
     void setMaxFrameCount(int count);
     void setNumThreads(int num);
 
@@ -49,6 +51,7 @@ public:
     SurfaceDirection surfaceDirection() const;
     BlockDataPair    fallbackBlock()    const;
     QSize            maxFrameSize()     const;
+    /** 如果是不限制帧数返回 -1。 */
     int              maxFrameCount()    const;
     int              numThreads()       const;
 
@@ -86,6 +89,8 @@ private:
 
     QLabel*                maxFrameCountLabel_        = nullptr;
     QSpinBox*              maxFrameCountInputer_      = nullptr;
+    QCheckBox*             maxFrameCountInfCheck_     = nullptr;
+    QWidget*               maxFrameCountWidget_       = nullptr;
 
     QLabel*                numThreadsLabel_           = nullptr;
     QSpinBox*              numThreadsInputer_         = nullptr;
