@@ -18,58 +18,58 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
     : AdaptiveWidget(parent)
 {
     // 构造 UI 元素。
-    packTypeLabel_              = new QLabel(this);
-    packTypeStructureButton_    = new QRadioButton(this);
-    packTypeFunctionButton_     = new QRadioButton(this);
-    auto* packTypeWidget        = new QWidget(this);
-    auto* packTypeLayout        = new QHBoxLayout(packTypeWidget);
+    packTypeLabel_                = new QLabel(this);
+    packTypeStructureButton_      = new QRadioButton(this);
+    packTypeFunctionButton_       = new QRadioButton(this);
+    auto* packTypeWidget          = new QWidget(this);
+    auto* packTypeLayout          = new QHBoxLayout(packTypeWidget);
     packTypeLayout->setContentsMargins(0, 0, 0, 0);
     packTypeLayout->addWidget(packTypeStructureButton_);
     packTypeLayout->addWidget(packTypeFunctionButton_);
 
-    auto* packTypeButtonGroup   = new QButtonGroup(this);
+    auto* packTypeButtonGroup     = new QButtonGroup(this);
     packTypeButtonGroup->setExclusive(true);
     packTypeButtonGroup->addButton(packTypeStructureButton_);
     packTypeButtonGroup->addButton(packTypeFunctionButton_);
     packTypeStructureButton_->setChecked(true);
 
-    packNameLabel_              = new QLabel(this);
-    packNameInputer_            = new QLineEdit(this);
-    packNameAutoFillBox_        = new QCheckBox(this);
-    auto* packNameWidget        = new QWidget(this);
-    auto* packNameLayout        = new QHBoxLayout(packNameWidget);
+    packNameLabel_                = new QLabel(this);
+    packNameInputer_              = new QLineEdit(this);
+    packNameAutoFillCheck_        = new QCheckBox(this);
+    auto* packNameWidget          = new QWidget(this);
+    auto* packNameLayout          = new QHBoxLayout(packNameWidget);
     packNameLayout->setContentsMargins(0, 0, 0, 0);
     packNameLayout->setSpacing(1);
     packNameLayout->addWidget(packNameInputer_);
-    packNameLayout->addWidget(packNameAutoFillBox_);
+    packNameLayout->addWidget(packNameAutoFillCheck_);
 
-    packDescriptionLabel_       = new QLabel(this);
-    packDescriptionInputer_     = new QLineEdit(this);
-    packDescriptionAutoFillBox_ = new QCheckBox(this);
-    auto* packDescriptionWidget = new QWidget(this);
-    auto* packDescriptionLayout = new QHBoxLayout(packDescriptionWidget);
+    packDescriptionLabel_         = new QLabel(this);
+    packDescriptionInputer_       = new QLineEdit(this);
+    packDescriptionAutoFillCheck_ = new QCheckBox(this);
+    auto* packDescriptionWidget   = new QWidget(this);
+    auto* packDescriptionLayout   = new QHBoxLayout(packDescriptionWidget);
     packDescriptionLayout->setContentsMargins(0, 0, 0, 0);
     packDescriptionLayout->setSpacing(1);
     packDescriptionLayout->addWidget(packDescriptionInputer_);
-    packDescriptionLayout->addWidget(packDescriptionAutoFillBox_);
+    packDescriptionLayout->addWidget(packDescriptionAutoFillCheck_);
 
-    packNamespaceLabel_         = new QLabel(this);
-    packNamespaceInputer_       = new QLineEdit(this);
+    packNamespaceLabel_           = new QLabel(this);
+    packNamespaceInputer_         = new QLineEdit(this);
 
-    packVersionLabel_           = new QLabel(this);
-    packVersionInputer_         = new QLineEdit(this);
+    packVersionLabel_             = new QLabel(this);
+    packVersionInputer_           = new QLineEdit(this);
 
-    assistFunctionEnabledLabel_ = new QLabel(this);
-    assistFunctionEnabledBox_   = new QCheckBox(this);
+    assistFunctionEnabledLabel_   = new QLabel(this);
+    assistFunctionEnabledCheck_   = new QCheckBox(this);
 
     // 配置输入验证器。
-    auto* packNameValidator      = new QRegularExpressionValidator(
+    auto* packNameValidator       = new QRegularExpressionValidator(
         QRegularExpression(QStringLiteral("^[^\\\\/:*?\"<>|]+$")), this);
     packNameInputer_->setValidator(packNameValidator);
-    auto* packNamespaceValidator = new QRegularExpressionValidator(
+    auto* packNamespaceValidator  = new QRegularExpressionValidator(
         QRegularExpression(QStringLiteral("^[A-Za-z_][A-Za-z0-9_]*$")), this);
     packNamespaceInputer_->setValidator(packNamespaceValidator);
-    auto* packVersionValidator   = new QRegularExpressionValidator(
+    auto* packVersionValidator    = new QRegularExpressionValidator(
         QRegularExpression(QStringLiteral("^\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}$")), this);
     packVersionInputer_->setValidator(packVersionValidator);
 
@@ -89,17 +89,17 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
     mainLayout->addWidget(packVersionLabel_,           4, 0);
     mainLayout->addWidget(packVersionInputer_,         4, 1);
     mainLayout->addWidget(assistFunctionEnabledLabel_, 5, 0);
-    mainLayout->addWidget(assistFunctionEnabledBox_,   5, 1);
+    mainLayout->addWidget(assistFunctionEnabledCheck_, 5, 1);
     mainLayout->setColumnStretch(0, 0);
     mainLayout->setColumnStretch(1, 1);
 
     // Connections
     connect(
-        packNameAutoFillBox_,        &QCheckBox::toggled,
+        packNameAutoFillCheck_,        &QCheckBox::toggled,
         this, &MCPackGeneratorOptionWidget::setAutoFillPackName
     );
     connect(
-        packDescriptionAutoFillBox_, &QCheckBox::toggled,
+        packDescriptionAutoFillCheck_, &QCheckBox::toggled,
         this, &MCPackGeneratorOptionWidget::setAutoFillPackDescription
     );
 
@@ -152,33 +152,33 @@ void MCPackGeneratorOptionWidget::setPackVersion(const Version& version)
 
 void MCPackGeneratorOptionWidget::setAssistFunctionEnabled(bool enabled)
 {
-    assistFunctionEnabledBox_->setChecked(enabled);
+    assistFunctionEnabledCheck_->setChecked(enabled);
 }
 
 void MCPackGeneratorOptionWidget::setAutoFillPackName(bool enabled)
 {
-    const bool old = packNameAutoFillBox_->blockSignals(true);
-    packNameAutoFillBox_->setChecked(enabled);
-    packNameAutoFillBox_->blockSignals(old);
+    const bool old = packNameAutoFillCheck_->blockSignals(true);
+    packNameAutoFillCheck_->setChecked(enabled);
+    packNameAutoFillCheck_->blockSignals(old);
     packNameInputer_->setEnabled(!enabled);
 }
 
 void MCPackGeneratorOptionWidget::setAutoFillPackDescription(bool enabled)
 {
-    const bool old = packDescriptionAutoFillBox_->blockSignals(true);
-    packDescriptionAutoFillBox_->setChecked(enabled);
-    packDescriptionAutoFillBox_->blockSignals(old);
+    const bool old = packDescriptionAutoFillCheck_->blockSignals(true);
+    packDescriptionAutoFillCheck_->setChecked(enabled);
+    packDescriptionAutoFillCheck_->blockSignals(old);
     packDescriptionInputer_->setEnabled(!enabled);
 }
 
 bool MCPackGeneratorOptionWidget::autoFillPackName() const
 {
-    return packNameAutoFillBox_->isChecked();
+    return packNameAutoFillCheck_->isChecked();
 }
 
 bool MCPackGeneratorOptionWidget::autoFillPackDescription() const
 {
-    return packDescriptionAutoFillBox_->isChecked();
+    return packDescriptionAutoFillCheck_->isChecked();
 }
 
 MCPackGeneratorOptionWidget::PackType MCPackGeneratorOptionWidget::packType() const
@@ -277,7 +277,7 @@ Version MCPackGeneratorOptionWidget::packVersion() const
 
 bool MCPackGeneratorOptionWidget::assistFunctionEnabled() const
 {
-    return assistFunctionEnabledBox_->isChecked();
+    return assistFunctionEnabledCheck_->isChecked();
 }
 
 void MCPackGeneratorOptionWidget::refreshText()
@@ -287,11 +287,11 @@ void MCPackGeneratorOptionWidget::refreshText()
     packTypeFunctionButton_->setText(EASYTR("Function Pack"));
 
     packNameLabel_->setText(EASYTR("Pack Name"));
-    packNameAutoFillBox_->setText(EASYTR("Auto fill"));
+    packNameAutoFillCheck_->setText(EASYTR("Auto fill"));
     packNameInputer_->setPlaceholderText(EASYTR("Please input the pack name"));
 
     packDescriptionLabel_->setText(EASYTR("Pack Description"));
-    packDescriptionAutoFillBox_->setText(EASYTR("Auto fill"));
+    packDescriptionAutoFillCheck_->setText(EASYTR("Auto fill"));
     packDescriptionInputer_->setPlaceholderText(EASYTR("Please input the pack description"));
 
     packNamespaceLabel_->setText(EASYTR("Pack Namespace"));
@@ -301,7 +301,7 @@ void MCPackGeneratorOptionWidget::refreshText()
     packVersionInputer_->setPlaceholderText(EASYTR("Please input the pack version"));
 
     assistFunctionEnabledLabel_->setText(EASYTR("Enable Assist Function"));
-    assistFunctionEnabledBox_->setText(EASYTR("Generate Assist Function For Load Structure/Function"));
+    assistFunctionEnabledCheck_->setText(EASYTR("Generate Assist Function For Load Structure/Function"));
 }
 
 bool MCPackGeneratorOptionWidget::isValidName(const QString& name)

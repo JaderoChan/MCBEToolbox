@@ -67,24 +67,24 @@ private:
     } processInfo_{};
     Version packVersion_{1, 0, 0};
 
-    QLabel*       packTypeLabel_              = nullptr;
-    QRadioButton* packTypeStructureButton_    = nullptr;
-    QRadioButton* packTypeFunctionButton_     = nullptr;
+    QLabel*       packTypeLabel_                = nullptr;
+    QRadioButton* packTypeStructureButton_      = nullptr;
+    QRadioButton* packTypeFunctionButton_       = nullptr;
 
-    QLabel*       packNameLabel_              = nullptr;
-    QLineEdit*    packNameInputer_            = nullptr;
-    QCheckBox*    packNameAutoFillBox_        = nullptr;
+    QLabel*       packNameLabel_                = nullptr;
+    QLineEdit*    packNameInputer_              = nullptr;
+    QCheckBox*    packNameAutoFillCheck_        = nullptr;
 
-    QLabel*       packDescriptionLabel_       = nullptr;
-    QLineEdit*    packDescriptionInputer_     = nullptr;
-    QCheckBox*    packDescriptionAutoFillBox_ = nullptr;
+    QLabel*       packDescriptionLabel_         = nullptr;
+    QLineEdit*    packDescriptionInputer_       = nullptr;
+    QCheckBox*    packDescriptionAutoFillCheck_ = nullptr;
 
-    QLabel*       packNamespaceLabel_         = nullptr;
-    QLineEdit*    packNamespaceInputer_       = nullptr;
+    QLabel*       packNamespaceLabel_           = nullptr;
+    QLineEdit*    packNamespaceInputer_         = nullptr;
 
-    QLabel*       packVersionLabel_           = nullptr;
-    QLineEdit*    packVersionInputer_         = nullptr;
+    QLabel*       packVersionLabel_             = nullptr;
+    QLineEdit*    packVersionInputer_           = nullptr;
 
-    QLabel*       assistFunctionEnabledLabel_ = nullptr;
-    QCheckBox*    assistFunctionEnabledBox_   = nullptr;
+    QLabel*       assistFunctionEnabledLabel_   = nullptr;
+    QCheckBox*    assistFunctionEnabledCheck_   = nullptr;
 };
