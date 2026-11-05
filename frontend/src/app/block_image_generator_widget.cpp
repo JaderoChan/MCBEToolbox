@@ -9,8 +9,8 @@ BlockImageGeneratorWidget::BlockImageGeneratorWidget(QWidget* parent)
     : AdaptiveWidget(parent)
 {
     container_ = new TabbedPageWidget(this);
-    imagePage_ = new BlockImageGeneratorPageWidget(this);
-    videoPage_ = new BlockImageGeneratorPageWidget(this);
+    imagePage_ = new BlockImageGeneratorPageWidget(BlockImageGeneratorPageWidget::ImageMode, this);
+    videoPage_ = new BlockImageGeneratorPageWidget(BlockImageGeneratorPageWidget::VideoMode, this);
 
     container_->addTab(imagePage_, "", QIcon());
     container_->addTab(videoPage_, "", QIcon());

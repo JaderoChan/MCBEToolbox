@@ -15,16 +15,24 @@ set(
 
     "${CMAKE_CURRENT_BINARY_DIR}/include/app_defines.h"
 
+    ./app/about_card_widget.h
     ./app/app_configuration.h
     ./app/app_logo_icon.h
     ./app/block_attribute_text.h
+    ./app/block_image_generator_page_widget.h
+    ./app/block_image_generator_widget.h
     ./app/block_list_widget.h
     ./app/block_usage_widget.h
     ./app/extended_block_list_widget.h
-    ./app/factory_option_widget.h
+    ./app/extended_block_usage_widget.h
     ./app/fallback_block_selector.h
+    ./app/generator_common_option_widget.h
+    ./app/generator_overlay_widget.h
     ./app/mainwidget.h
-    ./app/mcpack_option_widget.h
+    ./app/mcpack_generator_option_widget.h
+    ./app/pixel_art_generator_page_widget.h
+    ./app/pixel_art_generator_widget.h
+    ./app/settings_widget.h
 
     ./components/adaptive_widget.h
     ./components/color_scheme_manager.h
@@ -55,17 +63,25 @@ set(
 set(
     SRCS
 
+    ./app/about_card_widget.cpp
     ./app/app_configuration.cpp
     ./app/app_logo_icon.cpp
     ./app/block_attribute_text.cpp
+    ./app/block_image_generator_page_widget.cpp
+    ./app/block_image_generator_widget.cpp
     ./app/block_list_widget.cpp
     ./app/block_usage_widget.cpp
     ./app/extended_block_list_widget.cpp
-    ./app/factory_option_widget.cpp
+    ./app/extended_block_usage_widget.cpp
     ./app/fallback_block_selector.cpp
+    ./app/generator_common_option_widget.cpp
+    ./app/generator_overlay_widget.cpp
     ./app/main.cpp
     ./app/mainwidget.cpp
-    ./app/mcpack_option_widget.cpp
+    ./app/mcpack_generator_option_widget.cpp
+    ./app/pixel_art_generator_page_widget.cpp
+    ./app/pixel_art_generator_widget.cpp
+    ./app/settings_widget.cpp
 
     ./components/adaptive_widget.cpp
     ./components/color_scheme_manager.cpp
