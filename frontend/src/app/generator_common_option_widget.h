@@ -17,6 +17,7 @@ class GeneratorCommonOptionWidget : public AdaptiveWidget
     Q_OBJECT
 
 public:
+    /** Image 模式下不显示 MaxFrameCount 和 NumThreads 相关控件。 */
     enum Mode
     {
         ImageMode,

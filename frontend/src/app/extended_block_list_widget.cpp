@@ -140,6 +140,11 @@ const BlockDataMap& ExtendedBlockListWidget::blocks() const
     return blockListWidget_->blocks();
 }
 
+const BlockDataMap& ExtendedBlockListWidget::selecteds() const
+{
+    return blockListWidget_->selecteds();
+}
+
 void ExtendedBlockListWidget::refreshText()
 {
     selectAllButton_->setText(EASYTR("Select All"));

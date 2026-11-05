@@ -21,7 +21,8 @@ public:
     BlockListWidget* blockListWidget() const;
 
     void setBlocks(BlockDataMap blocks);
-    const BlockDataMap& blocks() const;
+    const BlockDataMap& blocks()    const;
+    const BlockDataMap& selecteds() const;
 
 protected:
     void refreshText() override;
