@@ -6,6 +6,8 @@
 #include <system_error> // std::error_code
 
 #include "color_kd_tree.hpp"
+#include "format_string.hpp"
+#include "image_ostream.hpp"
 
 BaseFactory::BaseFactory(const BlockDataMap& blocks, SurfaceDirection desiredSurface)
     : blocks_(blocks), desiredSurface_(desiredSurface) , colorKdTree_(new ColorKdTree(blocks, desiredSurface))
@@ -34,7 +36,8 @@ void BaseFactory::updateBlockUsageMap(BlockUsageMap& blockUsageMap, std::string_
         ++(it->second);
 }
 
-bool BaseFactory::invokeProgressCallback(ProgressCallback callback, std::size_t current, std::size_t total, void* userdata)
+bool BaseFactory::invokeProgressCallback(
+    ProgressCallback callback, std::size_t current, std::size_t total, void* userdata)
 {
     if (callback)
     {
@@ -61,7 +64,8 @@ bool BaseFactory::ensureDirectoryExists(const std::filesystem::path& dirPath, co
     {
         if (!std::filesystem::is_directory(dirPath))
         {
-            fprintf(stderr, "%s Target path '%s' is not a directory\n", logPrefix, dirPath.string().c_str());
+            errorMessage_ = formatString("{} Target path '{}' is not a directory", logPrefix, dirPath.string());
+            fprintf(stderr, "%s\n", errorMessage_.c_str());
             return false;
         }
         return true;
@@ -71,7 +75,37 @@ bool BaseFactory::ensureDirectoryExists(const std::filesystem::path& dirPath, co
     std::filesystem::create_directories(dirPath, ec);
     if (ec)
     {
-        fprintf(stderr, "%s Failed to create the directory '%s'\n", logPrefix, dirPath.string().c_str());
+        errorMessage_ = formatString("{} Failed to create the directory '{}'", logPrefix, dirPath.string());
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return false;
+    }
+    return true;
+}
+
+bool BaseFactory::validatePreconditions(const ImageOStream& stream, const char* logPrefix, int numThreads)
+{
+    if (!stream.isOpened())
+    {
+        errorMessage_ = formatString("{} Stream is not opened", logPrefix);
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return false;
+    }
+    if (stream.isEnd())
+    {
+        errorMessage_ = formatString("{} Stream has arrived at the end", logPrefix);
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return false;
+    }
+    if (!isConfigured())
+    {
+        errorMessage_ = formatString("{} Factory is not configured", logPrefix);
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return false;
+    }
+    if (numThreads < 1)
+    {
+        errorMessage_ = formatString("{} Parameter 'numThreads' ({}) is less than 1", logPrefix, numThreads);
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
         return false;
     }
     return true;
@@ -85,6 +119,7 @@ bool BaseFactory::isConfigured() const
 void BaseFactory::reinitializeState()
 {
     blockUsageMap_.clear();
+    errorMessage_.clear();
 }
 
 BlockDataPair BaseFactory::retrieveAppropriateBlock(const cv::Vec4b& color)

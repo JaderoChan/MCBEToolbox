@@ -1,11 +1,11 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 
 #include "block.hpp"
 #include "block_image_factory.hpp"
 #include "gif_image_ostream.hpp"
-#include "image_utilities.hpp"
 #include "mcfunction_factory.hpp"
 #include "mcpack.hpp"
 #include "mcstructure_factory.hpp"
@@ -33,8 +33,9 @@ struct GeneratorCommonOption
 
 struct FactoryResult
 {
-    bool ok;
+    BaseFactory::ResultType    result;
     BaseFactory::BlockUsageMap usage;
+    std::string                errorMessage;
 };
 
 struct BlockImageGeneratorOption : public GeneratorCommonOption

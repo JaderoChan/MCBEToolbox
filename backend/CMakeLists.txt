@@ -7,6 +7,7 @@ set(
     ./include/block_image_factory.hpp
     ./include/block.hpp
     ./include/color.hpp
+    ./include/format_string.hpp
     ./include/fs_utils.hpp
     ./include/gif_image_ostream.hpp
     ./include/image_ostream.hpp

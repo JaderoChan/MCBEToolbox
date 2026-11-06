@@ -7,34 +7,26 @@
 #include <fstream>     // std::ofstream
 #include <string_view> // std::string_view
 
+#include "format_string.hpp"
 #include "frame_pipeline.hpp"
 
 MCFunctionFactory::MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirection desiredSurface)
     : BaseFactory(blocks, desiredSurface)
 {}
 
-MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunction(ImageOStream& stream, bool callbackPerFrame)
+BaseFactory::ResultType MCFunctionFactory::generateSingleMCFunction(
+    ImageOStream& stream, bool callbackPerFrame, MCFunction& outFunction)
 {
     reinitializeState();
-    return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageMap_, callbackPerFrame);
+    return generateSingleMCFunctionHelper(stream, callback_, userdata_, blockUsageMap_, callbackPerFrame, outFunction);
 }
 
-std::vector<MCFunctionFactory::MCFunction>
-MCFunctionFactory::generateDetachMCFunction(ImageOStream& stream, int numThreads)
+BaseFactory::ResultType MCFunctionFactory::generateDetachMCFunction(
+    ImageOStream& stream, int numThreads, std::vector<MCFunction>& outFunctions)
 {
     reinitializeState();
-    if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
-    {
-        if (!stream.isOpened())
-            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Stream is not opened\n");
-        if (!stream.isEnd())
-            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Stream is arrive end\n");
-        if (!isConfigured())
-            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Factory is not configured\n");
-        if (numThreads < 1)
-            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Parameter 'numThreads' is less than 1\n");
-        return std::vector<MCFunction>();
-    }
+    if (!validatePreconditions(stream, "MCFunctionFactory::generateDetachMCFunction()", numThreads))
+        return FAIL;
     assert(stream.frameCount() > 0);
 
     const auto numFrames = stream.frameCount();
@@ -42,6 +34,7 @@ MCFunctionFactory::generateDetachMCFunction(ImageOStream& stream, int numThreads
     std::vector<MCFunction> ret;
     ret.reserve(static_cast<std::size_t>(numFrames));
 
+    bool cancelled = false;
     const bool ok = runFramePipeline<std::pair<MCFunction, BlockUsageMap>>(
         stream,
         numThreads,
@@ -58,36 +51,41 @@ MCFunctionFactory::generateDetachMCFunction(ImageOStream& stream, int numThreads
 
             ret.push_back(std::move(mcfunction));
             return true;
-        }
+        },
+        &cancelled
     );
 
-    return ok ? std::move(ret) : std::vector<MCFunction>();
+    if (!ok)
+    {
+        if (cancelled)
+            return CANCEL;
+        if (errorMessage_.empty())
+        {
+            errorMessage_ = "MCFunctionFactory::generateDetachMCFunction() Failed to process one or more frames";
+            fprintf(stderr, "%s\n", errorMessage_.c_str());
+        }
+        return FAIL;
+    }
+
+    outFunctions = std::move(ret);
+    return SUCCESS;
 }
 
-bool MCFunctionFactory::generateDetachMCFunction(
+BaseFactory::ResultType MCFunctionFactory::generateDetachMCFunction(
     ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads)
 {
     reinitializeState();
-    if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
-    {
-        if (!stream.isOpened())
-            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Stream is not opened\n");
-        if (!stream.isEnd())
-            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Stream is arrive end\n");
-        if (!isConfigured())
-            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Factory is not configured\n");
-        if (numThreads < 1)
-            fprintf(stderr, "MCFunctionFactory::generateDetachMCFunction() Parameter 'numThreads' is less than 1\n");
-        return false;
-    }
+    if (!validatePreconditions(stream, "MCFunctionFactory::generateDetachMCFunction()", numThreads))
+        return FAIL;
     if (!ensureDirectoryExists(outDirPath, "MCFunctionFactory::generateDetachMCFunction()"))
-        return false;
+        return FAIL;
     assert(stream.frameCount() > 0);
 
     const auto numFrames = stream.frameCount();
 
     std::size_t frameIdx = 1;
-    return runFramePipeline<std::pair<MCFunction, BlockUsageMap>>(
+    bool cancelled = false;
+    const bool ok = runFramePipeline<std::pair<MCFunction, BlockUsageMap>>(
         stream,
         numThreads,
         TASK_WINDOW_SIZE_FACTOR,
@@ -115,11 +113,10 @@ bool MCFunctionFactory::generateDetachMCFunction(
                     file = std::ofstream(path, std::ios::binary | std::ios::trunc);
                     if (!file.is_open())
                     {
-                        fprintf(
-                            stderr,
-                            "MCFunctionFactory::generateDetachMCFunction() Failed to open the out file '%s'\n",
-                            path.string().c_str()
-                        );
+                        errorMessage_ = formatString(
+                            "MCFunctionFactory::generateDetachMCFunction() Failed to open the out file '{}'",
+                            path.string());
+                        fprintf(stderr, "%s\n", errorMessage_.c_str());
                         return false;
                     }
                 }
@@ -129,8 +126,22 @@ bool MCFunctionFactory::generateDetachMCFunction(
 
             ++frameIdx;
             return true;
-        }
+        },
+        &cancelled
     );
+
+    if (!ok)
+    {
+        if (cancelled)
+            return CANCEL;
+        if (errorMessage_.empty())
+        {
+            errorMessage_ = "MCFunctionFactory::generateDetachMCFunction() Failed to process one or more frames";
+            fprintf(stderr, "%s\n", errorMessage_.c_str());
+        }
+        return FAIL;
+    }
+    return SUCCESS;
 }
 
 std::pair<MCFunctionFactory::MCFunction, BaseFactory::BlockUsageMap>
@@ -138,36 +149,33 @@ MCFunctionFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& s
 {
     SingleImageOStream imageStream(frame);
     BlockUsageMap localUsageCount;
-    MCFunction mcfunction = generateSingleMCFunctionHelper(
+    MCFunction mcfunction;
+    generateSingleMCFunctionHelper(
         imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
         { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
-        static_cast<void*>(&shouldStop), localUsageCount, true
+        static_cast<void*>(&shouldStop), localUsageCount, true, mcfunction
     );
     return {std::move(mcfunction), std::move(localUsageCount)};
 }
 
-MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
+BaseFactory::ResultType MCFunctionFactory::generateSingleMCFunctionHelper(
     ImageOStream&    stream,
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageMap,
-    bool             callbackPerFrame)
+    bool             callbackPerFrame,
+    MCFunction&      outFunction)
 {
-    if (!stream.isOpened() || stream.isEnd() || stream.frameCount() > INT_MAX || !isConfigured())
+    if (!validatePreconditions(stream, "MCFunctionFactory::generateSingleMCFunctionHelper()"))
+        return FAIL;
+    if (stream.frameCount() > INT_MAX)
     {
-        if (!stream.isOpened())
-            fprintf(stderr, "MCFunctionFactory::generateSingleMCFunctionHelper() Stream is not opened\n");
-        if (stream.isEnd())
-            fprintf(stderr, "MCFunctionFactory::generateSingleMCFunctionHelper() Stream is arrive end\n");
-        if (stream.frameCount() > INT_MAX)
-            fprintf(
-                stderr,
-                "MCFunctionFactory::generateSingleMCFunctionHelper() Stream's frame count (%lld) is too much\n",
-                stream.frameCount()
-            );
-        if (!isConfigured())
-            fprintf(stderr, "MCFunctionFactory::generateSingleMCFunctionHelper() Factory is not configured\n");
-        return MCFunction();
+        errorMessage_ = formatString(
+            "MCFunctionFactory::generateSingleMCFunctionHelper() Stream's frame count ({}) is too much",
+            stream.frameCount()
+        );
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return FAIL;
     }
 
     const int n = static_cast<int>(stream.frameCount());
@@ -187,11 +195,9 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
         cv::Mat frame = stream.nextFrame();
         if (frame.empty())
         {
-            fprintf(
-                stderr,
-                "MCFunctionFactory::generateSingleMCFunctionHelper() The frame got from stream is empty\n"
-            );
-            return MCFunction();
+            errorMessage_ = "MCFunctionFactory::generateSingleMCFunctionHelper() The frame got from stream is empty";
+            fprintf(stderr, "%s\n", errorMessage_.c_str());
+            return FAIL;
         }
 
         assert(frame.cols == w && frame.rows == h);
@@ -240,7 +246,7 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
                 {
                     ++current;
                     if (invokeProgressCallback(callback, current, total, userdata))
-                        return MCFunction();
+                        return CANCEL;
                 }
             }
 
@@ -265,9 +271,10 @@ MCFunctionFactory::MCFunction MCFunctionFactory::generateSingleMCFunctionHelper(
         if (callbackPerFrame)
         {
             if (invokeProgressCallback(callback, num + 1, n, userdata))
-                return MCFunction();
+                return CANCEL;
         }
     }
 
-    return mcfunction;
+    outFunction = std::move(mcfunction);
+    return SUCCESS;
 }

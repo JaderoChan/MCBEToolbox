@@ -12,6 +12,8 @@
 
 // 前置声明：方块颜色 KD 树（加速最近邻颜色方块数据的查找）。
 class ColorKdTree;
+// 前置声明：图像帧数据流接口。
+class ImageOStream;
 
 /** 各类工厂类的基类，提供一些通用的接口。 */
 class BaseFactory
@@ -33,6 +35,13 @@ public:
 
     /** 方块使用量数据类型 {程序用方块 ID : 方块用量} */
     using BlockUsageMap    = std::map<std::string, std::size_t, std::less<>>;
+
+    enum ResultType
+    {
+        SUCCESS,
+        FAIL,
+        CANCEL
+    };
 
     // =================================================================================================================
     // > Const/Constexpr
@@ -75,6 +84,8 @@ public:
 
     /** 获取上一个任务所使用的方块用量信息。 */
     const BlockUsageMap& getBlockUsageMap()    const          { return blockUsageMap_;          }
+    /** 获取上一个任务的错误信息，如果没有错误信息返回空字符串。 */
+    const std::string&   getErrorMessage()     const          { return errorMessage_;           }
 
 protected:
     // =================================================================================================================
@@ -102,7 +113,10 @@ protected:
 
     // 确保给定目录存在，如果不存在则创建，已存在但不是目录则失败。
     // 参数 logPrefix 用于打印日志时标记调用者来源。
-    static bool ensureDirectoryExists(const std::filesystem::path& dirPath, const char* logPrefix);
+    bool ensureDirectoryExists(const std::filesystem::path& dirPath, const char* logPrefix);
+
+    // 校验输入流与工厂状态等前置条件是否合法，校验失败时记录错误信息（见 #getErrorMessage()）并返回 false。
+    bool validatePreconditions(const ImageOStream& stream, const char* logPrefix, int numThreads = 1);
 
     // 判断当前工厂是否已成功配置（可用方块不为空，KD 树已构建等）。
     virtual bool isConfigured() const;
@@ -128,6 +142,7 @@ protected:
     void*                userdata_      = nullptr;
 
     BlockUsageMap blockUsageMap_;
+    std::string   errorMessage_;
 
     std::unique_ptr<ColorKdTree> colorKdTree_;
 };

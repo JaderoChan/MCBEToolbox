@@ -8,6 +8,7 @@
 #include <opencv2/videoio.hpp>   // cv::VideoWriter
 
 #include <image_utilities.hpp>
+#include "format_string.hpp"
 #include "fs_utils.hpp"
 #include "frame_pipeline.hpp"
 
@@ -18,10 +19,10 @@ BlockImageFactory::BlockImageFactory(
     : BaseFactory(blocks, desiredSurface), texturesDirPath_(texturesDirPath)
 {}
 
-cv::Mat BlockImageFactory::generateBlockImage(SingleImageOStream& stream)
+BaseFactory::ResultType BlockImageFactory::generateBlockImage(SingleImageOStream& stream, cv::Mat& outImage)
 {
     reinitializeState();
-    return generateBlockImageHelper(stream, callback_, userdata_, blockUsageMap_, texturesCache_, false);
+    return generateBlockImageHelper(stream, callback_, userdata_, blockUsageMap_, texturesCache_, false, outImage);
 }
 
 std::filesystem::path BlockImageFactory::createTexturePath(const std::string& path)
@@ -29,29 +30,19 @@ std::filesystem::path BlockImageFactory::createTexturePath(const std::string& pa
     return texturesDirPath_ / fs_utils::pathFromUtf8(path);
 }
 
-bool BlockImageFactory::generateBlockVideo(
+BaseFactory::ResultType BlockImageFactory::generateBlockVideo(
     VideoImageOStream& stream, const std::filesystem::path& outFilePath, int numThreads)
 {
     reinitializeState();
 
-    if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
-    {
-        if (!stream.isOpened())
-            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Stream is not opened\n");
-        if (!stream.isEnd())
-            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Stream is arrive end\n");
-        if (!isConfigured())
-            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Factory is not configured\n");
-        if (numThreads < 1)
-            fprintf(stderr, "BlockImageFactory::generateBlockVideo() Parameter 'numThreads' is less than 1\n");
-        return false;
-    }
+    if (!validatePreconditions(stream, "BlockImageFactory::generateBlockVideo()", numThreads))
+        return FAIL;
 
     // 确保输出路径的父目录存在。
     const std::filesystem::path outParentPath =
         outFilePath.has_parent_path() ? outFilePath.parent_path() : std::filesystem::current_path();
     if (!ensureDirectoryExists(outParentPath, "BlockImageFactory::generateBlockVideo()"))
-        return false;
+        return FAIL;
 
     int fps = stream.fps();
     fps = fps > 0 ? fps : 25;
@@ -59,25 +50,22 @@ bool BlockImageFactory::generateBlockVideo(
     cv::Size frameSize = stream.frameSize();
     if (frameSize.empty())
     {
-        fprintf(
-            stderr,
-            "BlockImageFactory::generateBlockVideo() "
-            "The frame size (%d * %d) got from stream is invalid\n",
+        errorMessage_ = formatString(
+            "BlockImageFactory::generateBlockVideo() The frame size ({} * {}) got from stream is invalid",
             frameSize.width, frameSize.height
         );
-        return false;
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return FAIL;
     }
     if (frameSize.width > VIDEO_FRAME_MAX_WIDTH || frameSize.height > VIDEO_FRAME_MAX_HEIGHT)
     {
-        fprintf(
-            stderr,
-            "BlockImageFactory::generateBlockVideo() "
-            "The frame size (%d * %d) is too large for block video, "
-            "the maximum acceptable size is (%d * %d)\n",
-            frameSize.width, frameSize.height,
-            VIDEO_FRAME_MAX_WIDTH, VIDEO_FRAME_MAX_HEIGHT
+        errorMessage_ = formatString(
+            "BlockImageFactory::generateBlockVideo() The frame size ({} * {}) is too large for block video, "
+            "the maximum acceptable size is ({} * {})",
+            frameSize.width, frameSize.height, VIDEO_FRAME_MAX_WIDTH, VIDEO_FRAME_MAX_HEIGHT
         );
-        return false;
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return FAIL;
     }
 
     frameSize *= 16;
@@ -102,20 +90,20 @@ bool BlockImageFactory::generateBlockVideo(
     }
     if (!writer.isOpened())
     {
-        fprintf(
-            stderr,
-            "BlockImageFactory::generateBlockVideo() "
-            "Failed to open the video writer created by file '%s' with all attempted codecs, "
-            "please check whether a H264 video encoder is available on this system\n",
-            outFilePath.string().c_str()
+        errorMessage_ = formatString(
+            "BlockImageFactory::generateBlockVideo() Failed to open the video writer created by file '{}' "
+            "with all attempted codecs, please check whether a H264 video encoder is available on this system",
+            outFilePath.string()
         );
-        return false;
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return FAIL;
     }
 
     const auto numFrames = stream.frameCount();
 
     using TaskResult = std::pair<cv::Mat, BlockUsageMap>;
 
+    bool cancelled = false;
     const bool pipelineOk = runFramePipeline<TaskResult>(
         stream,
         numThreads,
@@ -126,10 +114,11 @@ bool BlockImageFactory::generateBlockVideo(
             SingleImageOStream imageStream(frame);
             BlockUsageMap   localUsageCount;
             BlockTextureMap localTexturesCache;
-            cv::Mat blockImage = generateBlockImageHelper(
+            cv::Mat blockImage;
+            generateBlockImageHelper(
                 imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
                 { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
-                static_cast<void*>(&shouldStop), localUsageCount, localTexturesCache, true
+                static_cast<void*>(&shouldStop), localUsageCount, localTexturesCache, true, blockImage
             );
             return TaskResult(std::move(blockImage), std::move(localUsageCount));
         },
@@ -153,40 +142,55 @@ bool BlockImageFactory::generateBlockVideo(
             cv::cvtColor(blockImage, image, cv::COLOR_BGRA2BGR);
             writer.write(image);
             return true;
-        }
+        },
+        &cancelled
     );
 
     writer.release();
 
     if (!pipelineOk)
-        return false;
+    {
+        if (cancelled)
+            return CANCEL;
+        if (errorMessage_.empty())
+        {
+            errorMessage_ = "BlockImageFactory::generateBlockVideo() Failed to process one or more frames";
+            fprintf(stderr, "%s\n", errorMessage_.c_str());
+        }
+        return FAIL;
+    }
 
-    return fs_utils::moveFileReplacing(tempVideoPath, outFilePath);
+    if (!fs_utils::moveFileReplacing(tempVideoPath, outFilePath))
+    {
+        errorMessage_ = formatString(
+            "BlockImageFactory::generateBlockVideo() Failed to move the temporary file to '{}'",
+            outFilePath.string()
+        );
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return FAIL;
+    }
+
+    return SUCCESS;
 }
 
-cv::Mat BlockImageFactory::generateBlockImageHelper(
+BaseFactory::ResultType BlockImageFactory::generateBlockImageHelper(
     ImageOStream&    stream,
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageMap,
     BlockTextureMap& texturesCache,
-    bool             callbackPerFrame)
+    bool             callbackPerFrame,
+    cv::Mat&         outImage)
 {
-    if (!stream.isOpened() || stream.isEnd() || !isConfigured())
-    {
-        if (!stream.isOpened())
-            fprintf(stderr, "BlockImageFactory::generateBlockImageHelper() Stream is not opened\n");
-        if (stream.isEnd())
-            fprintf(stderr, "BlockImageFactory::generateBlockImageHelper() Stream is arrive end\n");
-        if (!isConfigured())
-            fprintf(stderr, "BlockImageFactory::generateBlockImageHelper() Factory is not configured\n");
-        return cv::Mat();
-    }
+    if (!validatePreconditions(stream, "BlockImageFactory::generateBlockImageHelper()"))
+        return FAIL;
+
     cv::Mat image = stream.nextFrame();
     if (image.empty())
     {
-        fprintf(stderr, "BlockImageFactory::generateBlockImageHelper() The frame got from stream is empty\n");
-        return cv::Mat();
+        errorMessage_ = "BlockImageFactory::generateBlockImageHelper() The frame got from stream is empty";
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return FAIL;
     }
 
     assert(image.type() == CV_8UC4);
@@ -239,7 +243,7 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
             {
                 ++current;
                 if (invokeProgressCallback(callback, current, total, userdata))
-                    return cv::Mat();
+                    return CANCEL;
             }
         }
     }
@@ -247,8 +251,9 @@ cv::Mat BlockImageFactory::generateBlockImageHelper(
     if (callbackPerFrame)
     {
         if (invokeProgressCallback(callback, 1, 1, userdata))
-            return cv::Mat();
+            return CANCEL;
     }
 
-    return ret;
+    outImage = std::move(ret);
+    return SUCCESS;
 }

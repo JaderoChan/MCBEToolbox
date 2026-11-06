@@ -22,17 +22,21 @@ public:
 
     MCFunctionFactory(const BlockDataMap& blocks, SurfaceDirection desiredSurface);
 
-    MCFunction generateSingleMCFunction(ImageOStream& stream, bool callbackPerFrame);
-    std::vector<MCFunction> generateDetachMCFunction(ImageOStream& stream, int numThreads = 4);
-    bool generateDetachMCFunction(ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads = 4);
+    ResultType generateSingleMCFunction(
+        ImageOStream& stream, bool callbackPerFrame, MCFunction& outFunction);
+    ResultType generateDetachMCFunction(
+        ImageOStream& stream, int numThreads, std::vector<MCFunction>& outFunctions);
+    ResultType generateDetachMCFunction(
+        ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads = 4);
 
 private:
-    MCFunction generateSingleMCFunctionHelper(
+    ResultType generateSingleMCFunctionHelper(
         ImageOStream&    stream,
         ProgressCallback callback,
         void*            userdata,
         BlockUsageMap&   blockUsageMap,
-        bool             callbackPerFrame);
+        bool             callbackPerFrame,
+        MCFunction&      outFunction);
 
     std::pair<MCFunction, BlockUsageMap> processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop);
 };

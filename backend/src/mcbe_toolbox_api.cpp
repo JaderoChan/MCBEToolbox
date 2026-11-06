@@ -45,7 +45,7 @@ FactoryResult generateBlockImage(
     ImageOStream& stream, BlockImageFactory& factory, const BlockImageGeneratorOption& option)
 {
     if (!isStreamReady(stream))
-        return {false, {}};
+        return {BaseFactory::FAIL, {}, "The input stream is not opened or has arrived at the end"};
 
     applyBaseFactoryOptions(factory, option);
     factory.setTexturesDirPath(option.textureDirPath);
@@ -53,11 +53,11 @@ FactoryResult generateBlockImage(
     const std::filesystem::path& outFilePath = option.outFilePath;
     const std::filesystem::path& tempDir     = fs_utils::createUniqueHiddenTempDir(outFilePath);
     if (tempDir.empty())
-        return {false, {}};
+        return {BaseFactory::FAIL, {}, "Failed to create a temporary working directory"};
 #ifdef _WIN32
     std::unique_ptr<fs_utils::AsciiSafeAlias> tempDirAlias = std::make_unique<fs_utils::AsciiSafeAlias>(tempDir);
     if (tempDirAlias->path().empty())
-        return {false, {}};
+        return {BaseFactory::FAIL, {}, "Failed to create an ASCII-safe alias for the temporary working directory"};
     const std::filesystem::path& tempDirRef = tempDirAlias->path();
 #else
     const std::filesystem::path& tempDirRef = tempDir;
@@ -66,48 +66,59 @@ FactoryResult generateBlockImage(
 
     const std::filesystem::path& tempFilePath = tempDirRef / outFilePath.filename();
 
-    bool ok = false;
+    BaseFactory::ResultType result = BaseFactory::FAIL;
+    std::string             message;
     if (option.generateVideo)
     {
         auto* videoStream = dynamic_cast<VideoImageOStream*>(&stream);
         if (!videoStream)
         {
-            fprintf(
-                stderr,
-                "generateBlockImage() option.generateVideo is true but 'stream' is not a VideoImageOStream\n"
-            );
-            return {false, {}};
+            message = "option.generateVideo is true but 'stream' is not a VideoImageOStream";
+            fprintf(stderr, "generateBlockImage() %s\n", message.c_str());
+            return {BaseFactory::FAIL, {}, message};
         }
-        ok = factory.generateBlockVideo(*videoStream, tempFilePath, option.numThreads);
+        result = factory.generateBlockVideo(*videoStream, tempFilePath, option.numThreads);
+        if (result != BaseFactory::SUCCESS)
+            message = factory.getErrorMessage();
     }
     else
     {
         auto* singleStream = dynamic_cast<SingleImageOStream*>(&stream);
         if (!singleStream)
         {
-            fprintf(
-                stderr,
-                "generateBlockImage() option.generateVideo is false but 'stream' is not a SingleImageOStream\n"
-            );
-            return {false, {}};
+            message = "option.generateVideo is false but 'stream' is not a SingleImageOStream";
+            fprintf(stderr, "generateBlockImage() %s\n", message.c_str());
+            return {BaseFactory::FAIL, {}, message};
         }
-        const cv::Mat& image = factory.generateBlockImage(*singleStream);
-        ok = imwriteUnicode(tempFilePath, image);
+        cv::Mat image;
+        result = factory.generateBlockImage(*singleStream, image);
+        if (result != BaseFactory::SUCCESS)
+        {
+            message = factory.getErrorMessage();
+        }
+        else if (!imwriteUnicode(tempFilePath, image))
+        {
+            result  = BaseFactory::FAIL;
+            message = "Failed to write the generated block image to the temporary file";
+        }
     }
 
     const auto& usage = factory.getBlockUsageMap();
 
-    if (ok)
-        ok = fs_utils::moveFileReplacing(tempFilePath, outFilePath);
+    if (result == BaseFactory::SUCCESS && !fs_utils::moveFileReplacing(tempFilePath, outFilePath))
+    {
+        result  = BaseFactory::FAIL;
+        message = "Failed to move the generated file to the output path";
+    }
 
-    return {ok, usage};
+    return {result, usage, message};
 }
 
 FactoryResult generateStructurePack(
     ImageOStream& stream, MCStructureFactory& factory, const MCPackGeneratorOption& option)
 {
     if (!isStreamReady(stream))
-        return {false, {}};
+        return {BaseFactory::FAIL, {}, "The input stream is not opened or has arrived at the end"};
 
     applyBaseFactoryOptions(factory, option);
 
@@ -116,30 +127,39 @@ FactoryResult generateStructurePack(
         option.packOption.nameSpace, option.packOption.version);
     configureMCPack(pack, option.packOption);
     if (!pack.isOk())
-        return {false, {}};
+        return {BaseFactory::FAIL, {}, "Failed to prepare the temporary MC Pack working directory"};
 
-    bool ok = false;
+    BaseFactory::ResultType result = BaseFactory::FAIL;
+    std::string             message;
     if (option.detachFileEnabled)
     {
-        ok = factory.generateDetachMCStructure(stream, pack.getStructuresPath(), option.numThreads);
-        if (option.assistFunctionEnabled)
+        result = factory.generateDetachMCStructure(stream, pack.getStructuresPath(), option.numThreads);
+        if (result != BaseFactory::SUCCESS)
+            message = factory.getErrorMessage();
+
+        if (result == BaseFactory::SUCCESS && option.assistFunctionEnabled)
         {
             // TODO
         }
     }
     else
     {
-        const nbt::Tag& mcstructure = factory.generateSingleMCStructure(stream, true);
-        ok = mcstructure.type() != nbt::TT_END;
-        if (ok)
+        nbt::Tag mcstructure;
+        result = factory.generateSingleMCStructure(stream, true, mcstructure);
+        if (result != BaseFactory::SUCCESS)
+        {
+            message = factory.getErrorMessage();
+        }
+        else
         {
             const std::filesystem::path& path =
                 pack.getStructuresPath() / fs_utils::pathFromUtf8(option.packOption.name + ".mcstructure");
             std::ofstream ofs(path, std::ios::binary | std::ios::trunc);
             if (!ofs)
             {
-                fprintf(stderr, "generateStructurePack() Failed to create the file '%s'\n", path.string().c_str());
-                ok = false;
+                message = "Failed to create the file '" + path.string() + "'";
+                fprintf(stderr, "generateStructurePack() %s\n", message.c_str());
+                result = BaseFactory::FAIL;
             }
             else
             {
@@ -149,12 +169,13 @@ FactoryResult generateStructurePack(
                 }
                 catch (const std::exception& e)
                 {
-                    fprintf(stderr, "generateStructurePack() Failed to dump the mcstructure: %s\n", e.what());
-                    ok = false;
+                    message = std::string("Failed to dump the mcstructure: ") + e.what();
+                    fprintf(stderr, "generateStructurePack() %s\n", message.c_str());
+                    result = BaseFactory::FAIL;
                 }
             }
 
-            if (option.assistFunctionEnabled)
+            if (result == BaseFactory::SUCCESS && option.assistFunctionEnabled)
             {
                 // TODO
             }
@@ -162,16 +183,20 @@ FactoryResult generateStructurePack(
     }
 
     const auto& usage = factory.getBlockUsageMap();
-    if (ok) ok = pack.pack();
+    if (result == BaseFactory::SUCCESS && !pack.pack())
+    {
+        result  = BaseFactory::FAIL;
+        message = "Failed to pack the generated contents into the .mcpack file";
+    }
 
-    return {ok, usage};
+    return {result, usage, message};
 }
 
 FactoryResult generateFucntionPack(
     ImageOStream& stream, MCFunctionFactory& factory, const MCPackGeneratorOption& option)
 {
     if (!isStreamReady(stream))
-        return {false, {}};
+        return {BaseFactory::FAIL, {}, "The input stream is not opened or has arrived at the end"};
 
     applyBaseFactoryOptions(factory, option);
 
@@ -180,21 +205,34 @@ FactoryResult generateFucntionPack(
         option.packOption.nameSpace, option.packOption.version);
     configureMCPack(pack, option.packOption);
     if (!pack.isOk())
-        return {false, {}};
+        return {BaseFactory::FAIL, {}, "Failed to prepare the temporary MC Pack working directory"};
 
-    bool ok = false;
+    BaseFactory::ResultType result = BaseFactory::FAIL;
+    std::string             message;
     if (option.detachFileEnabled)
     {
-        ok = factory.generateDetachMCFunction(stream, pack.getFunctionsPath(), option.numThreads);
-        if (option.assistFunctionEnabled)
+        result = factory.generateDetachMCFunction(stream, pack.getFunctionsPath(), option.numThreads);
+        if (result != BaseFactory::SUCCESS)
+            message = factory.getErrorMessage();
+
+        if (result == BaseFactory::SUCCESS && option.assistFunctionEnabled)
         {
             // TODO
         }
     }
     else
     {
-        const MCFunctionFactory::MCFunction& mcfunction = factory.generateSingleMCFunction(stream, true);
-        ok = !mcfunction.empty() && pack.addFunction(option.packOption.name, mcfunction);
+        MCFunctionFactory::MCFunction mcfunction;
+        result = factory.generateSingleMCFunction(stream, true, mcfunction);
+        if (result != BaseFactory::SUCCESS)
+        {
+            message = factory.getErrorMessage();
+        }
+        else if (!pack.addFunction(option.packOption.name, mcfunction))
+        {
+            result  = BaseFactory::FAIL;
+            message = "Failed to add the generated mcfunction to the pack";
+        }
         if (option.assistFunctionEnabled)
         {
             // TODO
@@ -202,7 +240,11 @@ FactoryResult generateFucntionPack(
     }
 
     const auto& usage = factory.getBlockUsageMap();
-    if (ok) ok = pack.pack();
+    if (result == BaseFactory::SUCCESS && !pack.pack())
+    {
+        result  = BaseFactory::FAIL;
+        message = "Failed to pack the generated contents into the .mcpack file";
+    }
 
-    return {ok, usage};
+    return {result, usage, message};
 }

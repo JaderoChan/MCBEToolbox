@@ -11,6 +11,7 @@
 #include <opencv2/core/mat.hpp>     // cv::Mat
 #include <mcnbt/be/mcstructure.hpp> // nbt::be::MCStructure
 
+#include "format_string.hpp"
 #include "frame_pipeline.hpp"
 
 MCStructureFactory::MCStructureFactory(
@@ -20,27 +21,20 @@ MCStructureFactory::MCStructureFactory(
     : BaseFactory(blocks, desiredSurface), blockFormatVersion_(blockFormatVersion)
 {}
 
-nbt::Tag MCStructureFactory::generateSingleMCStructure(ImageOStream& stream, bool callbackPerFrame)
+BaseFactory::ResultType MCStructureFactory::generateSingleMCStructure(
+    ImageOStream& stream, bool callbackPerFrame, nbt::Tag& outStructure)
 {
     reinitializeState();
-    return generateSingleMCStructureHelper(stream, callback_, userdata_, blockUsageMap_, callbackPerFrame);
+    return generateSingleMCStructureHelper(
+        stream, callback_, userdata_, blockUsageMap_, callbackPerFrame, outStructure);
 }
 
-std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(ImageOStream& stream, int numThreads)
+BaseFactory::ResultType MCStructureFactory::generateDetachMCStructure(
+    ImageOStream& stream, int numThreads, std::vector<nbt::Tag>& outStructures)
 {
     reinitializeState();
-    if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
-    {
-        if (!stream.isOpened())
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Stream is not opened\n");
-        if (!stream.isEnd())
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Stream is arrive end\n");
-        if (!isConfigured())
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Factory is not configured\n");
-        if (numThreads < 1)
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Parameter 'numThreads' is less than 1\n");
-        return std::vector<nbt::Tag>();
-    }
+    if (!validatePreconditions(stream, "MCStructureFactory::generateDetachMCStructure()", numThreads))
+        return FAIL;
     assert(stream.frameCount() > 0);
 
     const auto numFrames = stream.frameCount();
@@ -48,6 +42,7 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(ImageOStream
     std::vector<nbt::Tag> ret;
     ret.reserve(static_cast<std::size_t>(numFrames));
 
+    bool cancelled = false;
     const bool ok = runFramePipeline<std::pair<nbt::Tag, BlockUsageMap>>(
         stream,
         numThreads,
@@ -69,36 +64,41 @@ std::vector<nbt::Tag> MCStructureFactory::generateDetachMCStructure(ImageOStream
 
             ret.push_back(std::move(mcstructure));
             return true;
-        }
+        },
+        &cancelled
     );
 
-    return ok ? std::move(ret) : std::vector<nbt::Tag>();
+    if (!ok)
+    {
+        if (cancelled)
+            return CANCEL;
+        if (errorMessage_.empty())
+        {
+            errorMessage_ = "MCStructureFactory::generateDetachMCStructure() Failed to process one or more frames";
+            fprintf(stderr, "%s\n", errorMessage_.c_str());
+        }
+        return FAIL;
+    }
+
+    outStructures = std::move(ret);
+    return SUCCESS;
 }
 
-bool MCStructureFactory::generateDetachMCStructure(
+BaseFactory::ResultType MCStructureFactory::generateDetachMCStructure(
     ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads)
 {
     reinitializeState();
-    if (!stream.isOpened() || stream.isEnd() || !isConfigured() || numThreads < 1)
-    {
-        if (!stream.isOpened())
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Stream is not opened\n");
-        if (!stream.isEnd())
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Stream is arrive end\n");
-        if (!isConfigured())
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Factory is not configured\n");
-        if (numThreads < 1)
-            fprintf(stderr, "MCStructureFactory::generateDetachMCStructure() Parameter 'numThreads' is less than 1\n");
-        return false;
-    }
+    if (!validatePreconditions(stream, "MCStructureFactory::generateDetachMCStructure()", numThreads))
+        return FAIL;
     if (!ensureDirectoryExists(outDirPath, "MCStructureFactory::generateDetachMCStructure()"))
-        return false;
+        return FAIL;
     assert(stream.frameCount() > 0);
 
     const auto numFrames = stream.frameCount();
 
     std::size_t frameIdx = 1;
-    return runFramePipeline<std::pair<nbt::Tag, BlockUsageMap>>(
+    bool cancelled = false;
+    const bool ok = runFramePipeline<std::pair<nbt::Tag, BlockUsageMap>>(
         stream,
         numThreads,
         TASK_WINDOW_SIZE_FACTOR,
@@ -124,11 +124,9 @@ bool MCStructureFactory::generateDetachMCStructure(
             std::ofstream ofs(path, std::ios::binary | std::ios::trunc);
             if (!ofs)
             {
-                fprintf(
-                    stderr,
-                    "MCStructureFactory::generateDetachMCStructure() Failed to create the file '%s'\n",
-                    path.string().c_str()
-                );
+                errorMessage_ = formatString(
+                    "MCStructureFactory::generateDetachMCStructure() Failed to create the file '{}'", path.string());
+                fprintf(stderr, "%s\n", errorMessage_.c_str());
                 return false;
             }
             try
@@ -137,17 +135,29 @@ bool MCStructureFactory::generateDetachMCStructure(
             }
             catch (const std::exception& e)
             {
-                fprintf(
-                    stderr,
-                    "MCStructureFactory::generateDetachMCStructure() Failed to dump the mcstructure: %s\n",
-                    e.what()
-                );
+                errorMessage_ = formatString(
+                    "MCStructureFactory::generateDetachMCStructure() Failed to dump the mcstructure: {}", e.what());
+                fprintf(stderr, "%s\n", errorMessage_.c_str());
                 return false;
             }
             ++frameIdx;
             return true;
-        }
+        },
+        &cancelled
     );
+
+    if (!ok)
+    {
+        if (cancelled)
+            return CANCEL;
+        if (errorMessage_.empty())
+        {
+            errorMessage_ = "MCStructureFactory::generateDetachMCStructure() Failed to process one or more frames";
+            fprintf(stderr, "%s\n", errorMessage_.c_str());
+        }
+        return FAIL;
+    }
+    return SUCCESS;
 }
 
 std::pair<nbt::Tag, BaseFactory::BlockUsageMap>
@@ -155,36 +165,33 @@ MCStructureFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& 
 {
     SingleImageOStream imageStream(frame);
     BlockUsageMap localUsageCount;
-    nbt::Tag mcstructure = generateSingleMCStructureHelper(
+    nbt::Tag mcstructure;
+    generateSingleMCStructureHelper(
         imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
         { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
-        static_cast<void*>(&shouldStop), localUsageCount, true
+        static_cast<void*>(&shouldStop), localUsageCount, true, mcstructure
     );
     return {std::move(mcstructure), std::move(localUsageCount)};
 }
 
-nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
+BaseFactory::ResultType MCStructureFactory::generateSingleMCStructureHelper(
     ImageOStream&    stream,
     ProgressCallback callback,
     void*            userdata,
     BlockUsageMap&   blockUsageMap,
-    bool             callbackPerFrame)
+    bool             callbackPerFrame,
+    nbt::Tag&        outStructure)
 {
-    if (!stream.isOpened() || stream.isEnd() || stream.frameCount() > INT_MAX || !isConfigured())
+    if (!validatePreconditions(stream, "MCStructureFactory::generateSingleMCStructureHelper()"))
+        return FAIL;
+    if (stream.frameCount() > INT_MAX)
     {
-        if (!stream.isOpened())
-            fprintf(stderr, "MCStructureFactory::generateSingleMCStructureHelper() Stream is not opened\n");
-        if (stream.isEnd())
-            fprintf(stderr, "MCStructureFactory::generateSingleMCStructureHelper() Stream is arrive end\n");
-        if (stream.frameCount() > INT_MAX)
-            fprintf(
-                stderr,
-                "MCStructureFactory::generateSingleMCStructureHelper() Stream's frame count (%lld) is too much\n",
-                stream.frameCount()
-            );
-        if (!isConfigured())
-            fprintf(stderr, "MCStructureFactory::generateSingleMCStructureHelper() Factory is not configured\n");
-        return nbt::Tag();
+        errorMessage_ = formatString(
+            "MCStructureFactory::generateSingleMCStructureHelper() Stream's frame count ({}) is too much",
+            stream.frameCount()
+        );
+        fprintf(stderr, "%s\n", errorMessage_.c_str());
+        return FAIL;
     }
 
     nbt::be::MCStructure mcstructure(1, 1, 1, 1);
@@ -212,12 +219,12 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
             mcstructure.size()[2] = w;
             break;
         default:
-            fprintf(
-                stderr,
-                "MCStructureFactory::generateSingleMCStructureHelper() The desired surface (%d) is invalid\n",
-                desiredSurface_
+            errorMessage_ = formatString(
+                "MCStructureFactory::generateSingleMCStructureHelper() The desired surface ({}) is invalid",
+                static_cast<int>(desiredSurface_)
             );
-            return nbt::Tag();
+            fprintf(stderr, "%s\n", errorMessage_.c_str());
+            return FAIL;
     }
 
     const int xs = mcstructure.size()[0].getInt();
@@ -241,11 +248,9 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
         const cv::Mat frame = stream.nextFrame();
         if (frame.empty())
         {
-            fprintf(
-                stderr,
-                "MCStructureFactory::generateSingleMCStructureHelper() The frame got from stream is empty\n"
-            );
-            return nbt::Tag();
+            errorMessage_ = "MCStructureFactory::generateSingleMCStructureHelper() The frame got from stream is empty";
+            fprintf(stderr, "%s\n", errorMessage_.c_str());
+            return FAIL;
         }
 
         assert(frame.cols == w && frame.rows == h);
@@ -294,7 +299,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
                 {
                     ++current;
                     if (invokeProgressCallback(callback, current, total, userdata))
-                        return nbt::Tag();
+                        return CANCEL;
                 }
             }
         }
@@ -302,7 +307,7 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
         if (callbackPerFrame)
         {
             if (invokeProgressCallback(callback, num + 1, n, userdata))
-                return nbt::Tag();
+                return CANCEL;
         }
     }
 
@@ -318,5 +323,6 @@ nbt::Tag MCStructureFactory::generateSingleMCStructureHelper(
         palette.pushBack(std::move(paletteItem));
     }
 
-    return std::move(mcstructure.root);
+    outStructure = std::move(mcstructure.root);
+    return SUCCESS;
 }

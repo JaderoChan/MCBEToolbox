@@ -2,7 +2,6 @@
 
 #include <atomic>     // std::atomic
 #include <filesystem> // std::filesystem::path
-#include <string>     // std::string
 #include <utility>    // std::pair
 #include <vector>     // std::vector
 
@@ -27,17 +26,21 @@ public:
     void setBlockFormatVersion(const Version& blockFormatVersion) { blockFormatVersion_ = blockFormatVersion; }
     Version getBlockFormatVersion() const                         { return blockFormatVersion_;               }
 
-    nbt::Tag generateSingleMCStructure(ImageOStream& stream, bool callbackPerFrame);
-    std::vector<nbt::Tag> generateDetachMCStructure(ImageOStream& stream, int numThreads = 4);
-    bool generateDetachMCStructure(ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads = 4);
+    ResultType generateSingleMCStructure(
+        ImageOStream& stream, bool callbackPerFrame, nbt::Tag& outStructure);
+    ResultType generateDetachMCStructure(
+        ImageOStream& stream, int numThreads, std::vector<nbt::Tag>& outStructures);
+    ResultType generateDetachMCStructure(
+        ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads = 4);
 
 private:
-    nbt::Tag generateSingleMCStructureHelper(
+    ResultType generateSingleMCStructureHelper(
         ImageOStream&    stream,
         ProgressCallback callback,
         void*            userdata,
         BlockUsageMap&   blockUsageMap,
-        bool             callbackPerFrame);
+        bool             callbackPerFrame,
+        nbt::Tag&        outStructure);
 
     std::pair<nbt::Tag, BlockUsageMap> processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop);
 

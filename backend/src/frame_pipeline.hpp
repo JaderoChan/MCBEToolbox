@@ -22,6 +22,7 @@
  * @param processFrame     帧处理函数，签名：(const cv::Mat& frame, std::atomic<bool>& shouldStop) -> Product
  * @param reportProgress   进度回调函数，签名：(std::size_t completedCount) -> bool
  * @param consumeResult    结果处理函数，签名：(Product&&) -> bool
+ * @param cancelled        非空时，若因 reportProgress 返回 true（用户请求终止）而提前结束，将被置为 true。
  * @return 全部帧均成功处理并消费返回 true，否则返回 false。
  */
 template<typename Product, typename ProcessFrame, typename ReportProgress, typename ConsumeResult>
@@ -32,7 +33,8 @@ bool runFramePipeline(
     const char*      logPrefix,
     ProcessFrame&&   processFrame,
     ReportProgress&& reportProgress,
-    ConsumeResult&&  consumeResult)
+    ConsumeResult&&  consumeResult,
+    bool*            cancelled = nullptr)
 {
     std::deque<std::future<Product>> pending;
     std::atomic<std::size_t> completedCount{0};
@@ -78,7 +80,10 @@ bool runFramePipeline(
 
                 const std::size_t current = completedCount.fetch_add(1, std::memory_order_relaxed) + 1;
                 if (reportProgress(current))
+                {
                     shouldStop.store(true, std::memory_order_relaxed);
+                    if (cancelled) *cancelled = true;
+                }
 
                 return product;
             }

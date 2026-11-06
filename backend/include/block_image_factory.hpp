@@ -27,19 +27,22 @@ public:
     void setTexturesDirPath(const std::filesystem::path& texturesDirPath) { texturesDirPath_ = texturesDirPath; }
     std::filesystem::path getTexturesDirPath() const                      { return texturesDirPath_;            }
 
-    cv::Mat generateBlockImage(SingleImageOStream& stream);
-    bool generateBlockVideo(VideoImageOStream& stream, const std::filesystem::path& outFilePath, int numThreads = 4);
+    ResultType generateBlockImage(
+        SingleImageOStream& stream, cv::Mat& outImage);
+    ResultType generateBlockVideo(
+        VideoImageOStream& stream, const std::filesystem::path& outFilePath, int numThreads = 4);
 
 private:
     std::filesystem::path createTexturePath(const std::string& path);
 
-    cv::Mat generateBlockImageHelper(
+    ResultType generateBlockImageHelper(
         ImageOStream&    stream,
         ProgressCallback callback,
         void*            userdata,
         BlockUsageMap&   blockUsageMap,
         BlockTextureMap& texturesCache,
-        bool             callbackPerFrame);
+        bool             callbackPerFrame,
+        cv::Mat&         outImage);
 
     std::filesystem::path texturesDirPath_;
     BlockTextureMap       texturesCache_;
