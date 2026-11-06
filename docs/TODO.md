@@ -4,3 +4,5 @@
 - [ ] `NBT Editor` 增加：撤销与重做功能。
 - [ ] `NBT Editor` 优化：懒加载（对于内部元素极多的 Tag 对象仅在用户展开时才建立 Tree Item）。
 - [ ] `Block List Widget` 优化：Shift 多选逻辑。
+- [ ] 选定程序 Logo 图标。
+- [ ] 完成程序配置文件的加载与保存。
