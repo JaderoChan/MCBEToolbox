@@ -28,6 +28,8 @@ constexpr int BlockUsageRole     = Qt::UserRole + 2;
 class BlockUsageItem : public QTableWidgetItem
 {
 public:
+    using QTableWidgetItem::QTableWidgetItem;
+
     bool operator<(const QTableWidgetItem &other) const override
     {
         return data(BlockUsageRole).toULongLong() < other.data(BlockUsageRole).toULongLong();
@@ -163,10 +165,10 @@ void BlockUsageWidget::refreshText()
     for (int row = 0; row < tableWidget_->rowCount(); ++row)
     {
         const auto programId = tableWidget_->item(row, COLUMN_ID)->data(ProgramBlockIdRole).toString().toStdString();
-        const auto entryIt = entries.find(programId);
-        const auto blockIt = blocks_.find(std::string_view(programId));
-        const auto entry   = (entryIt == entries.end() ? nullptr : &entryIt->second);
-        const auto block   = (blockIt == blocks_.end() ? nullptr : blockIt->second);
+        const auto entryIt   = entries.find(programId);
+        const auto blockIt   = blocks_.find(std::string_view(programId));
+        const auto entry     = (entryIt == entries.end() ? nullptr : &entryIt->second);
+        const auto block     = (blockIt == blocks_.end() ? nullptr : blockIt->second);
 
         const auto id = block ? QString::fromStdString(block->id) : QString();
         QString name;
@@ -247,7 +249,7 @@ void BlockUsageWidget::rebuildTableWidget()
         auto* colorItem = new QTableWidgetItem(colorText);
         colorItem->setIcon(colorIcon);
 
-        auto* usageItem = new QTableWidgetItem(QString::number(usage));
+        auto* usageItem = new BlockUsageItem(QString::number(usage));
         usageItem->setData(BlockUsageRole, static_cast<qulonglong>(usage));
 
         tableWidget_->setItem(row, COLUMN_ID,    idItem);
