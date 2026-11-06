@@ -43,6 +43,7 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
         mode_ == ImageMode ? GeneratorCommonOptionWidget::ImageMode : GeneratorCommonOptionWidget::VideoMode);
     commonOptionWidget_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     availableBlockWidget_->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    availableBlockWidget_->setMinimumHeight(540);
     optionWidget_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     optionWidget_->setWidgetResizable(true);
 
