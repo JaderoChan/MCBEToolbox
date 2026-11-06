@@ -2,6 +2,7 @@
 #include <qfont.h>
 #include <qsettings.h>
 #include <qstringlist.h>
+#include <qstylefactory.h>
 
 #include <easy_translate.hpp>
 
@@ -47,6 +48,10 @@ int main(int argc, char* argv[])
         font.setFamilies(families);
         a.setFont(font);
     }
+
+#ifdef Q_OS_MAC
+    a.setStyle(QStyleFactory::create("Fusion"));
+#endif
 
     // 加载程序设置。
     setAppConfiguration(loadConfiguration());
