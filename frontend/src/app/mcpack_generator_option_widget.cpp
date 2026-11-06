@@ -78,6 +78,7 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setHorizontalSpacing(12);
     mainLayout->setVerticalSpacing(12);
+    mainLayout->setColumnMinimumWidth(0, 128);
     mainLayout->addWidget(packTypeLabel_,              0, 0);
     mainLayout->addWidget(packTypeWidget,              0, 1);
     mainLayout->addWidget(packNameLabel_,              1, 0);

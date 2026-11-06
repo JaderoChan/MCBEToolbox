@@ -75,6 +75,7 @@ GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setHorizontalSpacing(12);
     mainLayout->setVerticalSpacing(12);
+    mainLayout->setColumnMinimumWidth(0, 128);
     mainLayout->addWidget(inputFileLabel_,           0, 0);
     mainLayout->addWidget(inputFileWidget,           0, 1);
     mainLayout->addWidget(outputFileLabel_,          1, 0);
