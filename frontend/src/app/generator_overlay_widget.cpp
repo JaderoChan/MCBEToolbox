@@ -194,6 +194,10 @@ void GeneratorOverlayWidget::onViewBlockUsageClicked()
         blockUsageDialog_ = new AdaptiveDialog(this);
         blockUsageWidget_ = new ExtendedBlockUsageWidget(blockUsageDialog_);
         auto* layout      = new QVBoxLayout(blockUsageDialog_);
+        blockUsageWidget_->blockUsageWidget()->setSortMode(BlockUsageWidget::UsageDescendingSortMode);
+        blockUsageWidget_->setMarkdownTitle(QFileInfo(outputFilePath_).completeBaseName());
+        // TODO: Markdown Summary 必须包含输入文件路径，期望方块面，fallback block、帧的输出尺寸、帧的实际输出数量等信息。
+        // blockUsageWidget_->setMarkdownSummary();
         layout->addWidget(blockUsageWidget_);
         blockUsageDialog_->resize(640, 640);
         blockUsageDialog_->setWindowTitle(EASYTR("Block Usage"));
