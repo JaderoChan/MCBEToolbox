@@ -202,7 +202,7 @@ void FallbackBlockSelector::refreshText()
     airBlockButton_->setText(EASYTR("Air Block"));
     customBlockSelectorButton_->setText(QStringLiteral("..."));
     noneBlockButton_->setToolTip(EASYTR("FallbackBlock.None.Tooltip"));
-    noneBlockButton_->setToolTip(EASYTR("FallbackBlock.Air.Tooltip"));
+    airBlockButton_->setToolTip(EASYTR("FallbackBlock.Air.Tooltip"));
     customBlockButton_->setToolTip(EASYTR("FallbackBlock.Custom.Tooltip"));
     refreshCustomButtonTextIcon();
 }

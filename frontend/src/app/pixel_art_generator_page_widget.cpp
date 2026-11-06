@@ -132,6 +132,9 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
 
     mcpackOptionWidget_->setPackNamespace(DEFAULT_MCPACK_NAMESPACE);
     mcpackOptionWidget_->setPackVersion(DEFAULT_MCPACK_VERSION);
+    mcpackOptionWidget_->setAutoFillPackName(true);
+    mcpackOptionWidget_->setAutoFillPackDescription(true);
+    mcpackOptionWidget_->setAssistFunctionEnabled(true);
 
     // 初始化文本和刷新 Start 按钮位置。
     refreshText();
