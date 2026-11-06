@@ -3,7 +3,10 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include <qdir.h>
 #include <qlayout.h>
+#include <qmessagebox.h>
+#include <qmetaobject.h>
 #include <qscrollarea.h>
 #include <qstackedlayout.h>
 #include <qstyle.h>
@@ -11,8 +14,7 @@
 #include <qtoolbutton.h>
 
 #include <app_defines.h>
-#include <single_image_ostream.hpp>
-#include <video_image_ostream.hpp>
+#include <utils/qstring_path.h>
 #include "app_configuration.h"
 #include "extended_block_list_widget.h"
 #include "generator_common_option_widget.h"
@@ -24,6 +26,9 @@ namespace
 constexpr int START_BUTTON_SIZE   = 64;
 constexpr int START_BUTTON_MARGIN = 16;
 constexpr int START_BUTTON_RADIUS = START_BUTTON_SIZE / 2;
+
+constexpr int IMAGE_MODE_PROGRESS_UPDATE_INTERVAL = 10000;
+constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 1;
 
 } // namespace
 
@@ -67,6 +72,9 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
     overlayWidget_ = new GeneratorOverlayWidget(this);
     overlayWidget_->setVisible(false);
 
+    // 工厂实例。
+    factory_ = new BlockImageFactory(BlockDataMap(), DEFAULT_DESIRED_SURFACE);
+
     // 主布局。
     mainLayout_ = new QStackedLayout(this);
     mainLayout_->setContentsMargins(12, 12, 12, 12);
@@ -84,6 +92,12 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
         overlayWidget_, &GeneratorOverlayWidget::cancelRequested,
         this,           &BlockImageGeneratorPageWidget::stopGenerate
     );
+    connect(
+        overlayWidget_, &GeneratorOverlayWidget::confirmed,
+        this,           &BlockImageGeneratorPageWidget::returnToOptionView
+    );
+
+    commonOptionWidget_->setOutputFileExtension(mode_ == ImageMode ? QStringLiteral("png") : QStringLiteral("mp4"));
 
     // 配置默认值（未来需要根据程序配置进行设置）。
     availableBlockWidget_->setBlocks(getAppConfiguration().baseBlocks);
@@ -113,6 +127,12 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
     updateStartButtonGeometry();
 }
 
+BlockImageGeneratorPageWidget::~BlockImageGeneratorPageWidget()
+{
+    delete stream_;
+    delete factory_;
+}
+
 BlockImageGeneratorPageWidget::Mode BlockImageGeneratorPageWidget::mode() const
 {
     return mode_;
@@ -120,30 +140,92 @@ BlockImageGeneratorPageWidget::Mode BlockImageGeneratorPageWidget::mode() const
 
 void BlockImageGeneratorPageWidget::startGenerate()
 {
-    qDebug() << "Start Generate";
-    // if (!validateOptionAndOpenStream())
-    //     return;
+    if (workThread_)
+        return;
+    if (!validateOptionAndOpenStream())
+        return;
 
-    overlayWidget_->showProgressView(GeneratorOverlayWidget::GeneratingStage);
-    overlayWidget_->setProgress(0.0);
+    cancelRequested_.store(false, std::memory_order_relaxed);
+    progressCounter_.store(0,     std::memory_order_relaxed);
+    progressInterval_ =
+        (mode_ == VideoMode) ? VIDEO_MODE_PROGRESS_UPDATE_INTERVAL : IMAGE_MODE_PROGRESS_UPDATE_INTERVAL;
+
+    fallbackBlock_ = commonOptionWidget_->fallbackBlock();
+
+    const BlockDataMap& selectedBlocks = availableBlockWidget_->selecteds();
+    const bool          blocksChanged  = !blocksApplied_ || selectedBlocks != appliedBlocks_;
+
+    BlockImageGeneratorOption option{};
+    option.needUpdateBlocks = blocksChanged;
+    option.blocks           = selectedBlocks;
+    option.desiredSurface   = commonOptionWidget_->surfaceDirection();
+    option.fallbackBlock    = fallbackBlock_.second ? &fallbackBlock_ : nullptr;
+    option.callback         = &BlockImageGeneratorPageWidget::progressCallback;
+    option.userdata         = this;
+    option.outFilePath      = toFsPath(commonOptionWidget_->outputFilePath());
+    option.numThreads       = commonOptionWidget_->numThreads();
+    option.generateVideo    = (mode_ == VideoMode);
+    option.textureDirPath   =
+        toFsPath(QDir(APP_RESOURCES_DIRPATH).absoluteFilePath(QStringLiteral(APP_BLOCK_TEXTURES_DIRPATH)));
+
+    if (blocksChanged)
+    {
+        appliedBlocks_ = selectedBlocks;
+        blocksApplied_ = true;
+    }
+
+    overlayWidget_->setProgressUpdateInterval(progressInterval_);
+    overlayWidget_->showProgressView();
     overlayWidget_->setVisible(true);
+    overlayWidget_->raise();
     mainLayout_->setCurrentWidget(overlayWidget_);
+
+    ImageOStream*      stream  = stream_;
+    BlockImageFactory* factory = factory_;
+
+    workThread_ = QThread::create([this, option, stream, factory]()
+    {
+        FactoryResult result;
+        try
+        {
+            result = generateBlockImage(*stream, *factory, option);
+        }
+        catch (const std::exception& e)
+        {
+            result = {BaseFactory::FAIL, {}, e.what()};
+        }
+        catch (...)
+        {
+            result = {BaseFactory::FAIL, {}, "Unknown exception"};
+        }
+
+        QMetaObject::invokeMethod(this, [this, result]() { onGenerationFinished(result); }, Qt::QueuedConnection);
+    });
+    connect(workThread_, &QThread::finished, workThread_, &QObject::deleteLater);
+    workThread_->start();
 }
 
 void BlockImageGeneratorPageWidget::stopGenerate()
 {
-    qDebug() << "Cancel Generate";
-    // if (!workThread_ || !workThread_->isRunning())
-    //     return;
-
-    overlayWidget_->setVisible(false);
-    mainLayout_->setCurrentWidget(optionWidget_);
-    updateStartButtonGeometry();
+    cancelRequested_.store(true, std::memory_order_release);
 }
 
 void BlockImageGeneratorPageWidget::refreshText()
 {
     startButton_->setToolTip(EASYTR("Start Generate"));
+
+    if (mode_ == ImageMode)
+    {
+        commonOptionWidget_->setInputFileFilter(
+            QStringLiteral("%1 (*.png *.jpg *.jpeg *.bmp *.webp *.tiff *.tif)").arg(EASYTR("Images")));
+        commonOptionWidget_->setOutputFileFilter(QStringLiteral("%1 (*.png)").arg(EASYTR("PNG Image")));
+    }
+    else
+    {
+        commonOptionWidget_->setInputFileFilter(
+            QStringLiteral("%1 (*.mp4 *.avi *.mov *.mkv *.webm *.flv *.wmv *.m4v *.mpg *.mpeg)").arg(EASYTR("Videos")));
+        commonOptionWidget_->setOutputFileFilter(QStringLiteral("%1 (*.mp4)").arg(EASYTR("MP4 Video")));
+    }
 }
 
 void BlockImageGeneratorPageWidget::resizeEvent(QResizeEvent* e)
@@ -154,41 +236,41 @@ void BlockImageGeneratorPageWidget::resizeEvent(QResizeEvent* e)
 
 bool BlockImageGeneratorPageWidget::validateOptionAndOpenStream()
 {
-    // 验证配置是否有效。
-    if (workThread_ && workThread_->isRunning()) // TODO：需要弹出提示框。
+    if (commonOptionWidget_->inputFilePath().isEmpty())
+    {
+        QMessageBox(
+            QMessageBox::Warning, EASYTR("Notice"), EASYTR("Please select an input file first"),
+            QMessageBox::Close, this
+        ).exec();
         return false;
+    }
 
-    if (commonOptionWidget_->inputFilePath().isEmpty()) // TODO：需要弹出提示框。
+    if (commonOptionWidget_->outputFilePath().isEmpty())
+    {
+        QMessageBox(
+            QMessageBox::Warning, EASYTR("Notice"), EASYTR("Please specify an output file path first"),
+            QMessageBox::Close, this
+        ).exec();
         return false;
+    }
 
-    if (commonOptionWidget_->outputFilePath().isEmpty()) // TODO：需要弹出提示框。
+    if (availableBlockWidget_->selecteds().empty())
+    {
+        QMessageBox(
+            QMessageBox::Warning, EASYTR("Notice"), EASYTR("Please select at least one available block first"),
+            QMessageBox::Close, this
+        ).exec();
         return false;
-
-    if (availableBlockWidget_->selecteds().empty()) // TODO：需要弹出提示框。
-        return false;
+    }
 
     // 尝试打开流。
     assert(stream_ == nullptr); // 应该每次任务结束后置空 stream_。
     const auto inputFilePath = commonOptionWidget_->inputFilePath();
     const auto maxFrameSize  = commonOptionWidget_->maxFrameSize();
     if (mode_ == ImageMode)
-    {
-    #ifdef _WIN32
-        stream_ = new SingleImageOStream(inputFilePath.toStdWString());
-    #else
-        stream_ = new SingleImageOStream(inputFilePath.toStdString());
-    #endif // _WIN32
-    }
+        stream_ = new SingleImageOStream(toFsPath(inputFilePath));
     else
-    {
-        const auto maxFrameCount = commonOptionWidget_->maxFrameCount();
-    #ifdef _WIN32
-        stream_ = new VideoImageOStream(inputFilePath.toStdWString(), maxFrameCount);
-    #else
-        stream_ = new VideoImageOStream(inputFilePath.toStdString(),  maxFrameCount);
-    #endif
-
-    }
+        stream_ = new VideoImageOStream(toFsPath(inputFilePath), commonOptionWidget_->maxFrameCount());
 
     stream_->setMaxWidth(maxFrameSize.width());
     stream_->setMaxHeight(maxFrameSize.height());
@@ -196,11 +278,58 @@ bool BlockImageGeneratorPageWidget::validateOptionAndOpenStream()
     {
         delete stream_;
         stream_ = nullptr;
-        // TODO：需要弹出提示框。
+        QMessageBox(
+            QMessageBox::Critical, EASYTR("Error"),
+            EASYTR("Failed to open the input file, please check whether the file path and format are valid"),
+            QMessageBox::Close, this
+        ).exec();
         return false;
     }
 
     return true;
+}
+
+void BlockImageGeneratorPageWidget::onGenerationFinished(FactoryResult result)
+{
+    delete stream_;
+    stream_     = nullptr;
+    workThread_ = nullptr;
+
+    if (result.result == BaseFactory::CANCEL)
+    {
+        // 用户主动取消，无需确认，直接返回选项界面。
+        returnToOptionView();
+        return;
+    }
+
+    overlayWidget_->showEndView(
+        result.result == BaseFactory::SUCCESS, QString::fromStdString(result.errorMessage),
+        commonOptionWidget_->outputFilePath(),
+        availableBlockWidget_->selecteds(), commonOptionWidget_->surfaceDirection(), result.usage
+    );
+}
+
+void BlockImageGeneratorPageWidget::returnToOptionView()
+{
+    overlayWidget_->setVisible(false);
+    mainLayout_->setCurrentWidget(optionWidget_);
+    startButton_->raise();
+}
+
+void BlockImageGeneratorPageWidget::progressCallback(std::size_t current, std::size_t total, bool& stop, void* userdata)
+{
+    auto* self = static_cast<BlockImageGeneratorPageWidget*>(userdata);
+    stop = self->cancelRequested_.load(std::memory_order_acquire);
+
+    const bool isFinal = (total == 0) || (current + 1 >= total);
+    const auto count   = self->progressCounter_.fetch_add(1, std::memory_order_relaxed) + 1;
+    if (!isFinal && self->progressInterval_ > 1 && (count % static_cast<std::size_t>(self->progressInterval_)) != 0)
+        return;
+
+    const double percent =
+        total > 0 ? (static_cast<double>(current + 1) / static_cast<double>(total)) * 100.0 : 100.0;
+    QMetaObject::invokeMethod(
+        self, [self, percent]() { self->overlayWidget_->setProgress(percent); }, Qt::QueuedConnection);
 }
 
 void BlockImageGeneratorPageWidget::updateStartButtonGeometry()

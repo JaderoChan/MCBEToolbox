@@ -9,8 +9,8 @@ PixelArtGeneratorWidget::PixelArtGeneratorWidget(QWidget* parent)
     : AdaptiveWidget(parent)
 {
     container_ = new TabbedPageWidget(this);
-    imagePage_ = new PixelArtGeneratorPageWidget(this);
-    videoPage_ = new PixelArtGeneratorPageWidget(this);
+    imagePage_ = new PixelArtGeneratorPageWidget(PixelArtGeneratorPageWidget::ImageMode, this);
+    videoPage_ = new PixelArtGeneratorPageWidget(PixelArtGeneratorPageWidget::VideoMode, this);
 
     container_->addTab(imagePage_, "", QIcon());
     container_->addTab(videoPage_, "", QIcon());

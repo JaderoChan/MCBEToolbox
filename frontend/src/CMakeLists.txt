@@ -58,6 +58,7 @@ set(
     ./utils/directory_scope.h
     ./utils/file_io.h
     ./utils/format_string.h
+    ./utils/qstring_path.h
 )
 
 # 源文件

@@ -1,13 +1,15 @@
 #pragma once
 
+#include <cstddef>
+#include <atomic>
+
+#include <mcbe_toolbox_api.hpp>
 #include <components/adaptive_widget.h>
 
 class QScrollArea;
 class QStackedLayout;
 class QThread;
 class QToolButton;
-
-class ImageOStream;
 
 class ExtendedBlockListWidget;
 class GeneratorCommonOptionWidget;
@@ -25,6 +27,7 @@ public:
     };
 
     explicit BlockImageGeneratorPageWidget(Mode mode, QWidget* parent = nullptr);
+    ~BlockImageGeneratorPageWidget() override;
 
     Mode mode() const;
 
@@ -38,7 +41,11 @@ protected:
 private:
     friend class BlockImageGeneratorWidget;
 
+    static void progressCallback(std::size_t current, std::size_t total, bool& stop, void* userdata);
+
     bool validateOptionAndOpenStream();
+    void onGenerationFinished(FactoryResult result);
+    void returnToOptionView();
     void updateStartButtonGeometry();
 
     Mode mode_;
@@ -50,6 +57,15 @@ private:
     GeneratorOverlayWidget*      overlayWidget_        = nullptr;
     QStackedLayout*              mainLayout_           = nullptr;
 
-    QThread*      workThread_ = nullptr;
-    ImageOStream* stream_     = nullptr;
+    BlockImageFactory* factory_    = nullptr;
+    QThread*           workThread_ = nullptr;
+    ImageOStream*      stream_     = nullptr;
+    BlockDataPair      fallbackBlock_{std::string_view(), nullptr};
+
+    BlockDataMap appliedBlocks_;
+    bool         blocksApplied_ = false;
+
+    std::atomic<bool>        cancelRequested_{false};
+    std::atomic<std::size_t> progressCounter_{0};
+    int                      progressInterval_ = 1;
 };
