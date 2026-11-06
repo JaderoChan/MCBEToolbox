@@ -148,7 +148,7 @@ void MCPackGeneratorOptionWidget::setPackNamespace(const QString& nameSpace)
 
 void MCPackGeneratorOptionWidget::setPackVersion(const Version& version)
 {
-    packVersionInputer_->setText(QString::fromStdString(version.toString()));
+    packVersionInputer_->setText(QString::fromStdString(version.toString(false)));
 }
 
 void MCPackGeneratorOptionWidget::setAssistFunctionEnabled(bool enabled)

@@ -22,7 +22,7 @@ struct Version
     static Version fromString(std::string_view str);
 
     /** 将版本号序列化为 "major.minor.patch.tweak" 格式的字符串。 */
-    std::string toString() const;
+    std::string toString(bool showTweak = true) const;
 
     /** 将版本号转换为无符号整数值。 */
     constexpr unsigned int toUInt32() const

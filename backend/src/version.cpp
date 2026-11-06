@@ -49,16 +49,29 @@ throw std::invalid_argument("Version::fromString() invalid version string '" + s
 #undef THROW_INVALID_VERSION_STRING
 }
 
-std::string Version::toString() const
+std::string Version::toString(bool showTweak) const
 {
     char buf[256];
-    snprintf(
-        buf, sizeof(buf),
-        "%d.%d.%d.%d",
-        static_cast<int>(major),
-        static_cast<int>(minor),
-        static_cast<int>(patch),
-        static_cast<int>(tweak)
-    );
+    if (showTweak)
+    {
+        snprintf(
+            buf, sizeof(buf),
+            "%d.%d.%d.%d",
+            static_cast<int>(major),
+            static_cast<int>(minor),
+            static_cast<int>(patch),
+            static_cast<int>(tweak)
+        );
+    }
+    else
+    {
+        snprintf(
+            buf, sizeof(buf),
+            "%d.%d.%d",
+            static_cast<int>(major),
+            static_cast<int>(minor),
+            static_cast<int>(patch)
+        );
+    }
     return std::string(buf);
 }
