@@ -122,7 +122,7 @@ Build outputs are placed under `build/frontend/bin/` (the `MCBEToolbox` executab
 
 ## Known Limitations and Roadmap
 
-The current design has a few known limitations (minimum supported game version (1.20.7), block placement direction
+The current design has a few known limitations (minimum supported game version (1.21.50), block placement direction
 assumptions, etc.), documented in [限制.md](限制.md) (Chinese only); planned future work is tracked in
 [TODO.md](TODO.md).
 
