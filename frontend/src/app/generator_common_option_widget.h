@@ -37,6 +37,9 @@ public:
     void setOutputFileFilter(QString filter);
     const QString& outputFileFilter() const;
 
+    void setOutputFileExtension(QString extension);
+    const QString& outputFileExtension() const;
+
     void setMaxFrameSizeRange(const QSize& min, const QSize& max);
     void setMaxFrameCountRange(int min, int max);
     void setNumThreadsRange(int min, int max);

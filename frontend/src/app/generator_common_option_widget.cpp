@@ -144,6 +144,16 @@ const QString& GeneratorCommonOptionWidget::outputFileFilter() const
     return outputFileSelector_->outputFileFilter();
 }
 
+void GeneratorCommonOptionWidget::setOutputFileExtension(QString extension)
+{
+    outputFileSelector_->setOutputFileExtension(std::move(extension));
+}
+
+const QString& GeneratorCommonOptionWidget::outputFileExtension() const
+{
+    return outputFileSelector_->outputFileExtension();
+}
+
 void GeneratorCommonOptionWidget::setMaxFrameSizeRange(const QSize& min, const QSize& max)
 {
     maxFrameSizeWidthInputer_->setRange(min.width(),   max.width());
