@@ -1,14 +1,3 @@
-cmake_minimum_required(VERSION 3.26)
-
-project(MCBEToolbox VERSION 0.1.0 LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# 默认使用 Release 构建
-if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build with Release when not build type be specified." FORCE)
-endif()
-
 # 查找 Qt 库
 find_package(QT NAMES Qt5 Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} 6.5.0 REQUIRED COMPONENTS Widgets)

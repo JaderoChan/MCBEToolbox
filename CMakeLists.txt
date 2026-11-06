@@ -10,6 +10,44 @@ if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
 endif()
 
 ###############
+# 优化构建配置 #
+###############
+
+# 仅作用于 Release 配置
+
+# 启用 LTO/IPO
+option(MCBT_ENABLE_LTO "Enable link-time optimization (LTO/IPO) for Release builds." ON)
+if(MCBT_ENABLE_LTO)
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT MCBT_IPO_SUPPORTED OUTPUT MCBT_IPO_ERROR LANGUAGES CXX)
+    if(MCBT_IPO_SUPPORTED)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+    else()
+        message(WARNING "LTO/IPO is not supported by this toolchain, skipped: ${MCBT_IPO_ERROR}")
+    endif()
+endif()
+
+option(MCBT_OPTIMIZE_FOR_SIZE "Prefer code size over speed for Release builds." OFF)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options($<$<CONFIG:Release>:-ffunction-sections> $<$<CONFIG:Release>:-fdata-sections>)
+    if(APPLE)
+        add_link_options($<$<CONFIG:Release>:-Wl,-dead_strip>)
+    else()
+        add_link_options($<$<CONFIG:Release>:-Wl,--gc-sections> $<$<CONFIG:Release>:-s>)
+    endif()
+    if(MCBT_OPTIMIZE_FOR_SIZE)
+        add_compile_options($<$<CONFIG:Release>:-Os>)
+    endif()
+elseif(MSVC)
+    add_compile_options($<$<CONFIG:Release>:/Gw>)
+    add_link_options($<$<CONFIG:Release>:/OPT:REF> $<$<CONFIG:Release>:/OPT:ICF>)
+    if(MCBT_OPTIMIZE_FOR_SIZE)
+        string(REPLACE "/O2" "/O1" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+        string(REPLACE "/Ob2" "/Ob1" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    endif()
+endif()
+
+###############
 # 配置第三方库 #
 ###############
 
