@@ -65,7 +65,6 @@ private:
         QSize                             outputFrameSize;
         int                               outputFrameCount;
     } processInfo_{};
-    Version packVersion_{1, 0, 0};
 
     QLabel*       packTypeLabel_                = nullptr;
     QRadioButton* packTypeStructureButton_      = nullptr;

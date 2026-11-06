@@ -129,6 +129,9 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
     commonOptionWidget_->setNumThreadsRange(1, 16);
     commonOptionWidget_->setNumThreads(4);
 
+    mcpackOptionWidget_->setPackNamespace(DEFAULT_MCPACK_NAMESPACE);
+    mcpackOptionWidget_->setPackVersion(DEFAULT_MCPACK_VERSION);
+
     // 初始化文本和刷新 Start 按钮位置。
     refreshText();
     updateStartButtonGeometry();
@@ -302,6 +305,15 @@ bool PixelArtGeneratorPageWidget::validateOptionAndOpenStream()
     {
         QMessageBox(
             QMessageBox::Warning, EASYTR("Notice"), EASYTR("Please specify a pack namespace first"),
+            QMessageBox::Close, this
+        ).exec();
+        return false;
+    }
+
+    if (mcpackOptionWidget_->packVersion() == Version(0, 0, 0))
+    {
+        QMessageBox(
+            QMessageBox::Warning, EASYTR("Notice"), EASYTR("Please input the correct pack version first"),
             QMessageBox::Close, this
         ).exec();
         return false;

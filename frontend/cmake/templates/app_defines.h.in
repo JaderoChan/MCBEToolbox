@@ -39,3 +39,5 @@
 #define DEFAULT_PIXEL_ART_VIDEO_MAX_WIDTH         480
 #define DEFAULT_PIXEL_ART_VIDEO_MAX_HEIGHT        270
 #define DEFAULT_PIXEL_ART_VIDEO_MAX_FRAME_COUNT   -1    // （无限）
+#define DEFAULT_MCPACK_NAMESPACE                  "mcbetoolbox"
+#define DEFAULT_MCPACK_VERSION                    Version(1, 0, 0)
