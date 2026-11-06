@@ -159,7 +159,7 @@ endif()
 
 # 指定为 GUI 应用程序。
 if(WIN32)
-    option(KEEP_TERMINAL "Keep terminal window" ON)
+    option(KEEP_TERMINAL "Keep terminal window" OFF)
     set_target_properties(
         ${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE $<NOT:$<BOOL:${KEEP_TERMINAL}>>
@@ -167,7 +167,7 @@ if(WIN32)
 endif()
 
 # 程序退出后自动更新语言文件的翻译ID列表。（开发时使用，用于提取翻译ID）
-option(UPDATE_TRANSLATION_MAPPING_FILE "Update the translation mapping files. Only for dev dump Text ID list." ON)
+option(UPDATE_TRANSLATION_MAPPING_FILE "Update the translation mapping files. Only for dev dump Text ID list." OFF)
 target_compile_definitions(
     ${PROJECT_NAME} PRIVATE
     $<$<BOOL:${UPDATE_TRANSLATION_MAPPING_FILE}>:EASY_TRANSLATE_UPDATE_TRANSLATION_MAPPING_FILE>
