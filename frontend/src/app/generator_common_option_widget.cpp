@@ -271,6 +271,7 @@ void GeneratorCommonOptionWidget::refreshText()
         surfaceDirectionSelector_->setItemText(i, surfaceDirectionText(surfaceDirection));
     }
     fallbackBlockLabel_->setText(EASYTR("Fallback Block"));
+    fallbackBlockLabel_->setToolTip(EASYTR("FallbackBlock.Tooltip"));
     maxFrameSizeLabel_->setText(EASYTR("Max Frame Size"));
     maxFrameCountLabel_->setText(EASYTR("Max Frame Count"));
     maxFrameCountInfCheck_->setText(EASYTR("No Limit"));
