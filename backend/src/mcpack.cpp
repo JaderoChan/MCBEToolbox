@@ -270,8 +270,10 @@ void MCPack::generateTempPath()
     tempPath_      = fs_utils::createUniqueHiddenTempDir(filePath_);
 #ifdef _WIN32
     tempPathAlias_ = std::make_unique<fs_utils::AsciiSafeAlias>(tempPath_);
+    isOk_          = !tempPathAlias_->path().empty();
+#else
+    isOk_          = !tempPath_.empty();
 #endif // _WIN32
-    isOk_          = !tempPath_.empty() && !tempPathAlias_->path().empty();
 }
 
 void MCPack::removeTempPath() const

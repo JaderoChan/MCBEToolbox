@@ -5,7 +5,7 @@
 
 class QComboBox;
 class QLabel;
-class QToolBox;
+class QToolButton;
 
 /** #BlockUsageWidget 的扩展控件，提供排序方式下拉框以及 Markdown 导出按钮。 */
 class ExtendedBlockUsageWidget : public AdaptiveWidget
