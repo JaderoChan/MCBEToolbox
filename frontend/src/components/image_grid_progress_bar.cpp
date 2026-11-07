@@ -4,9 +4,7 @@
 
 ImageGridProgressBar::ImageGridProgressBar(QWidget* parent)
     : AdaptiveWidget(parent)
-{
-    refreshToolTip();
-}
+{}
 
 void ImageGridProgressBar::setImage(const QPixmap& image)
 {
@@ -44,7 +42,6 @@ void ImageGridProgressBar::setProgress(double progress)
         return;
 
     progress_ = clamped;
-    refreshToolTip();
     update();
     emit progressChanged(progress_);
 }
@@ -63,11 +60,6 @@ void ImageGridProgressBar::setUnlitColor(const QColor& color)
 QColor ImageGridProgressBar::unlitColor() const
 {
     return unlitColor_;
-}
-
-void ImageGridProgressBar::refreshToolTip()
-{
-    setToolTip(QStringLiteral("%1%").arg(progress_, 5, 'f', 2, QLatin1Char('0')));
 }
 
 QSize ImageGridProgressBar::sizeHint() const

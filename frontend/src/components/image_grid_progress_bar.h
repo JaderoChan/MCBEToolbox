@@ -38,8 +38,6 @@ protected:
     void paintEvent(QPaintEvent*) override;
 
 private:
-    void refreshToolTip();
-
     QPixmap image_;
     int     gridRows_   = 10;
     int     gridCols_   = 10;
