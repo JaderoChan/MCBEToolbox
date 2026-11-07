@@ -29,7 +29,7 @@ constexpr int START_BUTTON_MARGIN = 16;
 constexpr int START_BUTTON_RADIUS = START_BUTTON_SIZE / 2;
 
 constexpr int IMAGE_MODE_PROGRESS_UPDATE_INTERVAL = 10000;
-constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 50;
+constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 5;
 
 constexpr int     PIXEL_ART_MAX_FRAME_SIZE_WIDTH  = 540;
 constexpr int     PIXEL_ART_MAX_FRAME_SIZE_HEIGHT = 380;
@@ -192,7 +192,7 @@ void PixelArtGeneratorPageWidget::startGenerate()
     option.assistFunctionEnabled     = mcpackOptionWidget_->assistFunctionEnabled();
     option.detachFileEnabled         = (mode_ == VideoMode);
     option.packOption.formatVersion  = 2;
-    option.packOption.name           = mcpackOptionWidget_->packName().toStdString();
+    option.packOption.name           = toFsPath(mcpackOptionWidget_->packName());
     option.packOption.desciption     = mcpackOptionWidget_->packDescription().toStdString();
     option.packOption.nameSpace      = mcpackOptionWidget_->packNamespace().toStdString();
     option.packOption.version        = mcpackOptionWidget_->packVersion();
