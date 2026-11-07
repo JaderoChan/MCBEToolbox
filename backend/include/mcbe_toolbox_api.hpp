@@ -46,12 +46,12 @@ struct BlockImageGeneratorOption : public GeneratorCommonOption
 
 struct MCPackOption
 {
-    int         formatVersion;
-    std::string name;
-    std::string desciption;
-    std::string nameSpace;
-    Version     version;
-    Version     minVersion;
+    int                   formatVersion;
+    std::filesystem::path name;
+    std::string           desciption;
+    std::string           nameSpace;
+    Version               version;
+    Version               minVersion;
 };
 
 struct MCPackGeneratorOption : public GeneratorCommonOption

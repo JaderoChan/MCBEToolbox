@@ -20,6 +20,7 @@ set(
     ./include/version.hpp
     ./include/video_image_ostream.hpp
 
+    ./src/assist_function_generator.hpp
     ./src/color_kd_tree.hpp
     ./src/frame_pipeline.hpp
     ./src/nanoflann.hpp
@@ -29,6 +30,7 @@ set(
 )
 set(
     SRCS
+    ./src/assist_function_generator.cpp
     ./src/base_factory.cpp
     ./src/block_image_factory.cpp
     ./src/block.cpp

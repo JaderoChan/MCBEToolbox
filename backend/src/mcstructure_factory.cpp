@@ -85,7 +85,8 @@ BaseFactory::ResultType MCStructureFactory::generateDetachMCStructure(
 }
 
 BaseFactory::ResultType MCStructureFactory::generateDetachMCStructure(
-    ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads)
+    ImageOStream& stream, const std::filesystem::path& outDirPath,
+    const std::filesystem::path& fileName, int numThreads)
 {
     reinitializeState();
     if (!validatePreconditions(stream, "MCStructureFactory::generateDetachMCStructure()", numThreads))
@@ -105,7 +106,7 @@ BaseFactory::ResultType MCStructureFactory::generateDetachMCStructure(
         "MCStructureFactory::generateDetachMCStructure()",
         [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
         [this, numFrames](std::size_t current) { return invokeProgressCallback(current, numFrames); },
-        [this, &outDirPath, &frameIdx](std::pair<nbt::Tag, BlockUsageMap>&& result)
+        [this, &outDirPath, &fileName, &frameIdx](std::pair<nbt::Tag, BlockUsageMap>&& result)
         {
             auto& [mcstructure, localUsageCount] = result;
             if (mcstructure.type() == nbt::TT_END)
@@ -120,7 +121,8 @@ BaseFactory::ResultType MCStructureFactory::generateDetachMCStructure(
             for (auto& [id, count] : localUsageCount)
                 updateBlockUsageMap(id, count);
 
-            const std::filesystem::path path = outDirPath / (std::to_string(frameIdx) + ".mcstructure");
+            const std::filesystem::path path =
+                outDirPath / fs_utils::pathFromUtf8(fileName.u8string() + "-" + std::to_string(frameIdx) + ".mcstructure");
             std::ofstream ofs(path, std::ios::binary | std::ios::trunc);
             if (!ofs)
             {

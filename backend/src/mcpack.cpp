@@ -34,17 +34,22 @@ bool isDirectoryEmptyOfFiles(const std::filesystem::path& dirPath)
 } // namespace
 
 MCPack::MCPack(
-    const std::filesystem::path& filePath,
-    std::string_view             name,
-    std::string_view             description,
-    std::string_view             nameSpace,
-    const Version&               version)
-    : filePath_(filePath), name_(name), description_(description)
-    , nameSpace_(nameSpace), version_(version)
+        std::filesystem::path filePath,
+        std::filesystem::path name,
+        std::string_view      description,
+        std::string_view      nameSpace,
+        Version               version)
+    : filePath_(std::move(filePath)), name_(std::move(name)), description_(std::move(description))
+    , nameSpace_(std::move(nameSpace)), version_(std::move(version))
 {
     if (filePath_.empty())
     {
         fprintf(stderr, "MCPack::MCPack() Parameter 'filePath' is empty\n");
+        return;
+    }
+    if (name_.empty())
+    {
+        fprintf(stderr, "MCPack::MCPack() Parameter 'name' is empty\n");
         return;
     }
 
@@ -80,12 +85,12 @@ MCPack::~MCPack()
 
 std::filesystem::path MCPack::getFunctionsPath() const
 {
-    return contentPath_ / "functions" / fs_utils::pathFromUtf8(nameSpace_);
+    return contentPath_ / "functions" / nameSpace_;
 }
 
 std::filesystem::path MCPack::getStructuresPath() const
 {
-    return contentPath_ / "structures" / fs_utils::pathFromUtf8(nameSpace_);
+    return contentPath_ / "structures" / nameSpace_;
 }
 
 bool MCPack::addFunction(std::string_view relativePath, const std::vector<std::string>& mcfunction) const
@@ -97,14 +102,22 @@ bool MCPack::addFunction(std::string_view relativePath, const std::vector<std::s
         getFunctionsPath() / fs_utils::pathFromUtf8(std::string(relativePath) + ".mcfunction");
     if (!fs_utils::ensureDirectoryExists(path.parent_path()))
     {
-        fprintf(stderr, "MCPack::addFunction() Failed to create the parent directory of '%s'\n", path.string().c_str());
+        fprintf(
+            stderr,
+            "MCPack::addFunction() Failed to create the parent directory of '%s'\n",
+            path.u8string().c_str()
+        );
         return false;
     }
 
     std::ofstream file(path, std::ios::binary | std::ios::trunc);
     if (!file)
     {
-        fprintf(stderr, "MCPack::addFunction() Failed to create the function file '%s'\n", path.string().c_str());
+        fprintf(
+            stderr,
+            "MCPack::addFunction() Failed to create the function file '%s'\n",
+            path.u8string().c_str()
+        );
         return false;
     }
 
@@ -172,7 +185,7 @@ bool MCPack::pack() const
         {"format_version", formatVersion_},
         {"header", {
             {"description", description_},
-            {"name", name_},
+            {"name", name_.u8string()},
             {"uuid", fs_utils::generateUuid4()},
             {"version", {version_.major, version_.minor, version_.patch}},
             {"min_engine_version", {minVersion_.major, minVersion_.minor, minVersion_.patch}}
@@ -240,7 +253,10 @@ bool MCPack::pack() const
     int32_t err = mz_zip_writer_open_file(writer, tempZipPathUtf8.c_str(), 0, 0);
     if (err != MZ_OK)
         fprintf(
-            stderr, "MCPack::pack() Failed to open the zip file '%s' (error %d)\n", tempZipPath.string().c_str(), err
+            stderr,
+            "MCPack::pack() Failed to open the zip file '%s' (error %d)\n",
+            tempZipPath.u8string().c_str(),
+            err
         );
 
     if (err == MZ_OK)

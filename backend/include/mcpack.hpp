@@ -13,27 +13,27 @@ class MCPack
 {
 public:
     MCPack(
-        const std::filesystem::path& filePath,
-        std::string_view             name,
-        std::string_view             description,
-        std::string_view             nameSpace,
-        const Version&               version = Version(1, 0, 0));
+        std::filesystem::path filePath,
+        std::filesystem::path name,
+        std::string_view      description,
+        std::string_view      nameSpace,
+        Version               version = Version(1, 0, 0));
     ~MCPack();
 
     MCPack(const MCPack&)            = delete;
     MCPack& operator=(const MCPack&) = delete;
 
-    void setFormatVersion(int version)         { formatVersion_ = version; }
-    void setVersion(const Version& version)    { version_       = version; }
-    void setMinVersion(const Version& version) { minVersion_    = version; }
+    void setFormatVersion(int version)  { formatVersion_ = version;            }
+    void setVersion(Version version)    { version_       = std::move(version); }
+    void setMinVersion(Version version) { minVersion_    = std::move(version); }
 
-    int                   getFormatVersion() const { return formatVersion_; }
-    std::filesystem::path getFilePath()      const { return filePath_;      }
-    std::string           getName()          const { return name_;          }
-    std::string           getDescription()   const { return description_;   }
-    std::string           getNameSpace()     const { return nameSpace_;     }
-    Version               getVersion()       const { return version_;       }
-    Version               getMinVersion()    const { return minVersion_;    }
+    int                          getFormatVersion() const { return formatVersion_; }
+    const std::filesystem::path& getFilePath()      const { return filePath_;      }
+    const std::filesystem::path& getName()          const { return name_;          }
+    const std::string&           getDescription()   const { return description_;   }
+    const std::string&           getNameSpace()     const { return nameSpace_;     }
+    const Version&               getVersion()       const { return version_;       }
+    const Version&               getMinVersion()    const { return minVersion_;    }
 
     /** 获取临时工作目录下 "functions/<namespace>" 子目录路径，用于存放 .mcfunction 文件。 */
     std::filesystem::path getFunctionsPath()  const;
@@ -71,7 +71,7 @@ private:
 
     int                   formatVersion_ = 2;
     std::filesystem::path filePath_;
-    std::string           name_;
+    std::filesystem::path name_;
     std::string           description_;
     std::string           nameSpace_;
     Version               version_;
@@ -86,5 +86,5 @@ private:
     // 临时工作目录下实际存放 mcpack 内容（functions/structures/manifest.json/pack_icon.png）的子目录，
     // 与压缩产物（直接位于 #tempPath_ 下）相互隔离。
     std::filesystem::path contentPath_;
-    bool        isOk_ = false;
+    bool isOk_ = false;
 };

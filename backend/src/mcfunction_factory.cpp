@@ -72,7 +72,8 @@ BaseFactory::ResultType MCFunctionFactory::generateDetachMCFunction(
 }
 
 BaseFactory::ResultType MCFunctionFactory::generateDetachMCFunction(
-    ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads)
+    ImageOStream& stream, const std::filesystem::path& outDirPath,
+    const std::filesystem::path& fileName, int numThreads)
 {
     reinitializeState();
     if (!validatePreconditions(stream, "MCFunctionFactory::generateDetachMCFunction()", numThreads))
@@ -92,7 +93,7 @@ BaseFactory::ResultType MCFunctionFactory::generateDetachMCFunction(
         "MCFunctionFactory::generateDetachMCFunction()",
         [this](const cv::Mat& frame, std::atomic<bool>& shouldStop) { return processDetachFrame(frame, shouldStop); },
         [this, numFrames](std::size_t current) { return invokeProgressCallback(current, numFrames); },
-        [this, &outDirPath, &frameIdx](std::pair<MCFunction, BlockUsageMap>&& result)
+        [this, &outDirPath, &fileName, &frameIdx](std::pair<MCFunction, BlockUsageMap>&& result)
         {
             auto& [mcfunction, localUsageCount] = result;
 
@@ -107,8 +108,9 @@ BaseFactory::ResultType MCFunctionFactory::generateDetachMCFunction(
                 if (i % MAX_COMMAND_COUNT_PER_MCFUNCTION == 0)
                 {
                     ++subIdx;
-                    snprintf(nameBuf, sizeof(nameBuf), "%zu-%zu.mcfunction", frameIdx, subIdx);
-                    const std::filesystem::path path = outDirPath / nameBuf;
+                    snprintf(nameBuf, sizeof(nameBuf), "-%zu-%zu.mcfunction", frameIdx, subIdx);
+                    const std::filesystem::path path =
+                        outDirPath / fs_utils::pathFromUtf8(fileName.u8string() + nameBuf);
                     if (file.is_open()) file.close();
                     file = std::ofstream(path, std::ios::binary | std::ios::trunc);
                     if (!file.is_open())

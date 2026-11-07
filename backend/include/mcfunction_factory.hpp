@@ -27,7 +27,8 @@ public:
     ResultType generateDetachMCFunction(
         ImageOStream& stream, int numThreads, std::vector<MCFunction>& outFunctions);
     ResultType generateDetachMCFunction(
-        ImageOStream& stream, const std::filesystem::path& outDirPath, int numThreads = 4);
+        ImageOStream& stream, const std::filesystem::path& outDirPath,
+        const std::filesystem::path& fileName, int numThreads = 4);
 
 private:
     ResultType generateSingleMCFunctionHelper(

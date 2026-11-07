@@ -11,6 +11,7 @@
 #include <fs_utils.hpp>
 #include <image_utilities.hpp>
 #include <mcpack.hpp>
+#include "assist_function_generator.hpp"
 
 namespace
 {
@@ -129,11 +130,13 @@ FactoryResult generateStructurePack(
     if (!pack.isOk())
         return {BaseFactory::FAIL, {}, "Failed to prepare the temporary MC Pack working directory"};
 
+    const auto frameSize = stream.frameSize();
+
     BaseFactory::ResultType result = BaseFactory::FAIL;
     std::string             message;
     if (option.detachFileEnabled)
     {
-        result = factory.generateDetachMCStructure(stream, pack.getStructuresPath(), option.numThreads);
+        result = factory.generateDetachMCStructure(stream, pack.getStructuresPath(), pack.getName(), option.numThreads);
         if (result != BaseFactory::SUCCESS)
             message = factory.getErrorMessage();
 
@@ -153,11 +156,11 @@ FactoryResult generateStructurePack(
         else
         {
             const std::filesystem::path& path =
-                pack.getStructuresPath() / fs_utils::pathFromUtf8(option.packOption.name + ".mcstructure");
+                pack.getStructuresPath() / fs_utils::pathFromUtf8(option.packOption.name.u8string() + ".mcstructure");
             std::ofstream ofs(path, std::ios::binary | std::ios::trunc);
             if (!ofs)
             {
-                message = "Failed to create the file '" + path.string() + "'";
+                message = "Failed to create the file '" + path.u8string() + "'";
                 fprintf(stderr, "generateStructurePack() %s\n", message.c_str());
                 result = BaseFactory::FAIL;
             }
@@ -177,7 +180,13 @@ FactoryResult generateStructurePack(
 
             if (result == BaseFactory::SUCCESS && option.assistFunctionEnabled)
             {
-                // TODO
+                const std::string structureName = option.packOption.nameSpace + ":" + option.packOption.name.u8string();
+                AssistFunctionGenerator funcGen(
+                    frameSize.width, frameSize.height, option.desiredSurface, structureName);
+                pack.addFunction("setOrigin",        funcGen.makeSetOriginFunction());
+                pack.addFunction("clearOrigin",      funcGen.makeClearOriginFunction());
+                pack.addFunction("build",            funcGen.makeBuildFunction());
+                pack.addFunction("moveToWatchPoint", funcGen.makeMoveToWatchPointFunction());
             }
         }
     }
@@ -211,7 +220,7 @@ FactoryResult generateFucntionPack(
     std::string             message;
     if (option.detachFileEnabled)
     {
-        result = factory.generateDetachMCFunction(stream, pack.getFunctionsPath(), option.numThreads);
+        result = factory.generateDetachMCFunction(stream, pack.getFunctionsPath(), pack.getName(), option.numThreads);
         if (result != BaseFactory::SUCCESS)
             message = factory.getErrorMessage();
 
@@ -224,11 +233,12 @@ FactoryResult generateFucntionPack(
     {
         MCFunctionFactory::MCFunction mcfunction;
         result = factory.generateSingleMCFunction(stream, true, mcfunction);
+        // TODO: 需要做 mcfunction 文件函数最大数量限制。
         if (result != BaseFactory::SUCCESS)
         {
             message = factory.getErrorMessage();
         }
-        else if (!pack.addFunction(option.packOption.name, mcfunction))
+        else if (!pack.addFunction(option.packOption.name.u8string(), mcfunction))
         {
             result  = BaseFactory::FAIL;
             message = "Failed to add the generated mcfunction to the pack";
