@@ -572,7 +572,9 @@
       "id": "minecraft:waxed_chiseled_copper",
       "textures": "1.21.50.7/chiseled_copper.png",
       "colors": "#BE694A",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:copper_group:waxed_copper": {
@@ -698,7 +700,9 @@
       "id": "minecraft:waxed_weathered_chiseled_copper",
       "textures": "1.21.50.7/weathered_chiseled_copper.png",
       "colors": "#637C58",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:copper_group:waxed_weathered_copper": {
@@ -908,7 +912,9 @@
       "id": "minecraft:gilded_blackstone",
       "textures": "1.21.50.7/gilded_blackstone.png",
       "colors": "#251917",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:decorative_stone_group:mossy_stone_bricks": {
@@ -1290,7 +1296,9 @@
       "id": "minecraft:noteblock",
       "textures": "1.21.50.7/noteblock.png",
       "colors": "#4F301E",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:item_group:redstone_lamp": {
@@ -1300,7 +1308,9 @@
       "id": "minecraft:redstone_lamp",
       "textures": "1.21.50.7/redstone_lamp_off.png",
       "colors": "#341D12",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:item_group:sea_lantern": {
@@ -1396,7 +1406,8 @@
         "side": "#F7F6F4"
       },
       "attributes": {
-        "flammable": true
+        "flammable": true,
+        "has_pattern": true
       }
     }
   },
@@ -1789,7 +1800,9 @@
         "bottom": "#368886",
         "side": "#4A2639"
       },
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:nature_group:bedrock": {
@@ -1853,7 +1866,9 @@
         "bottom": "#3E302A",
         "side": "#6C605D"
       },
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:nature_group:dirt": {
@@ -2105,7 +2120,8 @@
       "textures": "1.21.50.7/shroomlight.png",
       "colors": "#FEC07E",
       "attributes": {
-        "is_luminous": true
+        "is_luminous": true,
+        "has_pattern": true
       }
     }
   },
@@ -2189,7 +2205,7 @@
     "base": {
       "id": "minecraft:crying_obsidian",
       "textures": "1.21.50.7/crying_obsidian.png",
-      "colors": "#07050D",
+      "colors": "#2B0178",
       "attributes": {
         "has_pattern": true
       }
@@ -2310,7 +2326,9 @@
       "id": "minecraft:coal_ore",
       "textures": "1.21.50.7/coal_ore.png",
       "colors": "#6B6B6B",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:copper_ore": {
@@ -2486,7 +2504,9 @@
       "id": "minecraft:nether_gold_ore",
       "textures": "1.21.50.7/nether_gold_ore.png",
       "colors": "#702F2D",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:ores_group:quartz_ore": {
@@ -2978,7 +2998,9 @@
       "id": "minecraft:raw_copper_block",
       "textures": "1.21.50.7/raw_copper_block.png",
       "colors": "#B0654D",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:raw_ores_group:raw_gold_block": {
@@ -4811,7 +4833,9 @@
         "bottom": "#35928E",
         "side": "#35928E"
       },
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:woods_group:warped_hyphae": {
