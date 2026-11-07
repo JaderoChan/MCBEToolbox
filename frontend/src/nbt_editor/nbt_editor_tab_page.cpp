@@ -245,7 +245,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     snbtButton_->setFocusPolicy(Qt::ClickFocus);
     snbtButton_->setToolButtonStyle(Qt::ToolButtonTextOnly);
     snbtButton_->setCheckable(true);
-    snbtButton_->setStyleSheet(getToolButtonStyleSheet());
+    snbtButton_->setStyleSheet(getNoFrameToolButtonStyleSheet());
 
     connect(snbtButton_, &QToolButton::clicked, this, &NbtEditorTabPage::togglePage);
 
@@ -450,7 +450,7 @@ void NbtEditorTabPage::refreshText()
 void NbtEditorTabPage::refreshColor()
 {
     for (auto& button : {renameButton_, editButton_, removeButton_, snbtButton_})
-        button->setStyleSheet(getToolButtonStyleSheet());
+        button->setStyleSheet(getNoFrameToolButtonStyleSheet());
 }
 
 NbtEditorTabPage::NbtEditorTabPage(QString rootName, nbt::Tag rootTag, NbtFileInfo fileInfo, QWidget* parent)

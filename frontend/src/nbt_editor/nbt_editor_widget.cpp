@@ -163,7 +163,7 @@ void NbtEditorWidget::refreshText()
 void NbtEditorWidget::refreshColor()
 {
     for (auto& button : {newButton_, openButton_, saveButton_, saveAsButton_, parseSnbtButton_})
-        button->setStyleSheet(getToolButtonStyleSheet());
+        button->setStyleSheet(getNoFrameToolButtonStyleSheet());
 }
 
 bool NbtEditorWidget::eventFilter(QObject* obj, QEvent* e)

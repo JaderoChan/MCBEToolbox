@@ -3,10 +3,10 @@
 #include <utils/file_io.h>
 #include "color_scheme_manager.h"
 
-const QString& getToolButtonStyleSheet()
+const QString& getNoFrameToolButtonStyleSheet()
 {
-    static const auto dark  = readFileContent(QStringLiteral(":/stylesheets/toolbutton_dark.qss"));
-    static const auto light = readFileContent(QStringLiteral(":/stylesheets/toolbutton_light.qss"));
+    static const auto dark  = readFileContent(QStringLiteral(":/stylesheets/noframe_toolbutton_dark.qss"));
+    static const auto light = readFileContent(QStringLiteral(":/stylesheets/noframe_toolbutton_light.qss"));
     return
         ColorSchemeManager::instance().loadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK
         ? dark : light;
