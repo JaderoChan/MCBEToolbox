@@ -271,7 +271,7 @@ QString GeneratorOverlayWidget::makeMarkdownSummary() const
             ? EASYTR("None Block")
             : QString::fromStdString(std::string(endViewInfo_.fallbackBlock.first))
         );
-    const auto frameSizeSec     = QStringLiteral("- %1: %2 * %3")
+    const auto frameSizeSec     = QStringLiteral("- %1: %2*%3")
         .arg(EASYTR("Frame Size"))
         .arg(endViewInfo_.frameSize.width()).arg(endViewInfo_.frameSize.height());
     const auto frameCountSec    = QStringLiteral("- %1: %2")

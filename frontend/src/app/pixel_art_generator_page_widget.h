@@ -67,11 +67,7 @@ private:
     QSize               streamFrameSize_;
     int                 streamFrameCount_;
 
-    BlockDataMap appliedBlocksStructure_;
-    bool         blocksAppliedStructure_ = false;
-    BlockDataMap appliedBlocksFunction_;
-    bool         blocksAppliedFunction_  = false;
-
+    BlockDataMap             lastAvailableBlocks_;
     std::atomic<bool>        cancelRequested_{false};
     std::atomic<std::size_t> progressCounter_{0};
     int                      progressInterval_ = 1;

@@ -176,22 +176,18 @@ void PixelArtGeneratorPageWidget::startGenerate()
         streamFrameCount_
     );
 
-    const auto    packType       = mcpackOptionWidget_->packType();
-    const bool    usingStructure = (packType == MCPackGeneratorOptionWidget::StructurePackType);
-    BlockDataMap& appliedBlocks  = usingStructure ? appliedBlocksStructure_ : appliedBlocksFunction_;
-    bool&         blocksApplied  = usingStructure ? blocksAppliedStructure_ : blocksAppliedFunction_;
-
-    const BlockDataMap& selectedBlocks = availableBlockWidget_->selecteds();
-    const bool          blocksChanged  = !blocksApplied || selectedBlocks != appliedBlocks;
+    const bool blocksChanged = lastAvailableBlocks_ != availableBlockWidget_->selecteds();
+    if (blocksChanged)
+        lastAvailableBlocks_ = availableBlockWidget_->selecteds();
 
     MCPackGeneratorOption option{};
     option.needUpdateBlocks          = blocksChanged;
-    option.blocks                    = selectedBlocks;
+    option.blocks                    = availableBlockWidget_->selecteds();
     option.desiredSurface            = commonOptionWidget_->surfaceDirection();
     option.fallbackBlock             = fallbackBlock_.second ? &fallbackBlock_ : nullptr;
     option.callback                  = &PixelArtGeneratorPageWidget::progressCallback;
     option.userdata                  = this;
-    option.outFilePath               = toFsPath(commonOptionWidget_->outputFilePath());
+    option.outFilePath               = toFsPath(commonOptionWidget_->outputFilePath(mcpackOptionWidget_->packName()));
     option.numThreads                = commonOptionWidget_->numThreads();
     option.assistFunctionEnabled     = mcpackOptionWidget_->assistFunctionEnabled();
     option.detachFileEnabled         = (mode_ == VideoMode);
@@ -201,12 +197,6 @@ void PixelArtGeneratorPageWidget::startGenerate()
     option.packOption.nameSpace      = mcpackOptionWidget_->packNamespace().toStdString();
     option.packOption.version        = mcpackOptionWidget_->packVersion();
     option.packOption.minVersion     = PIXEL_ART_DEFAULT_MIN_VERSION;
-
-    if (blocksChanged)
-    {
-        appliedBlocks = selectedBlocks;
-        blocksApplied = true;
-    }
 
     overlayWidget_->setProgressUpdateInterval(progressInterval_);
     overlayWidget_->showProgressView();
@@ -218,6 +208,7 @@ void PixelArtGeneratorPageWidget::startGenerate()
     MCStructureFactory* structureFactory = structureFactory_;
     MCFunctionFactory*  functionFactory  = functionFactory_;
 
+    const auto packType = mcpackOptionWidget_->packType();
     workThread_ = QThread::create([this, option, stream, structureFactory, functionFactory, packType]()
     {
         FactoryResult result;

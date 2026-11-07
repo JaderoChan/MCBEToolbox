@@ -193,7 +193,7 @@ QString MCPackGeneratorOptionWidget::packName() const
 {
     if (autoFillPackName())
     {
-        const auto name = QFileInfo(processInfo_.inputFilePath).completeBaseName();
+        const auto name = QFileInfo(processInfo_.inputFilePath).fileName();
         if (!isValidName(name))
             return (packType() == StructurePackType ? EASYTR("A Structure Pack") : EASYTR("A Function Pack"));
         return name;
@@ -226,11 +226,11 @@ QString MCPackGeneratorOptionWidget::packDescription() const
                 ? EASYTR("None Block")
                 : QString::fromStdString(std::string(processInfo_.fallbackBlock.first))
             );
-        const auto frameSizeSec        = QStringLiteral("%1: %2 * %3")
+        const auto frameSizeSec        = QStringLiteral("%1: %2*%3")
             .arg(EASYTR("Frame Size")).arg(processInfo_.frameSize.width()).arg(processInfo_.frameSize.height());
 
         auto description =
-            QStringLiteral("%1\n%2\n%3\n%4\n%5")
+            QStringLiteral("%1; %2; %3; %4; %5")
             .arg(title).arg(inputFilePathSec).arg(modeSec).arg(surfaceDirectionSec).arg(frameSizeSec);
 
         if (processInfo_.mode == GeneratorCommonOptionWidget::VideoMode)
@@ -238,7 +238,7 @@ QString MCPackGeneratorOptionWidget::packDescription() const
             const auto frameCountSec   = QStringLiteral("%1: %2")
                 .arg(EASYTR("Frame Count"))
                 .arg(processInfo_.frameCount);
-            description += "\n" + frameCountSec;
+            description += "; " + frameCountSec;
         }
 
         return description;
