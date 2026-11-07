@@ -9,6 +9,7 @@
 class QLabel;
 class QPushButton;
 class QStackedWidget;
+class QVBoxLayout;
 class ImageGridProgressBar;
 class AdaptiveDialog;
 class ExtendedBlockUsageWidget;
@@ -27,23 +28,36 @@ public:
 
     void setProgress(double progress);
 
-    /** 重置为进度条视图并将进度置为 0，每次开始新任务前调用。 */
-    void showProgressView();
-
     /**
-     * 设置结束页面所需的信息并展示结束页面。
+     * 设置结束页面所需的信息。
      *
      * @param success          指示生成是否成功，不成功将展示 errorMessage
      * @param errorMessage     错误信息
+     * @param inputFilePath    输入文件路径
      * @param outputFilePath   输出文件路径
+     * @param fallbackBlockId  Fallback 游戏内方块 ID
+     * @param frameSize        输入流限制后的帧尺寸
+     * @param frameCount       输入流限制后的总帧数量，传入 -1 则不在 Markdown 中显示 frameCount 相关文
      * @param blocks           用于方块用量界面展示方块图标/颜色预览的方块集合
      * @param surfaceDirection 用于方块用量界面展示方块颜色预览的朝向
      * @param blockUsage       方块用量
      */
-    void showEndView(
-        bool success, const QString& errorMessage, const QString& outputFilePath,
-        const BlockDataMap& blocks, SurfaceDirection surfaceDirection,
-        const BaseFactory::BlockUsageMap& blockUsage);
+    void setEndViewInfo(
+        bool                       success,
+        QString                    errorMessage,
+        QString                    inputFilePath,
+        QString                    outputFilePath,
+        BlockDataPair              fallbackBlock,
+        QSize                      frameSize,
+        int                        frameCount,
+        SurfaceDirection           surfaceDirection,
+        BlockDataMap               blocks,
+        BaseFactory::BlockUsageMap blockUsage);
+
+    /** 显示进度条页面并将进度置为 0，每次开始新任务前调用。 */
+    void showProgressView();
+    /** 显示结束页面。 */
+    void showEndView();
 
 signals:
     void cancelRequested();
@@ -56,29 +70,44 @@ private:
     void onOpenOutputFolderClicked();
     void onViewBlockUsageClicked();
 
-    ImageGridProgressBar* progressBar_    = nullptr;
-    QLabel*               progressLabel_  = nullptr;
-    QLabel*               loadingLabel_   = nullptr;
-    QStackedWidget*       labelWidget_    = nullptr;
-    QPushButton*          cancelButton_   = nullptr;
-    QWidget*              progressWidget_ = nullptr;
+    QString makeMarkdownSummary() const;
+    void refreshEndWidgetUi();
 
-    QLabel*      errorMessageLabel_       = nullptr;
-    QPushButton* openOutputFolderButton_  = nullptr;
-    QPushButton* viewBlockUsageButton_    = nullptr;
-    QPushButton* confirmButton_           = nullptr;
-    QWidget*     endWidget_               = nullptr;
+    struct EndViewInfo
+    {
+        bool                       success          = false;
+        QString                    errorMessage;
+        QString                    inputFilePath;
+        QString                    outputFilePath;
+        BlockDataPair              fallbackBlock;
+        QSize                      frameSize;
+        int                        frameCount       = 0;
+        SurfaceDirection           surfaceDirection;
+        BlockDataMap               blocks;
+        BaseFactory::BlockUsageMap blockUsage;
+    } endViewInfo_{};
 
-    QStackedWidget* container_ = nullptr;
-    QWidget*        panel_     = nullptr;
+    ImageGridProgressBar* progressBar_            = nullptr;
+    QLabel*               generatingLabel_        = nullptr;
+    QLabel*               eportingLabel_          = nullptr;
+    QStackedWidget*       labelWidget_            = nullptr;
+    QPushButton*          cancelButton_           = nullptr;
+    QWidget*              progressWidget_         = nullptr;
+
+    QLabel*               endWidgetTitleLabel_    = nullptr;
+    QLabel*               errorMessageLabel_      = nullptr;
+    QPushButton*          confirmButton_          = nullptr;
+    QPushButton*          openOutputFolderButton_ = nullptr;
+    QPushButton*          viewBlockUsageButton_   = nullptr;
+    QWidget*              endExtraButtonWidget_   = nullptr;
+    QWidget*              endWidget_              = nullptr;
+    QVBoxLayout*          endLayout_              = nullptr;
+
+    QStackedWidget*       container_              = nullptr;
+    QWidget*              panel_                  = nullptr;
+
+    ExtendedBlockUsageWidget* blockUsageWidget_   = nullptr;
+    AdaptiveDialog*           blockUsageDialog_   = nullptr;
 
     int progressUpdateInterval_ = 1;
-
-    QString                    outputFilePath_;
-    BlockDataMap               blocks_;
-    SurfaceDirection           surfaceDirection_ = SURFACE_DIRECTION_UP;
-    BaseFactory::BlockUsageMap blockUsage_;
-
-    ExtendedBlockUsageWidget*  blockUsageWidget_ = nullptr;
-    AdaptiveDialog*            blockUsageDialog_ = nullptr;
 };

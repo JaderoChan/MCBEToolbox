@@ -61,6 +61,8 @@ private:
     QThread*           workThread_ = nullptr;
     ImageOStream*      stream_     = nullptr;
     BlockDataPair      fallbackBlock_{std::string_view(), nullptr};
+    QSize              streamFrameSize_;
+    int                streamFrameCount_;
 
     BlockDataMap appliedBlocks_;
     bool         blocksApplied_ = false;

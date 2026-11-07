@@ -13,6 +13,7 @@
 #include <qvalidator.h>
 
 #include <app_defines.h>
+#include "block_attribute_text.h"
 
 MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
     : AdaptiveWidget(parent)
@@ -107,21 +108,22 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
     refreshText();
 }
 
-void MCPackGeneratorOptionWidget::setProcessInfoAutoFill(
-    QString inputFilePath, GeneratorCommonOptionWidget::Mode mode,
-    SurfaceDirection surfaceDirection, QSize outputFrameSize, int outputFrameCount)
+void MCPackGeneratorOptionWidget::setProcessInfoForAutoFill(
+    QString inputFilePath, GeneratorCommonOptionWidget::Mode mode, BlockDataPair fallbackBlock,
+    SurfaceDirection surfaceDirection, QSize frameSize, int frameCount)
 {
     processInfo_.inputFilePath    = std::move(inputFilePath);
     processInfo_.mode             = mode;
+    processInfo_.fallbackBlock    = std::move(fallbackBlock);
     processInfo_.surfaceDirection = surfaceDirection;
-    processInfo_.outputFrameSize  = std::move(outputFrameSize);
-    processInfo_.outputFrameCount = std::move(outputFrameCount);
+    processInfo_.frameSize        = std::move(frameSize);
+    processInfo_.frameCount       = std::move(frameCount);
 }
 
 void MCPackGeneratorOptionWidget::setPackType(PackType type)
 {
-    if (type == StructurePackType)     packTypeStructureButton_->setChecked(true);
-    else if (type == FunctionPackType) packTypeFunctionButton_->setChecked(true);
+    if      (type == StructurePackType) packTypeStructureButton_->setChecked(true);
+    else if (type == FunctionPackType)  packTypeFunctionButton_->setChecked(true);
 }
 
 void MCPackGeneratorOptionWidget::setPackName(const QString& name)
@@ -191,73 +193,52 @@ QString MCPackGeneratorOptionWidget::packName() const
 {
     if (autoFillPackName())
     {
-        auto name = QFileInfo(processInfo_.inputFilePath).baseName();
+        const auto name = QFileInfo(processInfo_.inputFilePath).completeBaseName();
         if (!isValidName(name))
-            name = (packType() == StructurePackType ? EASYTR("A Structure Pack") : EASYTR("A Function Pack"));
-        return QStringLiteral("%1 %2")
-            .arg(name)
-            .arg(QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd_HH-mm-ss")));
+            return (packType() == StructurePackType ? EASYTR("A Structure Pack") : EASYTR("A Function Pack"));
+        return name;
     }
     return packNameInputer_->text();
-}
-
-static QString surfaceDirectionText(SurfaceDirection surfaceDirection)
-{
-    switch (surfaceDirection)
-    {
-        case SURFACE_DIRECTION_UP:     return EASYTR("Up");
-        case SURFACE_DIRECTION_BOTTOM: return EASYTR("Bottom");
-        case SURFACE_DIRECTION_NORTH:  return EASYTR("North");
-        case SURFACE_DIRECTION_SOUTH:  return EASYTR("South");
-        case SURFACE_DIRECTION_EAST:   return EASYTR("East");
-        case SURFACE_DIRECTION_WEST:   return EASYTR("West");
-        default:                       return QString();
-    }
 }
 
 QString MCPackGeneratorOptionWidget::packDescription() const
 {
     if (autoFillPackDescription())
     {
-        const auto title =
-            QStringLiteral("%1 %2")
-            .arg(EASYTR("By MCBE Toolbox "))
+        const auto title               = QStringLiteral("%1 %2")
+            .arg(EASYTR("By MCBE Toolbox"))
             .arg(APP_VERSION);
-
-        const auto inputFilePathSec =
-            QStringLiteral("%1: %2")
+        const auto inputFilePathSec    = QStringLiteral("%1: %2")
             .arg(EASYTR("Input File Path"))
             .arg(processInfo_.inputFilePath);
-
-        const auto modeSec =
-            QStringLiteral("%1: %2")
+        const auto modeSec             = QStringLiteral("%1: %2")
             .arg(EASYTR("Input File Type"))
             .arg(processInfo_.mode == GeneratorCommonOptionWidget::ImageMode
-                ? EASYTR("Single Image Stream") : EASYTR("Multi Image Stream"));
-
-        const auto surfaceDirectionSec =
-            QStringLiteral("%1: %2")
+                ? EASYTR("Single Image Stream") : EASYTR("Multi Image Stream")
+            );
+        const auto surfaceDirectionSec = QStringLiteral("%1: %2")
             .arg(EASYTR("Desired Surface"))
-            .arg(surfaceDirectionText(processInfo_.surfaceDirection));
-
-        const auto outputFrameSizeSec =
-            QStringLiteral("%1: %2*%3")
-            .arg(EASYTR("Output Frame Size"))
-            .arg(processInfo_.outputFrameSize.width())
-            .arg(processInfo_.outputFrameSize.height());
+            .arg(getSurfaceDirectionText(processInfo_.surfaceDirection));
+        const auto fallbackSec         = QStringLiteral("%1: %2")
+            .arg(EASYTR("Fallback Block"))
+            .arg(
+                processInfo_.fallbackBlock.first == std::string_view()
+                ? EASYTR("None Block")
+                : QString::fromStdString(std::string(processInfo_.fallbackBlock.first))
+            );
+        const auto frameSizeSec        = QStringLiteral("%1: %2 * %3")
+            .arg(EASYTR("Frame Size")).arg(processInfo_.frameSize.width()).arg(processInfo_.frameSize.height());
 
         auto description =
             QStringLiteral("%1\n%2\n%3\n%4\n%5")
-            .arg(title).arg(inputFilePathSec).arg(modeSec).arg(surfaceDirectionSec).arg(outputFrameSizeSec);
+            .arg(title).arg(inputFilePathSec).arg(modeSec).arg(surfaceDirectionSec).arg(frameSizeSec);
 
         if (processInfo_.mode == GeneratorCommonOptionWidget::VideoMode)
         {
-            const auto outputFrameCountSec =
-                QStringLiteral("%1: %2")
-                .arg(EASYTR("Output Frame Count"))
-                .arg(processInfo_.outputFrameCount);
-
-            description += "\n" + outputFrameCountSec;
+            const auto frameCountSec   = QStringLiteral("%1: %2")
+                .arg(EASYTR("Frame Count"))
+                .arg(processInfo_.frameCount);
+            description += "\n" + frameCountSec;
         }
 
         return description;

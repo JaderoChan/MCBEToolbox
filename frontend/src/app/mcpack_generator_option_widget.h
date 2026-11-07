@@ -25,9 +25,9 @@ public:
     explicit MCPackGeneratorOptionWidget(QWidget* parent = nullptr);
 
     /** 设置处理进程的信息用于自动生成包名与包描述。 */
-    void setProcessInfoAutoFill(
-        QString inputFilePath, GeneratorCommonOptionWidget::Mode mode,
-        SurfaceDirection surfaceDirection, QSize outputFrameSize, int outputFrameCount = 0);
+    void setProcessInfoForAutoFill(
+        QString inputFilePath, GeneratorCommonOptionWidget::Mode mode, BlockDataPair fallbackBlock,
+        SurfaceDirection surfaceDirection, QSize frameSize, int frameCount = 0);
 
     void setPackType(PackType type);
     /** 如果输入的名称不合法则不做任何事。 */
@@ -61,9 +61,10 @@ private:
     {
         QString                           inputFilePath;
         GeneratorCommonOptionWidget::Mode mode;
+        BlockDataPair                     fallbackBlock;
         SurfaceDirection                  surfaceDirection;
-        QSize                             outputFrameSize;
-        int                               outputFrameCount;
+        QSize                             frameSize;
+        int                               frameCount = -1;
     } processInfo_{};
 
     QLabel*       packTypeLabel_                = nullptr;

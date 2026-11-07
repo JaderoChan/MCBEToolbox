@@ -51,3 +51,17 @@ QString makeBlockAttributesText(BlockAttributes attributes)
 
 #undef APPEND_ATTRIBUTE_TEXT
 }
+
+QString getSurfaceDirectionText(SurfaceDirection surfaceDirection)
+{
+    switch (surfaceDirection)
+    {
+        case SURFACE_DIRECTION_UP:     return EASYTR("Up");
+        case SURFACE_DIRECTION_BOTTOM: return EASYTR("Bottom");
+        case SURFACE_DIRECTION_NORTH:  return EASYTR("North");
+        case SURFACE_DIRECTION_SOUTH:  return EASYTR("South");
+        case SURFACE_DIRECTION_EAST:   return EASYTR("East");
+        case SURFACE_DIRECTION_WEST:   return EASYTR("West");
+        default:                       return QString();
+    }
+}

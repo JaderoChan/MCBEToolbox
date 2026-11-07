@@ -167,15 +167,19 @@ void PixelArtGeneratorPageWidget::startGenerate()
 
     fallbackBlock_ = commonOptionWidget_->fallbackBlock();
 
-    mcpackOptionWidget_->setProcessInfoAutoFill(
-        commonOptionWidget_->inputFilePath(), commonOptionWidget_->mode(), commonOptionWidget_->surfaceDirection(),
-        commonOptionWidget_->maxFrameSize(), mode_ == VideoMode ? commonOptionWidget_->maxFrameCount() : 0
+    mcpackOptionWidget_->setProcessInfoForAutoFill(
+        commonOptionWidget_->inputFilePath(),
+        commonOptionWidget_->mode(),
+        commonOptionWidget_->fallbackBlock(),
+        commonOptionWidget_->surfaceDirection(),
+        streamFrameSize_,
+        streamFrameCount_
     );
 
-    const auto   packType       = mcpackOptionWidget_->packType();
-    const bool   usingStructure = (packType == MCPackGeneratorOptionWidget::StructurePackType);
-    BlockDataMap& appliedBlocks = usingStructure ? appliedBlocksStructure_ : appliedBlocksFunction_;
-    bool&         blocksApplied = usingStructure ? blocksAppliedStructure_ : blocksAppliedFunction_;
+    const auto    packType       = mcpackOptionWidget_->packType();
+    const bool    usingStructure = (packType == MCPackGeneratorOptionWidget::StructurePackType);
+    BlockDataMap& appliedBlocks  = usingStructure ? appliedBlocksStructure_ : appliedBlocksFunction_;
+    bool&         blocksApplied  = usingStructure ? blocksAppliedStructure_ : blocksAppliedFunction_;
 
     const BlockDataMap& selectedBlocks = availableBlockWidget_->selecteds();
     const bool          blocksChanged  = !blocksApplied || selectedBlocks != appliedBlocks;
@@ -210,9 +214,9 @@ void PixelArtGeneratorPageWidget::startGenerate()
     overlayWidget_->raise();
     mainLayout_->setCurrentWidget(overlayWidget_);
 
-    ImageOStream*        stream           = stream_;
-    MCStructureFactory*  structureFactory = structureFactory_;
-    MCFunctionFactory*   functionFactory  = functionFactory_;
+    ImageOStream*       stream           = stream_;
+    MCStructureFactory* structureFactory = structureFactory_;
+    MCFunctionFactory*  functionFactory  = functionFactory_;
 
     workThread_ = QThread::create([this, option, stream, structureFactory, functionFactory, packType]()
     {
@@ -346,6 +350,9 @@ bool PixelArtGeneratorPageWidget::validateOptionAndOpenStream()
         return false;
     }
 
+    streamFrameSize_  = QSize(stream_->frameSize().width, stream_->frameSize().height);
+    streamFrameCount_ = mode_ == ImageMode ? -1 : stream_->frameCount();
+
     return true;
 }
 
@@ -362,11 +369,19 @@ void PixelArtGeneratorPageWidget::onGenerationFinished(FactoryResult result)
         return;
     }
 
-    overlayWidget_->showEndView(
-        result.result == BaseFactory::SUCCESS, QString::fromStdString(result.errorMessage),
+    overlayWidget_->setEndViewInfo(
+        result.result == BaseFactory::SUCCESS,
+        QString::fromStdString(result.errorMessage),
+        commonOptionWidget_->inputFilePath(),
         commonOptionWidget_->outputFilePath(),
-        availableBlockWidget_->selecteds(), commonOptionWidget_->surfaceDirection(), result.usage
+        commonOptionWidget_->fallbackBlock(),
+        streamFrameSize_,
+        streamFrameCount_,
+        commonOptionWidget_->surfaceDirection(),
+        availableBlockWidget_->selecteds(),
+        result.usage
     );
+    overlayWidget_->showEndView();
 }
 
 void PixelArtGeneratorPageWidget::returnToOptionView()

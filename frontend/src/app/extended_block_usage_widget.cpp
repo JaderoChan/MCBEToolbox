@@ -113,7 +113,6 @@ void ExtendedBlockUsageWidget::onComboBoxIndexChanged(int index)
 
 void ExtendedBlockUsageWidget::onExportButtonClicked()
 {
-    // TODO: 检查参数三是否能够按照预期工作。
     const auto filePath = QFileDialog::getSaveFileName(
         this,
         EASYTR("Saved to:"),

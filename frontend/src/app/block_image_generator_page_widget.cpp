@@ -288,6 +288,9 @@ bool BlockImageGeneratorPageWidget::validateOptionAndOpenStream()
         return false;
     }
 
+    streamFrameSize_  = QSize(stream_->frameSize().width, stream_->frameSize().height);
+    streamFrameCount_ = mode_ == ImageMode ? -1 : stream_->frameCount();
+
     return true;
 }
 
@@ -304,11 +307,19 @@ void BlockImageGeneratorPageWidget::onGenerationFinished(FactoryResult result)
         return;
     }
 
-    overlayWidget_->showEndView(
-        result.result == BaseFactory::SUCCESS, QString::fromStdString(result.errorMessage),
+    overlayWidget_->setEndViewInfo(
+        result.result == BaseFactory::SUCCESS,
+        QString::fromStdString(result.errorMessage),
+        commonOptionWidget_->inputFilePath(),
         commonOptionWidget_->outputFilePath(),
-        availableBlockWidget_->selecteds(), commonOptionWidget_->surfaceDirection(), result.usage
+        commonOptionWidget_->fallbackBlock(),
+        streamFrameSize_,
+        streamFrameCount_,
+        commonOptionWidget_->surfaceDirection(),
+        availableBlockWidget_->selecteds(),
+        result.usage
     );
+    overlayWidget_->showEndView();
 }
 
 void BlockImageGeneratorPageWidget::returnToOptionView()

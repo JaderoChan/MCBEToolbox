@@ -11,6 +11,7 @@
 #include <qtoolbutton.h>
 
 #include <components/no_wheel_focus_filter.h>
+#include "block_attribute_text.h"
 
 GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
     : AdaptiveWidget(parent)
@@ -244,20 +245,6 @@ int GeneratorCommonOptionWidget::numThreads() const
     return numThreadsInputer_->value();
 }
 
-static QString surfaceDirectionText(SurfaceDirection surfaceDirection)
-{
-    switch (surfaceDirection)
-    {
-        case SURFACE_DIRECTION_UP:     return EASYTR("Up");
-        case SURFACE_DIRECTION_BOTTOM: return EASYTR("Bottom");
-        case SURFACE_DIRECTION_NORTH:  return EASYTR("North");
-        case SURFACE_DIRECTION_SOUTH:  return EASYTR("South");
-        case SURFACE_DIRECTION_EAST:   return EASYTR("East");
-        case SURFACE_DIRECTION_WEST:   return EASYTR("West");
-        default:                       return QString();
-    }
-}
-
 void GeneratorCommonOptionWidget::refreshText()
 {
     inputFileLabel_->setText(EASYTR("Input File"));
@@ -268,7 +255,7 @@ void GeneratorCommonOptionWidget::refreshText()
     for (int i = 0; i < surfaceDirectionSelector_->count(); ++i)
     {
         auto surfaceDirection = static_cast<SurfaceDirection>(surfaceDirectionSelector_->itemData(i).toInt());
-        surfaceDirectionSelector_->setItemText(i, surfaceDirectionText(surfaceDirection));
+        surfaceDirectionSelector_->setItemText(i, getSurfaceDirectionText(surfaceDirection));
     }
     fallbackBlockLabel_->setText(EASYTR("Fallback Block"));
     fallbackBlockLabel_->setToolTip(EASYTR("FallbackBlock.Tooltip"));
