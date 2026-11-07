@@ -104,7 +104,9 @@
       "id": "minecraft:honeycomb_block",
       "textures": "1.21.50.7/honeycomb.png",
       "colors": "#EE970F",
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:arch_group:lodestone": {
