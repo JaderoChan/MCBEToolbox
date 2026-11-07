@@ -140,25 +140,27 @@ const QString& OutputFileSelector::outputFileFilter() const
     return outputFileFilter_;
 }
 
-QString OutputFileSelector::outputFilePath() const
+QString OutputFileSelector::outputFilePath(bool attachTimestamp) const
 {
-    const auto info = QFileInfo(inputFilePath_);
-    switch (mode_)
+    if (mode_ == ToCustomFileMode)
     {
-        case ToSourceDirectoryMode:
-            if (inputFilePath_.isEmpty()) return QString();
-            return
-                info.path() + QStringLiteral("/") +
-                info.completeBaseName() + QStringLiteral(".") + outputFileExtension_;
-        case ToCustomDirectoryMode:
-            if (customOutputDirectoryPath_.isEmpty() || inputFilePath_.isEmpty()) return QString();
-            return
-                customOutputDirectoryPath_ + QStringLiteral("/") +
-                info.completeBaseName() + QStringLiteral(".") + outputFileExtension_;
-        case ToCustomFileMode:
-            return customOutputFilePath_;
-        default:
+        return customOutputFilePath_;
+    }
+    else
+    {
+        if (inputFilePath_.isEmpty() || (mode_ == ToCustomDirectoryMode && customOutputDirectoryPath_.isEmpty()))
             return QString();
+
+        const auto info       = QFileInfo(inputFilePath_);
+        const auto parentPath = mode_ == ToSourceDirectoryMode ? info.path() : customOutputDirectoryPath_;
+        const auto extra      =
+            attachTimestamp
+            ? QStringLiteral("-") + QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd_HH-mm-ss"))
+            : QString();
+
+        return
+            parentPath + QStringLiteral("/") +
+            info.fileName() + extra + QStringLiteral(".") + outputFileExtension_;
     }
 }
 
