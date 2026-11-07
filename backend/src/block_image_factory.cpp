@@ -112,8 +112,8 @@ BaseFactory::ResultType BlockImageFactory::generateBlockVideo(
         [this](const cv::Mat& frame, std::atomic<bool>& shouldStop)
         {
             SingleImageOStream imageStream(frame);
-            BlockUsageMap   localUsageCount;
-            BlockTextureMap localTexturesCache;
+            BlockUsageMap      localUsageCount;
+            BlockTextureMap    localTexturesCache;
             cv::Mat blockImage;
             generateBlockImageHelper(
                 imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
@@ -213,7 +213,7 @@ BaseFactory::ResultType BlockImageFactory::generateBlockImageHelper(
                 if (!surface.first.empty())
                 {
                     const std::filesystem::path texturePath = createTexturePath(surface.first);
-                    const std::string textureKey = texturePath.string();
+                    const std::string           textureKey  = texturePath.string();
 
                     // 如果当前材质还未被加载则将其加载至缓存中。
                     if (texturesCache.find(textureKey) == texturesCache.end())
@@ -223,6 +223,15 @@ BaseFactory::ResultType BlockImageFactory::generateBlockImageHelper(
                             texture = convertColorToBgra(texture);
                         if (texture.empty())
                             texture = cv::Mat(16, 16, CV_8UC4, cv::Scalar(0.0, 0.0, 0.0, 0.0));
+                        if (texture.cols != 16 || texture.rows != 16)
+                        {
+                            errorMessage_ = formatString(
+                                "BlockImageFactory::generateBlockImageHelper() The block texture '{}' size is not 16*16",
+                                surface.first
+                            );
+                            fprintf(stderr, "%s\n", errorMessage_.c_str());
+                            return FAIL;
+                        }
                         texturesCache[textureKey] = texture;
                     }
 

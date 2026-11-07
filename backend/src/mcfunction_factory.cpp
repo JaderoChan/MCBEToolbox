@@ -148,8 +148,8 @@ std::pair<MCFunctionFactory::MCFunction, BaseFactory::BlockUsageMap>
 MCFunctionFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop)
 {
     SingleImageOStream imageStream(frame);
-    BlockUsageMap localUsageCount;
-    MCFunction mcfunction;
+    BlockUsageMap      localUsageCount;
+    MCFunction         mcfunction;
     generateSingleMCFunctionHelper(
         imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
         { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },

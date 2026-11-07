@@ -164,8 +164,8 @@ std::pair<nbt::Tag, BaseFactory::BlockUsageMap>
 MCStructureFactory::processDetachFrame(const cv::Mat& frame, std::atomic<bool>& shouldStop)
 {
     SingleImageOStream imageStream(frame);
-    BlockUsageMap localUsageCount;
-    nbt::Tag mcstructure;
+    BlockUsageMap      localUsageCount;
+    nbt::Tag           mcstructure;
     generateSingleMCStructureHelper(
         imageStream, [](std::size_t, std::size_t, bool& stop, void* userdata) -> void
         { stop = static_cast<std::atomic<bool>*>(userdata)->load(std::memory_order_relaxed); },
