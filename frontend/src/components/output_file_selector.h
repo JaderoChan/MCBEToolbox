@@ -44,7 +44,7 @@ public:
      * 当 \p attachTimeStamp 为 true 且处于 ToSourceDirectoryMode 或 ToCustomDirectoryMode 时，
      * 输出文件名的尾部将附带时间戳。
      */
-    QString outputFilePath(bool attachTimestamp = true) const;
+    QString outputFilePath(bool attachTimestamp = false) const;
 
 protected:
     void refreshText() override;
