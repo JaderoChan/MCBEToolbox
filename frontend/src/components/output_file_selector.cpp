@@ -146,10 +146,12 @@ QString OutputFileSelector::outputFilePath() const
     switch (mode_)
     {
         case ToSourceDirectoryMode:
+            if (inputFilePath_.isEmpty()) return QString();
             return
                 info.path() + QStringLiteral("/") +
                 info.completeBaseName() + QStringLiteral(".") + outputFileExtension_;
         case ToCustomDirectoryMode:
+            if (customOutputDirectoryPath_.isEmpty() || inputFilePath_.isEmpty()) return QString();
             return
                 customOutputDirectoryPath_ + QStringLiteral("/") +
                 info.completeBaseName() + QStringLiteral(".") + outputFileExtension_;
