@@ -35,8 +35,8 @@ set(
     ./app/settings_widget.h
 
     ./components/adaptive_widget.h
-    ./components/color_scheme_manager.h
     ./components/code_text_edit.h
+    ./components/color_scheme_manager.h
     ./components/flow_grid_layout.h
     ./components/image_grid_progress_bar.h
     ./components/language_manager.h
@@ -86,8 +86,8 @@ set(
     ./app/settings_widget.cpp
 
     ./components/adaptive_widget.cpp
-    ./components/color_scheme_manager.cpp
     ./components/code_text_edit.cpp
+    ./components/color_scheme_manager.cpp
     ./components/flow_grid_layout.cpp
     ./components/image_grid_progress_bar.cpp
     ./components/language_manager.cpp

@@ -39,8 +39,8 @@ int TabbedPageWidget::insertTab(int index, QWidget* widget, const QString& label
     index = qBound(0, index, count());
 
     auto* button = new QToolButton(this);
-    button->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    button->setToolButtonStyle(Qt::ToolButtonFollowStyle);
+    button->setMinimumSize(96, 48);
     button->setCheckable(true);
     button->setAutoRaise(true);
     button->setText(label);

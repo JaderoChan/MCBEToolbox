@@ -28,7 +28,9 @@ PixelArtGeneratorWidget::PixelArtGeneratorWidget(QWidget* parent)
 void PixelArtGeneratorWidget::refreshText()
 {
     container_->setTabText(0, EASYTR("Image"));
+    container_->setTabToolTip(0, EASYTR("Image"));
     container_->setTabText(1, EASYTR("Video/GIF"));
+    container_->setTabToolTip(1, EASYTR("Video/GIF"));
 }
 
 void PixelArtGeneratorWidget::refreshColor()
