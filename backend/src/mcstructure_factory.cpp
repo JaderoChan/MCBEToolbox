@@ -121,8 +121,8 @@ BaseFactory::ResultType MCStructureFactory::generateDetachMCStructure(
             for (auto& [id, count] : localUsageCount)
                 updateBlockUsageMap(id, count);
 
-            const std::filesystem::path path =
-                outDirPath / fs_utils::pathFromUtf8(fileName.u8string() + "-" + std::to_string(frameIdx) + ".mcstructure");
+            const std::filesystem::path path = outDirPath /
+                fs_utils::pathFromUtf8(fileName.u8string() + "-" + std::to_string(frameIdx) + ".mcstructure");
             std::ofstream ofs(path, std::ios::binary | std::ios::trunc);
             if (!ofs)
             {

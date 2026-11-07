@@ -226,7 +226,8 @@ BaseFactory::ResultType BlockImageFactory::generateBlockImageHelper(
                         if (texture.cols != 16 || texture.rows != 16)
                         {
                             errorMessage_ = formatString(
-                                "BlockImageFactory::generateBlockImageHelper() The block texture '{}' size is not 16*16",
+                                "BlockImageFactory::generateBlockImageHelper() "
+                                "The block texture '{}' size is not 16*16",
                                 surface.first
                             );
                             fprintf(stderr, "%s\n", errorMessage_.c_str());
