@@ -51,7 +51,8 @@ public:
     void setNumThreads(int num);
 
     QString          inputFilePath()    const;
-    QString          outputFilePath()   const;
+    /** @sa \ref OutputFileSelector::outputFilePath() */
+    QString          outputFilePath(QString fileName = QString(), bool attachTimestamp = false) const;
     SurfaceDirection surfaceDirection() const;
     BlockDataPair    fallbackBlock()    const;
     QSize            maxFrameSize()     const;

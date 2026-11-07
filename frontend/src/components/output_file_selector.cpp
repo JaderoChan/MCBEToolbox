@@ -140,7 +140,7 @@ const QString& OutputFileSelector::outputFileFilter() const
     return outputFileFilter_;
 }
 
-QString OutputFileSelector::outputFilePath(bool attachTimestamp) const
+QString OutputFileSelector::outputFilePath(QString fileName, bool attachTimestamp) const
 {
     if (mode_ == ToCustomFileMode)
     {
@@ -158,9 +158,8 @@ QString OutputFileSelector::outputFilePath(bool attachTimestamp) const
             ? QStringLiteral("-") + QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd_HH-mm-ss"))
             : QString();
 
-        return
-            parentPath + QStringLiteral("/") +
-            info.fileName() + extra + QStringLiteral(".") + outputFileExtension_;
+        fileName = fileName.isEmpty() ? info.fileName() : fileName;
+        return parentPath + QStringLiteral("/") + fileName + extra + QStringLiteral(".") + outputFileExtension_;
     }
 }
 

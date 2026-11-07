@@ -41,10 +41,13 @@ public:
     const QString& outputFileFilter() const;
 
     /**
-     * 当 \p attachTimeStamp 为 true 且处于 ToSourceDirectoryMode 或 ToCustomDirectoryMode 时，
-     * 输出文件名的尾部将附带时间戳。
+     * @param fileName 指定输出文件的文件名（不含扩展名），如果为空字符串则采用“输入文件路径”的文件名。
+     *                （仅 ToSourceDirectoryMode 和 ToCustomDirectoryMode 有效）
+     * @param attachTimeStamp 指定文件名尾部后是否附带时间戳。
+     *                       （仅 ToSourceDirectoryMode 和 ToCustomDirectoryMode 有效）
+     * @return 如果关键参数未配置或用户未输入路径则返回空字符串。
      */
-    QString outputFilePath(bool attachTimestamp = false) const;
+    QString outputFilePath(QString fileName = QString(), bool attachTimestamp = false) const;
 
 protected:
     void refreshText() override;

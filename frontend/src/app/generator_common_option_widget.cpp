@@ -213,9 +213,9 @@ QString GeneratorCommonOptionWidget::inputFilePath() const
     return inputFileInputer_->text();
 }
 
-QString GeneratorCommonOptionWidget::outputFilePath() const
+QString GeneratorCommonOptionWidget::outputFilePath(QString fileName, bool attachTimestamp) const
 {
-    return outputFileSelector_->outputFilePath();
+    return outputFileSelector_->outputFilePath(fileName, attachTimestamp);
 }
 
 SurfaceDirection GeneratorCommonOptionWidget::surfaceDirection() const
