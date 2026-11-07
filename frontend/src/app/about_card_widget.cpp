@@ -89,8 +89,8 @@ void AboutCardWidget::refreshColor()
 
     const bool dark = ColorSchemeManager::instance().loadedColorScheme() == ColorSchemeManager::COLOR_SCHEME_DARK;
 
-    githubButton_->setStyleSheet(getToolButtonStyleSheet());
-    emailButton_->setStyleSheet(getToolButtonStyleSheet());
+    githubButton_->setStyleSheet(getNoFrameToolButtonStyleSheet());
+    emailButton_->setStyleSheet(getNoFrameToolButtonStyleSheet());
     githubButton_->setIcon(QIcon(dark
         ? QStringLiteral(":/icons/app/github_light.svg")
         : QStringLiteral(":/icons/app/github_dark.svg")));
