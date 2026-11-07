@@ -107,6 +107,6 @@ private:
     int  expandedWidth_  = 240;
     int  collapsedWidth_ = 48;
     int  iconSize_       = 24;
-    int  entrySpacing_   = 4;
+    int  entrySpacing_   = 8;
     int  currentIndex_   = -1;
 };
