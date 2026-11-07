@@ -32,7 +32,7 @@ constexpr int IMAGE_MODE_PROGRESS_UPDATE_INTERVAL = 10000;
 constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 1;
 
 constexpr int     PIXEL_ART_MAX_FRAME_SIZE_WIDTH  = 540;
-constexpr int     PIXEL_ART_MAX_FRAME_SIZE_HEIGHT = 360;
+constexpr int     PIXEL_ART_MAX_FRAME_SIZE_HEIGHT = 380;
 constexpr Version PIXEL_ART_DEFAULT_MIN_VERSION{1, 21, 50};
 
 } // namespace
