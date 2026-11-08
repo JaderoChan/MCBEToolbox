@@ -107,6 +107,10 @@ GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
         maxFrameCountInfCheck_, &QCheckBox::toggled,
         this,                   &GeneratorCommonOptionWidget::refreshUiState
     );
+    connect(
+        surfaceDirectionSelector_, &QComboBox::currentIndexChanged,
+        this,                      [this]() { emit surfaceDirectionChanged(surfaceDirection()); }
+    );
 
     refreshText();
     refreshUiState();
@@ -186,8 +190,11 @@ void GeneratorCommonOptionWidget::setSurfaceDirection(SurfaceDirection surfaceDi
 
 void GeneratorCommonOptionWidget::setMaxFrameSize(const QSize& size)
 {
-    maxFrameSizeWidthInputer_->setValue(size.width());
-    maxFrameSizeHeightInputer_->setValue(size.height());
+    if (maxFrameSize() != size)
+    {
+        maxFrameSizeWidthInputer_->setValue(size.width());
+        maxFrameSizeHeightInputer_->setValue(size.height());
+    }
 }
 
 void GeneratorCommonOptionWidget::setMaxFrameCount(int count)

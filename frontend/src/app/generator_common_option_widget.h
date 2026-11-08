@@ -60,6 +60,9 @@ public:
     int              maxFrameCount()    const;
     int              numThreads()       const;
 
+signals:
+    void surfaceDirectionChanged(SurfaceDirection surfaceDirection);
+
 protected:
     void refreshText() override;
 

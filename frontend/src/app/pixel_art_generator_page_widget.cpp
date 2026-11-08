@@ -31,8 +31,6 @@ constexpr int START_BUTTON_RADIUS = START_BUTTON_SIZE / 2;
 constexpr int IMAGE_MODE_PROGRESS_UPDATE_INTERVAL = 10000;
 constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 5;
 
-constexpr int     PIXEL_ART_MAX_FRAME_SIZE_WIDTH  = 540;
-constexpr int     PIXEL_ART_MAX_FRAME_SIZE_HEIGHT = 380;
 constexpr Version PIXEL_ART_DEFAULT_MIN_VERSION{1, 21, 50};
 
 } // namespace
@@ -115,12 +113,30 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
     commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(getAppConfiguration().baseBlocks);
     commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(DEFAULT_FALLBACK_BLOCK_ID);
 
-    commonOptionWidget_->setMaxFrameSizeRange(
-        QSize(1, 1), QSize(PIXEL_ART_MAX_FRAME_SIZE_WIDTH, PIXEL_ART_MAX_FRAME_SIZE_HEIGHT));
+    commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(540, 380));
     commonOptionWidget_->setMaxFrameSize(
         mode_ == ImageMode
         ? QSize(DEFAULT_PIXEL_ART_IMAGE_MAX_WIDTH, DEFAULT_PIXEL_ART_IMAGE_MAX_HEIGHT)
         : QSize(DEFAULT_PIXEL_ART_VIDEO_MAX_WIDTH, DEFAULT_PIXEL_ART_VIDEO_MAX_HEIGHT)
+    );
+
+    connect(
+        commonOptionWidget_, &GeneratorCommonOptionWidget::surfaceDirectionChanged,
+        this, [this](SurfaceDirection surfaceDirection)
+        {
+            if (surfaceDirection == SURFACE_DIRECTION_UP || surfaceDirection == SURFACE_DIRECTION_BOTTOM)
+            {
+                commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(1024, 1024));
+            }
+            else
+            {
+                auto maxFrameSize = commonOptionWidget_->maxFrameSize();
+                if (maxFrameSize.width()  > 540) maxFrameSize.setWidth(540);
+                if (maxFrameSize.height() > 380) maxFrameSize.setHeight(380);
+                commonOptionWidget_->setMaxFrameSize(maxFrameSize);
+                commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(540, 380));
+            }
+        }
     );
 
     commonOptionWidget_->setMaxFrameCountRange(1, INT32_MAX);
