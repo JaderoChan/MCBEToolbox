@@ -237,16 +237,28 @@ QString MCPackGeneratorOptionWidget::packDescription() const
         const auto frameSizeSec        = QStringLiteral("%1: %2*%3")
             .arg(EASYTR("Frame Size")).arg(processInfo_.frameSize.width()).arg(processInfo_.frameSize.height());
 
-        auto description =
-            QStringLiteral("%1; %2; %3; %4; %5")
-            .arg(title).arg(inputFilePathSec).arg(modeSec).arg(surfaceDirectionSec).arg(frameSizeSec);
+        auto description = QStringLiteral("%1! %2; %3; %4; %5; %6")
+            .arg(title).arg(inputFilePathSec).arg(modeSec).arg(surfaceDirectionSec).arg(fallbackSec).arg(frameSizeSec);
 
-        if (processInfo_.mode == GeneratorCommonOptionWidget::VideoMode)
+        if (processInfo_.mode == GeneratorCommonOptionWidget::ImageMode)
         {
-            const auto frameCountSec   = QStringLiteral("%1: %2")
+            const auto resultNameSec = QStringLiteral("%1: %2")
+                .arg(packType() == StructurePackType ? EASYTR("Structure Name") : EASYTR("Function Name"))
+                .arg(packNamespace() + QStringLiteral(":") + packName());
+            description += QStringLiteral("; %1.").arg(resultNameSec);
+        }
+        else
+        {
+            const auto frameCountSec = QStringLiteral("%1: %2")
                 .arg(EASYTR("Frame Count"))
                 .arg(processInfo_.frameCount);
-            description += "; " + frameCountSec;
+            const auto resultNameSec = QStringLiteral("%1: %2")
+                .arg(packType() == StructurePackType ? EASYTR("Structure Name") : EASYTR("Function Name"))
+                .arg(
+                    packNamespace() + QStringLiteral(":") + packName() + QStringLiteral("-{frameIndex}") +
+                    (packType() == FunctionPackType ? QStringLiteral("-{functionIndex}") : QString())
+                );
+            description += QStringLiteral("; %1; %2.").arg(frameCountSec).arg(resultNameSec);
         }
 
         return description;
