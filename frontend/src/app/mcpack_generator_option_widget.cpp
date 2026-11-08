@@ -216,7 +216,7 @@ QString MCPackGeneratorOptionWidget::packDescription() const
         const auto title               = QStringLiteral("%1 %2")
             .arg(EASYTR("By MCBE Toolbox"))
             .arg(APP_VERSION);
-        const auto inputFilePathSec    = QStringLiteral("%1: %2")
+        const auto inputFilePathSec    = QStringLiteral("%1: '%2'")
             .arg(EASYTR("Input File Path"))
             .arg(processInfo_.inputFilePath);
         const auto modeSec             = QStringLiteral("%1: %2")
