@@ -65,3 +65,6 @@ std::string formatString(const std::string& fmt, Args&&... args)
     format_string_impl::formatStringImpl(oss, fmt, 0, std::forward<Args>(args)...);
     return oss.str();
 }
+
+/** 转义字符串中的双引号。 */
+std::string escapeQuotes(const std::string& str);

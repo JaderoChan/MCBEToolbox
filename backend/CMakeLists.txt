@@ -36,6 +36,7 @@ set(
     ./src/block.cpp
     ./src/color_kd_tree.cpp
     ./src/color.cpp
+    ./src/format_string.cpp
     ./src/fs_utils.cpp
     ./src/gif_image_ostream.cpp
     ./src/image_ostream.cpp
