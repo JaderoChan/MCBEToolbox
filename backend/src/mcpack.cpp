@@ -122,8 +122,9 @@ bool MCPack::addFunction(std::string_view relativePath, const std::vector<std::s
         return false;
     }
 
-    for (const auto& command : mcfunction)
-        file << command << '\n';
+    for (std::size_t i = 0; i < mcfunction.size() - 1; ++i)
+        file << mcfunction[i] << '\n';
+    if (!mcfunction.empty()) file << mcfunction.back();
     file.close();
     return true;
 }
