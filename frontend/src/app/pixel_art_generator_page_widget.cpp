@@ -116,10 +116,10 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
             else
             {
                 auto maxFrameSize = commonOptionWidget_->maxFrameSize();
-                if (maxFrameSize.width()  > 540) maxFrameSize.setWidth(540);
+                if (maxFrameSize.width()  > 720) maxFrameSize.setWidth(720);
                 if (maxFrameSize.height() > 380) maxFrameSize.setHeight(380);
                 commonOptionWidget_->setMaxFrameSize(maxFrameSize);
-                commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(540, 380));
+                commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(720, 380));
             }
         }
     );
@@ -132,7 +132,7 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
     commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(getAppConfiguration().baseBlocks);
     commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(DEFAULT_FALLBACK_BLOCK_ID);
 
-    commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(540, 380));
+    commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(720, 380));
     commonOptionWidget_->setMaxFrameSize(
         mode_ == ImageMode
         ? QSize(DEFAULT_PIXEL_ART_IMAGE_MAX_WIDTH, DEFAULT_PIXEL_ART_IMAGE_MAX_HEIGHT)
@@ -144,7 +144,7 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
     commonOptionWidget_->setMaxFrameCount(DEFAULT_PIXEL_ART_VIDEO_MAX_FRAME_COUNT);
 
     commonOptionWidget_->setNumThreadsRange(1, 16);
-    commonOptionWidget_->setNumThreads(4);
+    commonOptionWidget_->setNumThreads(6);
 
     mcpackOptionWidget_->setPackNamespace(DEFAULT_MCPACK_NAMESPACE);
     mcpackOptionWidget_->setPackVersion(DEFAULT_MCPACK_VERSION);
