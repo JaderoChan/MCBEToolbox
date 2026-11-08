@@ -292,6 +292,13 @@ void MCPackGeneratorOptionWidget::refreshText()
 
     assistFunctionEnabledLabel_->setText(EASYTR("Enable Assist Function"));
     assistFunctionEnabledCheck_->setText(EASYTR("Generate Assist Function For Load Structure/Function"));
+
+    if (packType() == FunctionPackType)
+    {
+        const auto tooltip = EASYTR("Assist function is not available in the Function Pack for the time being.");
+        assistFunctionEnabledLabel_->setToolTip(tooltip);
+        assistFunctionEnabledCheck_->setToolTip(tooltip);
+    }
 }
 
 bool MCPackGeneratorOptionWidget::isValidName(const QString& name)
@@ -308,19 +315,19 @@ bool MCPackGeneratorOptionWidget::isValidNamespace(const QString& nameSpace)
 
 void MCPackGeneratorOptionWidget::refreshAssistFunctionUiState()
 {
-    auto* mainLayout = static_cast<QGridLayout*>(layout());
     if (packType() == FunctionPackType)
     {
-        assistFunctionEnabledLabel_->setVisible(false);
-        assistFunctionEnabledCheck_->setVisible(false);
-        mainLayout->removeWidget(assistFunctionEnabledLabel_);
-        mainLayout->removeWidget(assistFunctionEnabledCheck_);
+        const auto tooltip = EASYTR("Assist function is not available in the Function Pack for the time being.");
+        assistFunctionEnabledLabel_->setToolTip(tooltip);
+        assistFunctionEnabledCheck_->setToolTip(tooltip);
+        assistFunctionEnabledLabel_->setDisabled(true);
+        assistFunctionEnabledCheck_->setDisabled(true);
     }
     else
     {
-        assistFunctionEnabledLabel_->setVisible(true);
-        assistFunctionEnabledCheck_->setVisible(true);
-        mainLayout->addWidget(assistFunctionEnabledLabel_, 5, 0);
-        mainLayout->addWidget(assistFunctionEnabledCheck_, 5, 1);
+        assistFunctionEnabledLabel_->setToolTip(QString());
+        assistFunctionEnabledCheck_->setToolTip(QString());
+        assistFunctionEnabledLabel_->setDisabled(false);
+        assistFunctionEnabledCheck_->setDisabled(false);
     }
 }
