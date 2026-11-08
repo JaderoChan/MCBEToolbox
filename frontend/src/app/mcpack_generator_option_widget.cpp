@@ -104,8 +104,13 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
         packDescriptionAutoFillCheck_, &QCheckBox::toggled,
         this, &MCPackGeneratorOptionWidget::setAutoFillPackDescription
     );
+    connect(
+        packTypeButtonGroup, &QButtonGroup::buttonToggled,
+        this, &MCPackGeneratorOptionWidget::refreshAssistFunctionUiState
+    );
 
     refreshText();
+    refreshAssistFunctionUiState();
 }
 
 void MCPackGeneratorOptionWidget::setProcessInfoForAutoFill(
@@ -122,8 +127,11 @@ void MCPackGeneratorOptionWidget::setProcessInfoForAutoFill(
 
 void MCPackGeneratorOptionWidget::setPackType(PackType type)
 {
+    if (packType() == type)
+        return;
     if      (type == StructurePackType) packTypeStructureButton_->setChecked(true);
     else if (type == FunctionPackType)  packTypeFunctionButton_->setChecked(true);
+    refreshAssistFunctionUiState();
 }
 
 void MCPackGeneratorOptionWidget::setPackName(const QString& name)
@@ -296,4 +304,23 @@ bool MCPackGeneratorOptionWidget::isValidNamespace(const QString& nameSpace)
 {
     static const QRegularExpression regex(QStringLiteral("^[A-Za-z_][A-Za-z0-9_]*$"));
     return regex.match(nameSpace).hasMatch();
+}
+
+void MCPackGeneratorOptionWidget::refreshAssistFunctionUiState()
+{
+    auto* mainLayout = static_cast<QGridLayout*>(layout());
+    if (packType() == FunctionPackType)
+    {
+        assistFunctionEnabledLabel_->setVisible(false);
+        assistFunctionEnabledCheck_->setVisible(false);
+        mainLayout->removeWidget(assistFunctionEnabledLabel_);
+        mainLayout->removeWidget(assistFunctionEnabledCheck_);
+    }
+    else
+    {
+        assistFunctionEnabledLabel_->setVisible(true);
+        assistFunctionEnabledCheck_->setVisible(true);
+        mainLayout->addWidget(assistFunctionEnabledLabel_, 5, 0);
+        mainLayout->addWidget(assistFunctionEnabledCheck_, 5, 1);
+    }
 }

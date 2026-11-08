@@ -105,21 +105,6 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
         this,           &PixelArtGeneratorPageWidget::returnToOptionView
     );
 
-    commonOptionWidget_->setOutputFileExtension(QStringLiteral("mcpack"));
-
-    // 配置默认值（未来需要根据程序配置进行设置）。
-    availableBlockWidget_->setBlocks(getAppConfiguration().baseBlocks);
-    commonOptionWidget_->setSurfaceDirection(DEFAULT_DESIRED_SURFACE);
-    commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(getAppConfiguration().baseBlocks);
-    commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(DEFAULT_FALLBACK_BLOCK_ID);
-
-    commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(540, 380));
-    commonOptionWidget_->setMaxFrameSize(
-        mode_ == ImageMode
-        ? QSize(DEFAULT_PIXEL_ART_IMAGE_MAX_WIDTH, DEFAULT_PIXEL_ART_IMAGE_MAX_HEIGHT)
-        : QSize(DEFAULT_PIXEL_ART_VIDEO_MAX_WIDTH, DEFAULT_PIXEL_ART_VIDEO_MAX_HEIGHT)
-    );
-
     connect(
         commonOptionWidget_, &GeneratorCommonOptionWidget::surfaceDirectionChanged,
         this, [this](SurfaceDirection surfaceDirection)
@@ -137,6 +122,21 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
                 commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(540, 380));
             }
         }
+    );
+
+    // 配置默认值（未来需要根据程序配置进行设置）。
+    availableBlockWidget_->setBlocks(getAppConfiguration().baseBlocks);
+
+    commonOptionWidget_->setOutputFileExtension(QStringLiteral("mcpack"));
+    commonOptionWidget_->setSurfaceDirection(DEFAULT_DESIRED_SURFACE);
+    commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(getAppConfiguration().baseBlocks);
+    commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(DEFAULT_FALLBACK_BLOCK_ID);
+
+    commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(540, 380));
+    commonOptionWidget_->setMaxFrameSize(
+        mode_ == ImageMode
+        ? QSize(DEFAULT_PIXEL_ART_IMAGE_MAX_WIDTH, DEFAULT_PIXEL_ART_IMAGE_MAX_HEIGHT)
+        : QSize(DEFAULT_PIXEL_ART_VIDEO_MAX_WIDTH, DEFAULT_PIXEL_ART_VIDEO_MAX_HEIGHT)
     );
 
     commonOptionWidget_->setMaxFrameCountRange(1, INT32_MAX);

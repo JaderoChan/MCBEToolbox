@@ -57,6 +57,8 @@ private:
     static bool isValidName(const QString& name);
     static bool isValidNamespace(const QString& nameSpace);
 
+    void refreshAssistFunctionUiState();
+
     struct ProcessInfo
     {
         QString                           inputFilePath;
