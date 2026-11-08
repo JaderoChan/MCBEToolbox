@@ -64,7 +64,7 @@ bool BaseFactory::ensureDirectoryExists(const std::filesystem::path& dirPath, co
     {
         if (!std::filesystem::is_directory(dirPath))
         {
-            errorMessage_ = formatString("{} Target path '{}' is not a directory", logPrefix, dirPath.string());
+            errorMessage_ = formatString("{} Target path '{}' is not a directory", logPrefix, dirPath.u8string());
             fprintf(stderr, "%s\n", errorMessage_.c_str());
             return false;
         }
@@ -75,7 +75,7 @@ bool BaseFactory::ensureDirectoryExists(const std::filesystem::path& dirPath, co
     std::filesystem::create_directories(dirPath, ec);
     if (ec)
     {
-        errorMessage_ = formatString("{} Failed to create the directory '{}'", logPrefix, dirPath.string());
+        errorMessage_ = formatString("{} Failed to create the directory '{}'", logPrefix, dirPath.u8string());
         fprintf(stderr, "%s\n", errorMessage_.c_str());
         return false;
     }

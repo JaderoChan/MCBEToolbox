@@ -127,7 +127,7 @@ BaseFactory::ResultType MCStructureFactory::generateDetachMCStructure(
             if (!ofs)
             {
                 errorMessage_ = formatString(
-                    "MCStructureFactory::generateDetachMCStructure() Failed to create the file '{}'", path.string());
+                    "MCStructureFactory::generateDetachMCStructure() Failed to create the file '{}'", path.u8string());
                 fprintf(stderr, "%s\n", errorMessage_.c_str());
                 return false;
             }

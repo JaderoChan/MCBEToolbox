@@ -117,7 +117,7 @@ BaseFactory::ResultType MCFunctionFactory::generateDetachMCFunction(
                     {
                         errorMessage_ = formatString(
                             "MCFunctionFactory::generateDetachMCFunction() Failed to open the out file '{}'",
-                            path.string());
+                            path.u8string());
                         fprintf(stderr, "%s\n", errorMessage_.c_str());
                         return false;
                     }

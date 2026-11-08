@@ -71,7 +71,7 @@ BaseFactory::ResultType BlockImageFactory::generateBlockVideo(
     frameSize *= 16;
 
     const std::filesystem::path tempVideoPath =
-        outParentPath / (fs_utils::generateUuid4() + outFilePath.extension().string());
+        outParentPath / fs_utils::pathFromUtf8(fs_utils::generateUuid4() + outFilePath.extension().u8string());
     const fs_utils::ScopedPathRemover tempVideoRemover(tempVideoPath);
 
     // 优先使用 H264 编码，若打不开（例如系统未注册对应的硬件/软件编码器），
@@ -93,7 +93,7 @@ BaseFactory::ResultType BlockImageFactory::generateBlockVideo(
         errorMessage_ = formatString(
             "BlockImageFactory::generateBlockVideo() Failed to open the video writer created by file '{}' "
             "with all attempted codecs, please check whether a H264 video encoder is available on this system",
-            outFilePath.string()
+            outFilePath.u8string()
         );
         fprintf(stderr, "%s\n", errorMessage_.c_str());
         return FAIL;
@@ -164,7 +164,7 @@ BaseFactory::ResultType BlockImageFactory::generateBlockVideo(
     {
         errorMessage_ = formatString(
             "BlockImageFactory::generateBlockVideo() Failed to move the temporary file to '{}'",
-            outFilePath.string()
+            outFilePath.u8string()
         );
         fprintf(stderr, "%s\n", errorMessage_.c_str());
         return FAIL;

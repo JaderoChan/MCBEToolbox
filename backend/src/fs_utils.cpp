@@ -31,7 +31,7 @@ std::filesystem::path tryCreateHiddenTempDirIn(
         fprintf(
             stderr,
             "fs_utils::tryCreateHiddenTempDirIn() Target path '%s' has filesystem entity exists\n",
-            tempPath.string().c_str()
+            tempPath.u8string().c_str()
         );
         return std::filesystem::path();
     }
@@ -105,7 +105,7 @@ std::filesystem::path createUniqueHiddenTempDir(const std::filesystem::path& anc
     fprintf(
         stderr,
         "fs_utils::createUniqueHiddenTempDir() Failed to create a unique temporary directory near '%s'\n",
-        anchorPath.string().c_str()
+        anchorPath.u8string().c_str()
     );
     return std::filesystem::path();
 }
@@ -135,7 +135,7 @@ bool moveFileReplacing(const std::filesystem::path& src, const std::filesystem::
         fprintf(
             stderr,
             "fs_utils::moveFileReplacing() Failed to create the directory '%s'\n",
-            dstParent.string().c_str()
+            dstParent.u8string().c_str()
         );
         return false;
     }
@@ -156,7 +156,7 @@ bool moveFileReplacing(const std::filesystem::path& src, const std::filesystem::
     fprintf(
         stderr,
         "fs_utils::moveFileReplacing() Failed to move '%s' to '%s'\n",
-        src.string().c_str(), dst.string().c_str()
+        src.u8string().c_str(), dst.u8string().c_str()
     );
     return false;
 }
@@ -176,7 +176,8 @@ AsciiSafeAlias::AsciiSafeAlias(const std::filesystem::path& originalPath) : orig
     const std::filesystem::path& tempPath  = std::filesystem::temp_directory_path(ec);
     if (ec)
         return;
-    const std::filesystem::path& candidate = tempPath / (generateUuid4() + originalPath_.extension().string());
+    const std::filesystem::path& candidate =
+        tempPath / fs_utils::pathFromUtf8(generateUuid4() + originalPath_.extension().u8string());
 
     if (std::filesystem::exists(candidate, ec))
         std::filesystem::remove_all(candidate, ec);
@@ -197,7 +198,7 @@ AsciiSafeAlias::AsciiSafeAlias(const std::filesystem::path& originalPath) : orig
     fprintf(
         stderr,
         "fs_utils::AsciiSafeAlias::AsciiSafeAlias() Failed to create an ASCII-safe alias for '%s'\n",
-        originalPath_.string().c_str()
+        originalPath_.u8string().c_str()
     );
 }
 
