@@ -258,7 +258,7 @@ void GeneratorOverlayWidget::onViewBlockUsageClicked()
 
 QString GeneratorOverlayWidget::makeMarkdownSummary() const
 {
-    const auto inputFilePathSec = QStringLiteral("- %1: %2")
+    const auto inputFilePathSec = QStringLiteral("- %1: '%2'")
         .arg(EASYTR("Input File Path"))
         .arg(endViewInfo_.inputFilePath);
     const auto surfaceSec       = QStringLiteral("- %1: %2")
