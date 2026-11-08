@@ -30,6 +30,10 @@ constexpr int START_BUTTON_RADIUS = START_BUTTON_SIZE / 2;
 constexpr int IMAGE_MODE_PROGRESS_UPDATE_INTERVAL = 10000;
 constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 1;
 
+constexpr QSize MAX_FRAME_SIZE_RANGE_MIN       = QSize(1,    1   );
+constexpr QSize IMAGE_MAX_FRAME_SIZE_RANGE_MAX = QSize(4096, 4096);
+constexpr QSize VIDEO_MAX_FRAME_SIZE_RANGE_MAX = QSize(256,  128 );
+
 } // namespace
 
 BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget* parent)
@@ -98,7 +102,14 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
         this,           &BlockImageGeneratorPageWidget::returnToOptionView
     );
 
+    // 配置范围限制。
     commonOptionWidget_->setOutputFileExtension(mode_ == ImageMode ? QStringLiteral("png") : QStringLiteral("mp4"));
+    commonOptionWidget_->setMaxFrameSizeRange(
+        MAX_FRAME_SIZE_RANGE_MIN,
+        mode_ == ImageMode ? IMAGE_MAX_FRAME_SIZE_RANGE_MAX : VIDEO_MAX_FRAME_SIZE_RANGE_MAX
+    );
+    commonOptionWidget_->setMaxFrameCountRange(1, INT32_MAX);
+    commonOptionWidget_->setNumThreadsRange(1, 16);
 
     // 配置默认值（未来需要根据程序配置进行设置）。
     availableBlockWidget_->setBlocks(getAppConfiguration().baseBlocks);
@@ -106,23 +117,10 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
     commonOptionWidget_->fallbackBlockSelector_->setModeButtonVisible(FallbackBlockSelector::AirBlockMode, false);
     commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(getAppConfiguration().baseBlocks);
     commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(DEFAULT_FALLBACK_BLOCK_ID);
-
-    commonOptionWidget_->setMaxFrameSizeRange(
-        QSize(1, 1),
-        QSize(mode_ == ImageMode ? 4096 : 256, mode_ == ImageMode ? 4096 : 128)
-    );
-    commonOptionWidget_->setMaxFrameSize(
-        mode_ == ImageMode
-        ? QSize(DEFAULT_BLOCK_IMAGE_IMAGE_MAX_WIDTH, DEFAULT_BLOCK_IMAGE_IMAGE_MAX_HEIGHT)
-        : QSize(DEFAULT_BLOCK_IMAGE_VIDEO_MAX_WIDTH, DEFAULT_BLOCK_IMAGE_VIDEO_MAX_HEIGHT)
-    );
-
-    commonOptionWidget_->setMaxFrameCountRange(1, INT32_MAX);
+    commonOptionWidget_->setMaxFrameSize(mode_ == ImageMode ? QSize(1024, 1024) : QSize(240, 128));
     commonOptionWidget_->setMaxFrameCount(360);
-    commonOptionWidget_->setMaxFrameCount(DEFAULT_BLOCK_IMAGE_VIDEO_MAX_FRAME_COUNT);
-
-    commonOptionWidget_->setNumThreadsRange(1, 16);
-    commonOptionWidget_->setNumThreads(4);
+    commonOptionWidget_->setMaxFrameCount(-1);
+    commonOptionWidget_->setNumThreads(8);
 
     // 初始化文本和刷新 Start 按钮位置。
     refreshText();

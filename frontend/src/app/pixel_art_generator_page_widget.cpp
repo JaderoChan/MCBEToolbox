@@ -29,9 +29,30 @@ constexpr int START_BUTTON_MARGIN = 16;
 constexpr int START_BUTTON_RADIUS = START_BUTTON_SIZE / 2;
 
 constexpr int IMAGE_MODE_PROGRESS_UPDATE_INTERVAL = 10000;
-constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 5;
+constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 4;
 
-constexpr Version PIXEL_ART_DEFAULT_MIN_VERSION{1, 21, 50};
+constexpr QSize MAX_FRAME_SIZE_RANGE_MIN       = QSize(1,    1   );
+constexpr QSize MAX_FRAME_SIZE_RANGE_MAX_FLOOR = QSize(1024, 1024);
+constexpr QSize MAX_FRAME_SIZE_RANGE_MAX_WALL  = QSize(720,  380 );
+
+constexpr Version MCPACK_MIN_VERSION = Version(1, 21, 50);
+
+template <typename T>
+inline T clamp(const T& value, const T& min, const T& max)
+{
+    assert(min <= max);
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
+inline QSize clampSize(const QSize& value, const QSize& min, const QSize& max)
+{
+    return QSize(
+        clamp(value.width(),  min.width(),  max.width()),
+        clamp(value.height(), min.height(), max.height())
+    );
+}
 
 } // namespace
 
@@ -105,49 +126,41 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
         this,           &PixelArtGeneratorPageWidget::returnToOptionView
     );
 
+    // 配置范围限制。
     connect(
         commonOptionWidget_, &GeneratorCommonOptionWidget::surfaceDirectionChanged,
         this, [this](SurfaceDirection surfaceDirection)
         {
             if (surfaceDirection == SURFACE_DIRECTION_UP || surfaceDirection == SURFACE_DIRECTION_BOTTOM)
             {
-                commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(1024, 1024));
+                commonOptionWidget_->setMaxFrameSizeRange(MAX_FRAME_SIZE_RANGE_MIN, MAX_FRAME_SIZE_RANGE_MAX_FLOOR);
             }
             else
             {
                 auto maxFrameSize = commonOptionWidget_->maxFrameSize();
-                if (maxFrameSize.width()  > 720) maxFrameSize.setWidth(720);
-                if (maxFrameSize.height() > 380) maxFrameSize.setHeight(380);
+                maxFrameSize = clampSize(maxFrameSize, MAX_FRAME_SIZE_RANGE_MIN, MAX_FRAME_SIZE_RANGE_MAX_WALL);
                 commonOptionWidget_->setMaxFrameSize(maxFrameSize);
-                commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(720, 380));
+                commonOptionWidget_->setMaxFrameSizeRange(MAX_FRAME_SIZE_RANGE_MIN, MAX_FRAME_SIZE_RANGE_MAX_WALL);
             }
         }
     );
 
+    commonOptionWidget_->setOutputFileExtension(QStringLiteral("mcpack"));
+    commonOptionWidget_->setMaxFrameSizeRange(MAX_FRAME_SIZE_RANGE_MIN, MAX_FRAME_SIZE_RANGE_MAX_WALL);
+    commonOptionWidget_->setMaxFrameCountRange(1, INT32_MAX);
+    commonOptionWidget_->setNumThreadsRange(1, 16);
+
     // 配置默认值（未来需要根据程序配置进行设置）。
     availableBlockWidget_->setBlocks(getAppConfiguration().baseBlocks);
-
-    commonOptionWidget_->setOutputFileExtension(QStringLiteral("mcpack"));
     commonOptionWidget_->setSurfaceDirection(DEFAULT_DESIRED_SURFACE);
     commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(getAppConfiguration().baseBlocks);
     commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(DEFAULT_FALLBACK_BLOCK_ID);
-
-    commonOptionWidget_->setMaxFrameSizeRange(QSize(1, 1), QSize(720, 380));
-    commonOptionWidget_->setMaxFrameSize(
-        mode_ == ImageMode
-        ? QSize(DEFAULT_PIXEL_ART_IMAGE_MAX_WIDTH, DEFAULT_PIXEL_ART_IMAGE_MAX_HEIGHT)
-        : QSize(DEFAULT_PIXEL_ART_VIDEO_MAX_WIDTH, DEFAULT_PIXEL_ART_VIDEO_MAX_HEIGHT)
-    );
-
-    commonOptionWidget_->setMaxFrameCountRange(1, INT32_MAX);
+    commonOptionWidget_->setMaxFrameSize(QSize(560, 360));
     commonOptionWidget_->setMaxFrameCount(360);
-    commonOptionWidget_->setMaxFrameCount(DEFAULT_PIXEL_ART_VIDEO_MAX_FRAME_COUNT);
-
-    commonOptionWidget_->setNumThreadsRange(1, 16);
-    commonOptionWidget_->setNumThreads(6);
-
+    commonOptionWidget_->setMaxFrameCount(-1);
+    commonOptionWidget_->setNumThreads(8);
     mcpackOptionWidget_->setPackNamespace(DEFAULT_MCPACK_NAMESPACE);
-    mcpackOptionWidget_->setPackVersion(DEFAULT_MCPACK_VERSION);
+    mcpackOptionWidget_->setPackVersion(Version(1, 0, 0));
     mcpackOptionWidget_->setAutoFillPackName(true);
     mcpackOptionWidget_->setAutoFillPackDescription(true);
     mcpackOptionWidget_->setAssistFunctionEnabled(true);
@@ -214,7 +227,7 @@ void PixelArtGeneratorPageWidget::startGenerate()
     option.packOption.desciption     = mcpackOptionWidget_->packDescription().toStdString();
     option.packOption.nameSpace      = mcpackOptionWidget_->packNamespace().toStdString();
     option.packOption.version        = mcpackOptionWidget_->packVersion();
-    option.packOption.minVersion     = PIXEL_ART_DEFAULT_MIN_VERSION;
+    option.packOption.minVersion     = MCPACK_MIN_VERSION;
 
     overlayWidget_->setProgressUpdateInterval(progressInterval_);
     overlayWidget_->showProgressView();
