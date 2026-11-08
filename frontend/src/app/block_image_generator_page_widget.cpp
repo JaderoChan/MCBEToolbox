@@ -109,7 +109,7 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
 
     commonOptionWidget_->setMaxFrameSizeRange(
         QSize(1, 1),
-        QSize(mode_ == ImageMode ? 4096 : 128, mode_ == ImageMode ? 4096 : 128)
+        QSize(mode_ == ImageMode ? 4096 : 256, mode_ == ImageMode ? 4096 : 128)
     );
     commonOptionWidget_->setMaxFrameSize(
         mode_ == ImageMode

@@ -16,7 +16,7 @@ public:
 
     static constexpr const char* DEFAULT_TEXTURES_DIR_PATH = "./textures";
     // 生成方块视频时，输入视频帧的最大尺寸。
-    static constexpr int VIDEO_FRAME_MAX_WIDTH  = 2048 / 16;
+    static constexpr int VIDEO_FRAME_MAX_WIDTH  = 4096 / 16;
     static constexpr int VIDEO_FRAME_MAX_HEIGHT = 2048 / 16;
 
     BlockImageFactory(
