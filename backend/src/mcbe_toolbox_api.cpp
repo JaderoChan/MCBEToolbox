@@ -8,6 +8,7 @@
 
 #include <mcnbt/mcnbt.hpp> // nbt::Tag, nbt::TT_END
 
+#include <format_string.hpp>
 #include <fs_utils.hpp>
 #include <image_utilities.hpp>
 #include <mcpack.hpp>
@@ -130,7 +131,8 @@ FactoryResult generateStructurePack(
     if (!pack.isOk())
         return {BaseFactory::FAIL, {}, "Failed to prepare the temporary MC Pack working directory"};
 
-    const auto frameSize = stream.frameSize();
+    const auto frameSize  = stream.frameSize();
+    const auto frameCount = stream.frameCount();
 
     BaseFactory::ResultType result = BaseFactory::FAIL;
     std::string             message;
@@ -142,7 +144,28 @@ FactoryResult generateStructurePack(
 
         if (result == BaseFactory::SUCCESS && option.assistFunctionEnabled)
         {
-            // TODO
+            const std::string structureName = option.packOption.nameSpace + ":" + option.packOption.name.u8string();
+            VideoAssistFunctionGenerator funcGenerator(
+                frameSize.width, frameSize.height, option.desiredSurface, structureName, frameCount);
+            pack.addFunction("setOrigin",         funcGenerator.generateSetOriginFunction());
+            pack.addFunction("clearOrigin",       funcGenerator.generateClearOriginFunction());
+            pack.addFunction("build",             funcGenerator.generateBuildFunction());
+            pack.addFunction("destroy",           funcGenerator.generateDestroyFunction());
+            pack.addFunction("moveToWatchPoint",  funcGenerator.generateMoveToWatchPointFunction());
+            pack.addFunction("play",              funcGenerator.generatePlayFunction());
+            pack.addFunction("pause",             funcGenerator.generatePauseFunction());
+            pack.addFunction("stop",              funcGenerator.generateStopFunction());
+
+            const auto content = funcGenerator.generateWorkPerTickFunction1Content();
+            for (int i = 0; i < content.size(); ++i)
+                pack.addFunction(formatString("workPerTickData/func-{}", i), content[i]);
+
+            const auto prefix = formatString("{}/workPerTickData/func-", option.packOption.nameSpace);
+            pack.addFunction("workPerTick/func1", funcGenerator.generateWorkPerTickFunction1(prefix));
+            pack.addFunction("workPerTick/func2", funcGenerator.generateWorkPerTickFunction2());
+
+            pack.addTickFunction("workPerTick/func1");
+            pack.addTickFunction("workPerTick/func2");
         }
     }
     else
@@ -181,12 +204,13 @@ FactoryResult generateStructurePack(
             if (result == BaseFactory::SUCCESS && option.assistFunctionEnabled)
             {
                 const std::string structureName = option.packOption.nameSpace + ":" + option.packOption.name.u8string();
-                AssistFunctionGenerator funcGen(
+                ImageAssistFunctionGenerator funcGenerator(
                     frameSize.width, frameSize.height, option.desiredSurface, structureName);
-                pack.addFunction("setOrigin",        funcGen.makeSetOriginFunction());
-                pack.addFunction("clearOrigin",      funcGen.makeClearOriginFunction());
-                pack.addFunction("build",            funcGen.makeBuildFunction());
-                pack.addFunction("moveToWatchPoint", funcGen.makeMoveToWatchPointFunction());
+                pack.addFunction("setOrigin",        funcGenerator.generateSetOriginFunction());
+                pack.addFunction("clearOrigin",      funcGenerator.generateClearOriginFunction());
+                pack.addFunction("build",            funcGenerator.generateBuildFunction());
+                pack.addFunction("destroy",          funcGenerator.generateDestroyFunction());
+                pack.addFunction("moveToWatchPoint", funcGenerator.generateMoveToWatchPointFunction());
             }
         }
     }

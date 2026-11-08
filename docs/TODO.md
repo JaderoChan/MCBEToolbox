@@ -6,7 +6,7 @@
 - [ ] `Block List Widget` 优化：Shift 多选逻辑。
 - [x] 选定程序 Logo 图标。
 - [ ] 完成程序配置文件的加载与保存。
-- [ ] 完成 Assist Function 的生成。
+- [x] 完成 Assist Function 的生成。
 - [x] 修复 BlockUsageMap 按用量排序结果不正确的问题，并将默认排序方式置为按用量降序排序。
 - [x] 修复进度条界面 “Exporting” 字样位置偏左的问题。
 - [x] 修复进度条界面生成结果提示文本未翻译问题。
