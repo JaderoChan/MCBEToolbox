@@ -242,7 +242,7 @@ QString MCPackGeneratorOptionWidget::packDescription() const
 
         if (processInfo_.mode == GeneratorCommonOptionWidget::ImageMode)
         {
-            const auto resultNameSec = QStringLiteral("%1: %2")
+            const auto resultNameSec = QStringLiteral("%1: '%2'")
                 .arg(packType() == StructurePackType ? EASYTR("Structure Name") : EASYTR("Function Name"))
                 .arg(packNamespace() + QStringLiteral(":") + packName());
             description += QStringLiteral("; %1.").arg(resultNameSec);
@@ -252,7 +252,7 @@ QString MCPackGeneratorOptionWidget::packDescription() const
             const auto frameCountSec = QStringLiteral("%1: %2")
                 .arg(EASYTR("Frame Count"))
                 .arg(processInfo_.frameCount);
-            const auto resultNameSec = QStringLiteral("%1: %2")
+            const auto resultNameSec = QStringLiteral("%1: '%2'")
                 .arg(packType() == StructurePackType ? EASYTR("Structure Name") : EASYTR("Function Name"))
                 .arg(
                     packNamespace() + QStringLiteral(":") + packName() + QStringLiteral("-{frameIndex}") +
