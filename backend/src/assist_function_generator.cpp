@@ -7,17 +7,25 @@
 namespace
 {
 
-#define MCBE_TOOLBOX_NAMESPACE       "mcbetoolbox"
-#define ORIGIN_NAME                  MCBE_TOOLBOX_NAMESPACE "_origin"
-#define ORIGIN_ARMOR_STAND_ID       "@e[type=minecraft:armor_stand,name=" ORIGIN_NAME "]"
-#define WATCH_ANCHOR_NAME            MCBE_TOOLBOX_NAMESPACE "_anchor"
-#define WATCH_ANCHOR_ARMOR_STAND_ID "@e[type=minecraft:armor_stand,name=" ORIGIN_NAME "]"
+#define MCBE_TOOLBOX_NAMESPACE               "mcbetoolbox"
+
+#define ORIGIN_NAME                          MCBE_TOOLBOX_NAMESPACE "_origin"
+#define ORIGIN_ARMOR_STAND_NAME_ID           "@e[type=minecraft:armor_stand,name=" ORIGIN_NAME "]"
+
+#define ORIGIN_WITH_BASE_NAME                MCBE_TOOLBOX_NAMESPACE "_origin_with_base"
+#define ORIGIN_WITH_BASE_ARMOR_STAND_NAME_ID "@e[type=minecraft:armor_stand,name=" ORIGIN_WITH_BASE_NAME "]"
+
+#define ORIGIN_ARMOR_STAND_TAG_ID            "@e[type=minecraft:armor_stand,tag=" ORIGIN_NAME "]"
+
+#define WATCH_ANCHOR_NAME                    MCBE_TOOLBOX_NAMESPACE "_anchor"
+#define WATCH_ANCHOR_ARMOR_STAND_NAME_ID     "@e[type=minecraft:armor_stand,name=" WATCH_ANCHOR_NAME "]"
 
 constexpr double WATCH_DISTANCE_AND_CANVAS_SIZE_RATE = 0.75;
 
 } // namespace
 
-AssistFunctionGenerator::AssistFunctionGenerator(int width, int height, SurfaceDirection surfaceDirection, std::string structureName)
+AssistFunctionGenerator::AssistFunctionGenerator(
+    int width, int height, SurfaceDirection surfaceDirection, std::string structureName)
     : width_(width), height_(height), surfaceDirection_(surfaceDirection), structureName_(structureName)
 {
     // 计算一个常加载区域的“宽度”（以区块 16*16 为单位）。
@@ -67,14 +75,20 @@ AssistFunctionGenerator::MCFunction AssistFunctionGenerator::makeSetOriginFuncti
     for (const auto& area : tickingAreaList_)
         function.emplace_back(formatString("tickingarea remove {}", area.name));
     // 删除之前的原点。
-    function.emplace_back(formatString("execute as {} at @s if block ~~-1~ minecraft:glass run setblock ~~-1~ minecraft:air", ORIGIN_ARMOR_STAND_ID));
-    function.emplace_back(formatString("kill {}", ORIGIN_ARMOR_STAND_ID));
+    function.emplace_back(formatString("execute as {} run kill @s",                             ORIGIN_ARMOR_STAND_NAME_ID));
+    function.emplace_back(formatString("execute as {} at @s run setblock ~~-1~ minecraft:air",  ORIGIN_WITH_BASE_ARMOR_STAND_NAME_ID));
+    function.emplace_back(formatString("execute as {} run kill @s",                             ORIGIN_WITH_BASE_ARMOR_STAND_NAME_ID));
     // 添加新的原点。
-    function.emplace_back("setblock ~~~ minecraft:glass");
-    function.emplace_back(formatString("summon minecraft:armor_stand {} ~~1~", ORIGIN_NAME));
+    function.emplace_back(formatString("execute as @s at @s if block ~~-1~ minecraft:air run tag @s add {}_need_base",                MCBE_TOOLBOX_NAMESPACE));
+    function.emplace_back(formatString("execute as @s at @s if entity @s[tag={}_need_base] run setblock ~~-1~ glass",                 MCBE_TOOLBOX_NAMESPACE));
+    function.emplace_back(formatString("execute as @s at @s if entity @s[tag={}_need_base] run summon minecraft:armor_stand {} ~~~",  MCBE_TOOLBOX_NAMESPACE, ORIGIN_WITH_BASE_NAME));
+    function.emplace_back(formatString("execute as @s at @s if entity @s[tag={}_need_base] run tag {} add {}",                        MCBE_TOOLBOX_NAMESPACE, ORIGIN_WITH_BASE_ARMOR_STAND_NAME_ID, ORIGIN_NAME));
+    function.emplace_back(formatString("execute as @s at @s if entity @s[tag={}_need_base] run tag @s remove {}_need_base",           MCBE_TOOLBOX_NAMESPACE, MCBE_TOOLBOX_NAMESPACE));
+    function.emplace_back(formatString("execute as @s at @s if entity @s[tag=!{}_need_base] run summon minecraft:armor_stand {} ~~~", MCBE_TOOLBOX_NAMESPACE, ORIGIN_NAME));
+    function.emplace_back(formatString("execute as @s at @s if entity @s[tag=!{}_need_base] run tag {} add {}",                       MCBE_TOOLBOX_NAMESPACE, ORIGIN_ARMOR_STAND_NAME_ID, ORIGIN_NAME));
     // 添加新常加载区域。
     for (const auto& area : tickingAreaList_)
-        function.emplace_back(formatString("execute as {} at @s run tickingarea add {} {} {}", ORIGIN_ARMOR_STAND_ID, posString(area.pos1), posString(area.pos2), area.name));
+        function.emplace_back(formatString("execute as {} at @s run tickingarea add {} {} {}", ORIGIN_ARMOR_STAND_NAME_ID, posString(area.pos1), posString(area.pos2), area.name));
 
     return function;
 }
@@ -85,8 +99,9 @@ AssistFunctionGenerator::MCFunction AssistFunctionGenerator::makeClearOriginFunc
 
     for (const auto& area : tickingAreaList_)
         function.emplace_back(formatString("tickingarea remove {}", area.name));
-    function.emplace_back(formatString("execute as {} at @s if block ~~-1~ minecraft:glass run setblock ~~-1~ minecraft:air", ORIGIN_ARMOR_STAND_ID));
-    function.emplace_back(formatString("kill {}", ORIGIN_ARMOR_STAND_ID));
+    function.emplace_back(formatString("execute as {} run kill @s", ORIGIN_ARMOR_STAND_NAME_ID));
+    function.emplace_back(formatString("execute as {} at @s run setblock ~~-1~ minecraft:airr", ORIGIN_WITH_BASE_ARMOR_STAND_NAME_ID));
+    function.emplace_back(formatString("execute as {} run kill @s", ORIGIN_WITH_BASE_ARMOR_STAND_NAME_ID));
 
     return function;
 }
@@ -95,7 +110,7 @@ AssistFunctionGenerator::MCFunction AssistFunctionGenerator::makeBuildFunction()
 {
     return MCFunction
     {
-        formatString("execute as {} at @s run structure load {} ~~~", ORIGIN_ARMOR_STAND_ID, structureName_)
+        formatString("execute as {} at @s run structure load {} ~~~", ORIGIN_ARMOR_STAND_TAG_ID, structureName_)
     };
 }
 
@@ -139,9 +154,9 @@ AssistFunctionGenerator::MCFunction AssistFunctionGenerator::makeMoveToWatchPoin
 
     return MCFunction
     {
-        formatString("execute as {} at @s run summon minecraft:armor_stand {} {}", ORIGIN_ARMOR_STAND_ID, WATCH_ANCHOR_NAME, posString(anchorOffset)),
-        formatString("execute as @s at {} run tp @s {} facing {}", ORIGIN_ARMOR_STAND_ID, posString(playerOffset), WATCH_ANCHOR_ARMOR_STAND_ID),
-        formatString("kill {}", WATCH_ANCHOR_ARMOR_STAND_ID)
+        formatString("execute as {} at @s run summon minecraft:armor_stand {} {}", ORIGIN_ARMOR_STAND_TAG_ID, WATCH_ANCHOR_NAME, posString(anchorOffset)),
+        formatString("execute as @s at {} run tp @s {} facing {}",                 ORIGIN_ARMOR_STAND_TAG_ID, posString(playerOffset), WATCH_ANCHOR_ARMOR_STAND_NAME_ID),
+        formatString("kill {}",                                                    WATCH_ANCHOR_ARMOR_STAND_NAME_ID)
     };
 }
 
