@@ -282,7 +282,9 @@ void PixelArtGeneratorPageWidget::refreshText()
     else
     {
         commonOptionWidget_->setInputFileFilter(
-            QStringLiteral("%1 (*.mp4 *.avi *.mov *.mkv *.webm *.flv *.wmv *.m4v *.mpg *.mpeg)").arg(EASYTR("Videos")));
+            QStringLiteral("%1 (*.mp4 *.avi *.mov *.mkv *.webm *.flv *.wmv *.m4v *.mpg *.mpeg);;%2 (*.gif)")
+            .arg(EASYTR("Videos")).arg(EASYTR("GIFs"))
+        );
     }
     commonOptionWidget_->setOutputFileFilter(QStringLiteral("%1 (*.mcpack)").arg(EASYTR("MC Pack")));
 }
@@ -354,9 +356,16 @@ bool PixelArtGeneratorPageWidget::validateOptionAndOpenStream()
     const auto inputFilePath = commonOptionWidget_->inputFilePath();
     const auto maxFrameSize  = commonOptionWidget_->maxFrameSize();
     if (mode_ == ImageMode)
+    {
         stream_ = new SingleImageOStream(toFsPath(inputFilePath));
+    }
     else
-        stream_ = new VideoImageOStream(toFsPath(inputFilePath), commonOptionWidget_->maxFrameCount());
+    {
+        if (inputFilePath.endsWith(".gif"))
+            stream_ = new GifImageOStream(toFsPath(inputFilePath), commonOptionWidget_->maxFrameCount());
+        else
+            stream_ = new VideoImageOStream(toFsPath(inputFilePath), commonOptionWidget_->maxFrameCount());
+    }
 
     stream_->setMaxWidth(maxFrameSize.width());
     stream_->setMaxHeight(maxFrameSize.height());
