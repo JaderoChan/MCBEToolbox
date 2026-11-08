@@ -178,11 +178,13 @@ void PixelArtGeneratorPageWidget::startGenerate()
 
     const bool blocksChanged = lastAvailableBlocks_ != availableBlockWidget_->selecteds();
     if (blocksChanged)
+    {
         lastAvailableBlocks_ = availableBlockWidget_->selecteds();
+        structureFactory_->setBlocks(lastAvailableBlocks_);
+        functionFactory_->setBlocks(lastAvailableBlocks_);
+    }
 
     MCPackGeneratorOption option{};
-    option.needUpdateBlocks          = blocksChanged;
-    option.blocks                    = availableBlockWidget_->selecteds();
     option.desiredSurface            = commonOptionWidget_->surfaceDirection();
     option.fallbackBlock             = fallbackBlock_.second ? &fallbackBlock_ : nullptr;
     option.callback                  = &PixelArtGeneratorPageWidget::progressCallback;
