@@ -10,6 +10,7 @@
 #include <mz_zip_rw.h>       // mz_zip_writer_*
 #include <nlohmann/json.hpp> // nlohmann::json
 
+#include <format_string.hpp>
 #include "pack_icon_data.hpp"
 
 namespace
@@ -184,18 +185,18 @@ bool MCPack::pack() const
     const nlohmann::json manifest = {
         {"format_version", formatVersion_},
         {"header", {
-            {"description", description_},
-            {"name", name_.u8string()},
-            {"uuid", fs_utils::generateUuid4()},
-            {"version", {version_.major, version_.minor, version_.patch}},
+            {"description",        escapeQuotes(description_)},
+            {"name",               escapeQuotes(name_.u8string())},
+            {"uuid",               fs_utils::generateUuid4()},
+            {"version",            {version_.major, version_.minor, version_.patch}},
             {"min_engine_version", {minVersion_.major, minVersion_.minor, minVersion_.patch}}
         }},
         {"modules", nlohmann::json::array({
             {
-                {"description", description_},
-                {"type", "data"},
-                {"uuid", fs_utils::generateUuid4()},
-                {"version", {version_.major, version_.minor, version_.patch}}
+                {"description", escapeQuotes(description_)},
+                {"type",        "data"},
+                {"uuid",        fs_utils::generateUuid4()},
+                {"version",     {version_.major, version_.minor, version_.patch}}
             }
         })}
     };
