@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 颜色定义 -->
+  <defs>
+    <!-- 背景渐变 -->
+    <linearGradient id="background" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#1a2a1a"/>
+      <stop offset="100%" stop-color="#0d1a0d"/>
+    </linearGradient>
+    <!-- 草方块左侧面泥土 -->
+    <linearGradient id="dirtLeft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#7a5230"/>
+      <stop offset="100%" stop-color="#5a3a1e"/>
+    </linearGradient>
+    <!-- 草方块右侧面泥土 -->
+    <linearGradient id="dirtRight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#a0723e"/>
+      <stop offset="100%" stop-color="#7a5230"/>
+    </linearGradient>
+    <!-- 草方块左侧面草皮 -->
+    <linearGradient id="grassLeft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#4aa834"/>
+      <stop offset="100%" stop-color="#2d6b24"/>
+    </linearGradient>
+    <!-- 草方块右侧面草皮 -->
+    <linearGradient id="grassRight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#5cb83e"/>
+      <stop offset="100%" stop-color="#3d8b2f"/>
+    </linearGradient>
+    <!-- 草方块顶面 -->
+    <linearGradient id="grassTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#8ee85a"/>
+      <stop offset="100%" stop-color="#5cb83e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景 -->
+  <rect x="100" y="100" width="824" height="824" rx="185.4" fill="url(#background)"/>
+  <!-- 背景网格纹理 -->
+  <g opacity="0.1" stroke="#7ed957" stroke-width="3">
+    <path d="M 100 284 L 924 284 M 100 360 L 924 360 M 100 520 L 924 520 M 100 680 L 924 680 M 100 756 L 924 756"/>
+    <path d="M 284 100 L 284 924 M 360 100 L 360 924 M 520 100 L 520 924 M 680 100 L 680 924 M 756 100 L 756 924"/>
+  </g>
+
+  <!-- 草方块主体 -->
+  <g transform="translate(260, 220) scale(3)" filter="url(#softShadow)">
+    <!-- 左侧面泥土 -->
+    <path d="M 0 50 L 86.6 100 L 86.6 200 L 0 150 Z"         fill="url(#dirtLeft)"/>
+    <!-- 右侧面泥土 -->
+    <path d="M 86.6 100 L 173.2 50 L 173.2 150 L 86.6 200 Z" fill="url(#dirtRight)"/>
+    <!-- 左侧面草皮条 -->
+    <path d="M 0 50 L 86.6 100 L 86.6 120 L 0 70 Z"          fill="url(#grassLeft)"/>
+    <!-- 右侧面草皮条 -->
+    <path d="M 86.6 100 L 173.2 50 L 173.2 70 L 86.6 120 Z"  fill="url(#grassRight)"/>
+    <!-- 顶面 -->
+    <path d="M 0 50 L 86.6 0 L 173.2 50 L 86.6 100 Z"        fill="url(#grassTop)" filter="url(#glow)"/>
+
+    <!-- 泥土与草皮条交线 -->
+    <line x1="0"    y1="70"  x2="86.6"  y2="120" stroke="#2d6b24" stroke-width="3" opacity="0.5"/>
+    <line x1="86.6" y1="120" x2="173.2" y2="70"  stroke="#2d6b24" stroke-width="3" opacity="0.5"/>
+    <!-- 立方体描边 -->
+    <path d="M 0 50 L 86.6 0 L 173.2 50 L 173.2 150 L 86.6 200 L 0 150 Z" fill="none" stroke="#a8f08a" stroke-width="3" opacity="0.5"/>
+
+    <!-- 左侧面泥土粒子 -->
+    <g opacity="0.2">
+      <g transform="translate(20, 90)  scale(0.1)"><path d="M 0 50 L 86.6 100 L 86.6 200 L 0 150 Z" fill="#3a2410"/></g>
+      <g transform="translate(60, 120) scale(0.1)"><path d="M 0 50 L 86.6 100 L 86.6 200 L 0 150 Z" fill="#3a2410"/></g>
+      <g transform="translate(30, 140) scale(0.1)"><path d="M 0 50 L 86.6 100 L 86.6 200 L 0 150 Z" fill="#3a2410"/></g>
+    </g>
+    <!-- 右侧面泥土粒子 -->
+    <g opacity="0.2">
+      <g transform="translate(100, 120) scale(0.1)"><path d="M 86.6 100 L 173.2 50 L 173.2 150 L 86.6 200 Z" fill="#5a3a1e"/></g>
+      <g transform="translate(140, 90)  scale(0.1)"><path d="M 86.6 100 L 173.2 50 L 173.2 150 L 86.6 200 Z" fill="#5a3a1e"/></g>
+      <g transform="translate(125, 140) scale(0.1)"><path d="M 86.6 100 L 173.2 50 L 173.2 150 L 86.6 200 Z" fill="#5a3a1e"/></g>
+    </g>
+  </g>
+
+  <!-- 背景装饰粒子 -->
+  <g opacity="0.3">
+    <rect x="170" y="420" width="20" height="20" rx="2" fill="#7ed957"/>
+    <rect x="440" y="160" width="12" height="12" rx="1" fill="#a8f08a"/>
+    <rect x="840" y="310" width="14" height="14" rx="1" fill="#a8f08a"/>
+    <rect x="210" y="800" width="24" height="24" rx="2" fill="#7ed957"/>
+    <rect x="250" y="860" width="12" height="12" rx="1" fill="#a8f08a"/>
+    <rect x="290" y="840" width="16" height="16" rx="1" fill="#a8f08a"/>
+    <rect x="760" y="840" width="20" height="20" rx="2" fill="#7ed957"/>
+    <rect x="810" y="780" width="16" height="16" rx="2" fill="#7ed957"/>
+  </g>
+</svg>
