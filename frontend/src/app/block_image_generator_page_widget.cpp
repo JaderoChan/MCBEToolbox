@@ -54,7 +54,7 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
     // 选项配置界面（包括通用选项配置界面和可用方块选择界面）。
     auto* optionContent = new QWidget(optionWidget_);
     auto* optionLayout  = new QVBoxLayout(optionContent);
-    optionLayout->setContentsMargins(0, 0, 0, 0);
+    optionLayout->setContentsMargins(6, 6, 6, 6);
     optionLayout->setSpacing(12);
     optionLayout->addWidget(commonOptionWidget_);
     optionLayout->addWidget(availableBlockWidget_);
@@ -82,7 +82,7 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
 
     // 主布局。
     mainLayout_ = new QStackedLayout(this);
-    mainLayout_->setContentsMargins(12, 12, 12, 12);
+    mainLayout_->setContentsMargins(0, 0, 0, 0);
     mainLayout_->setStackingMode(QStackedLayout::StackAll);
     mainLayout_->addWidget(optionWidget_);
     mainLayout_->addWidget(overlayWidget_);
