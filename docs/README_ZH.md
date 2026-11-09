@@ -11,8 +11,9 @@
 
 [**简体中文** | [English](README_EN.md)]
 
-一个面向 **Minecraft 基岩版（MCBE）** 内容创作者的工具箱：将图片 / 视频 / GIF 转换为方块图片、方块视频、
-像素画结构文件或函数文件，并内置一个 NBT 编辑器。
+> 此文档大部分内容由 AI 总结，待审查
+
+一个面向 **Minecraft 基岩版（MCBE）** 内容创作者的工具箱：将图片 / 视频 / GIF 转换为方块图片、方块视频、像素画结构文件或函数文件，并内置一个 NBT 编辑器。
 
 ## 目录
 
@@ -33,18 +34,15 @@
 
 ## 简介
 
-MCBE Toolbox 由后端生成库（`backend/`）与 Qt6 前端界面（`frontend/`）组成：后端负责图像 / 视频采样、
-方块颜色匹配、NBT 结构与函数生成等核心算法，前端提供可视化的参数配置、方块选择、进度展示与 NBT 编辑能力。
+MCBE Toolbox 由后端生成库（`backend/`）与 Qt6 前端界面（`frontend/`）组成：后端负责图像 / 视频采样、方块颜色匹配、NBT 结构与函数生成等核心算法，前端提供可视化的参数配置、方块选择、进度展示与 NBT 编辑能力。
 
 ## 功能
 
 - **方块图片 / 视频生成器**：将图片转换为方块拼图（PNG），将视频转换为方块拼图视频（MP4）。
-- **像素画生成器**：将图片 / 视频 / GIF 转换为 Minecraft 结构文件（`.mcstructure`）或函数文件（`.mcfunction`）
-  打包的行为包（`.mcpack`），支持单文件与逐帧拆分两种模式。（当前前端仅提供逐帧拆分模式）
+- **像素画生成器**：将图片 / 视频 / GIF 转换为 Minecraft 结构文件（`.mcstructure`）或函数文件（`.mcfunction`）打包的行为包（`.mcpack`），支持单文件与逐帧拆分两种模式。（当前前端仅提供逐帧拆分模式）
 - **方块筛选与管理**：按方块属性（透明、发光、重力等）筛选可用方块，支持 Fallback 方块（透明像素填充方块）与方块用量统计。
 - **NBT 编辑器**：查看与编辑 NBT 文件，NBT 与 SNBT 互转，大小端序转换，GZip 压缩 / 解压缩。
-- **多语言界面**：内置简体中文 / English，基于 [easy_translate](https://github.com/JaderoChan/easy_translate)
-  的运行时翻译系统，易于扩展更多语言。
+- **多语言界面**：内置简体中文 / English，基于 [easy_translate](https://github.com/JaderoChan/easy_translate) 的运行时翻译系统，易于扩展更多语言。
 - **多线程生成**：生成任务在后台线程执行，支持进度展示与用户随时取消。
 
 ## 界面截图
@@ -70,8 +68,7 @@ MCBE Toolbox 由后端生成库（`backend/`）与 Qt6 前端界面（`frontend/
 | OpenCV | `core`、`imgcodecs`、`videoio` 组件 |
 | Python 3 | 可选，用于部分构建辅助脚本（如 macOS 平台的 RPATH 修复、方块颜色数据生成） |
 
-其余第三方依赖（zlib、nlohmann/json、minizip-ng、mcnbt、easy_translate）已随仓库一同提供（位于 `3rdparty/`
-目录下），无需额外安装。
+其余第三方依赖（zlib、nlohmann/json、minizip-ng、mcnbt、easy_translate）已随仓库一同提供（位于 `3rdparty/` 目录下），无需额外安装。
 
 ### 获取源码
 
@@ -87,8 +84,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ```
 
-构建产物位于 `build/frontend/bin/`（可执行文件 `MCBEToolbox`）与 `build/backend/`（静态库
-`MCBEToolboxBackend`）下。
+构建产物位于 `build/frontend/bin/`（可执行文件 `MCBEToolbox`）与 `build/backend/`（静态库 `MCBEToolboxBackend`）下。
 
 ### CMake 选项
 
@@ -114,13 +110,11 @@ cmake --build build --config Release
 
 ## 已知限制与规划
 
-当前设计与实现存在一些限制（如最低兼容游戏版本（1.21.50）、方块摆放方向假设等），详见
-[限制说明](限制.md)；后续开发计划见 [TODO](TODO.md)。
+当前设计与实现存在一些限制（如最低兼容游戏版本（1.21.50）、方块摆放方向假设等），详见 [限制说明](限制.md)；后续开发计划见 [TODO](TODO.md)。
 
 ## 许可证
 
-本项目基于 [MIT 许可证](../LICENSE) 开源。`3rdparty/` 下的第三方依赖各自保留其原始许可证（见各自目录下的
-`LICENSE` 文件）。
+本项目基于 [MIT 许可证](../LICENSE) 开源。`3rdparty/` 下的第三方依赖各自保留其原始许可证（见各自目录下的 `LICENSE` 文件）。
 
 ## 作者信息
 
