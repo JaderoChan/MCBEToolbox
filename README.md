@@ -1,6 +1,6 @@
 # MCBE Toolbox
 
-![MCBE Toolbox](docs/assets/icon.png)
+![MCBE Toolbox](docs/assets/app_icon.png)
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![C++](https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&logoColor=white)
