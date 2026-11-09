@@ -72,7 +72,7 @@ AboutCardWidget::AboutCardWidget(QWidget* parent)
 
 void AboutCardWidget::refreshText()
 {
-    nameLabel_->setText(QStringLiteral(APP_TITLE));
+    nameLabel_->setText(EASYTR(APP_TITLE));
     versionLabel_->setText(QStringLiteral("%1 %2").arg(EASYTR("Version"), QStringLiteral(APP_VERSION)));
     authorLabel_->setText(QStringLiteral("%1 %2").arg(EASYTR("Author:"), QStringLiteral(APP_AUTHOR)));
     githubButton_->setToolTip(EASYTR("Open GitHub Repository"));

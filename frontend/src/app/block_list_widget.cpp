@@ -176,7 +176,7 @@ protected:
         if (!name_.isEmpty())
         {
             QFont f = font();
-            f.setPointSizeF(f.pointSizeF() * 0.8);
+            f.setPointSizeF(f.pointSizeF() * 0.75);
             painter.setFont(f);
             painter.setPen(palette().color(QPalette::WindowText));
             const auto elided = QFontMetrics(f).elidedText(name_, Qt::ElideRight, textRect.width());
