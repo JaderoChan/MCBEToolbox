@@ -95,8 +95,8 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 
 void SettingsWidget::refreshText()
 {
-    languageLabel_->setText(EASYTR("Language:"));
-    colorSchemeLabel_->setText(EASYTR("Theme:"));
+    languageLabel_->setText(EASYTR("Language"));
+    colorSchemeLabel_->setText(EASYTR("Theme"));
     colorSchemeAutoBtn_->setText(EASYTR("Auto"));
     colorSchemeLightBtn_->setText(EASYTR("Light"));
     colorSchemeDarkBtn_->setText(EASYTR("Dark"));

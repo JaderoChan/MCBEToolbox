@@ -39,6 +39,9 @@ public:
     int count() const;
     int indexOf(QWidget* widget) const;
 
+protected:
+    void refreshColor() override;
+
 signals:
     void currentIndexChanged(int index);
 

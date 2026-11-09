@@ -20,45 +20,45 @@ AboutCardWidget::AboutCardWidget(QWidget* parent)
     setAttribute(Qt::WA_StyledBackground, true);
 
     iconLabel_ = new QLabel(this);
-    iconLabel_->setFixedSize(64, 64);
+    iconLabel_->setFixedSize(128, 128);
     iconLabel_->setScaledContents(true);
-    iconLabel_->setPixmap(getAppLogoPixmap(128));
+    iconLabel_->setPixmap(getAppLogoPixmap(256));
 
     nameLabel_ = new QLabel(this);
     auto nameFont = nameLabel_->font();
     nameFont.setBold(true);
-    nameFont.setPointSize(nameFont.pointSize() + 3);
+    nameFont.setPointSize(nameFont.pointSizeF() * 1.5);
     nameLabel_->setFont(nameFont);
 
     versionLabel_ = new QLabel(this);
     authorLabel_  = new QLabel(this);
 
     githubButton_ = new QToolButton(this);
-    githubButton_->setIconSize(QSize(20, 20));
+    githubButton_->setIconSize(QSize(24, 24));
     githubButton_->setCursor(Qt::PointingHandCursor);
     emailButton_  = new QToolButton(this);
-    emailButton_->setIconSize(QSize(20, 20));
+    emailButton_->setIconSize(QSize(24, 24));
     emailButton_->setCursor(Qt::PointingHandCursor);
 
     auto* linkLayout = new QHBoxLayout();
     linkLayout->setContentsMargins(0, 0, 0, 0);
     linkLayout->addWidget(githubButton_);
     linkLayout->addWidget(emailButton_);
-    linkLayout->addStretch(1);
+    linkLayout->addStretch();
 
     auto* textLayout = new QVBoxLayout();
     textLayout->setContentsMargins(0, 0, 0, 0);
     textLayout->setSpacing(2);
     textLayout->addWidget(nameLabel_);
+    textLayout->addSpacing(16);
     textLayout->addWidget(versionLabel_);
     textLayout->addWidget(authorLabel_);
-    textLayout->addStretch(1);
     textLayout->addLayout(linkLayout);
 
     auto* mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(16, 16, 16, 16);
     mainLayout->setSpacing(16);
-    mainLayout->addWidget(iconLabel_, 0, Qt::AlignTop);
+    mainLayout->addWidget(iconLabel_, 0, Qt::AlignVCenter);
     mainLayout->addLayout(textLayout, 1);
 
     connect(githubButton_, &QToolButton::clicked, this, []()

@@ -5,12 +5,15 @@
 #include <qstackedwidget.h>
 #include <qtoolbutton.h>
 
+#include "stylesheet_table.h"
+
 TabbedPageWidget::TabbedPageWidget(QWidget* parent)
     : AdaptiveWidget(parent)
 {
     auto* headerContainer = new QWidget(this);
     headerLayout_ = new QHBoxLayout(headerContainer);
     headerLayout_->setContentsMargins(0, 0, 0, 0);
+    headerLayout_->setSpacing(8);
     headerLayout_->addStretch();
     headerLayout_->addStretch();
 
@@ -24,6 +27,8 @@ TabbedPageWidget::TabbedPageWidget(QWidget* parent)
     mainLayout->setSpacing(0);
     mainLayout->addWidget(headerContainer);
     mainLayout->addWidget(stackWidget_, 1);
+
+    refreshColor();
 }
 
 int TabbedPageWidget::addTab(QWidget* widget, const QString& label, const QIcon& icon)
@@ -39,12 +44,10 @@ int TabbedPageWidget::insertTab(int index, QWidget* widget, const QString& label
     index = qBound(0, index, count());
 
     auto* button = new QToolButton(this);
-    button->setToolButtonStyle(Qt::ToolButtonFollowStyle);
-    button->setMinimumSize(96, 48);
     button->setCheckable(true);
-    button->setAutoRaise(true);
     button->setText(label);
     button->setIcon(icon);
+    button->setCursor(Qt::PointingHandCursor);
     connect(button, &QToolButton::clicked, this, [this, button]() { setCurrentIndex(headers_.indexOf(button)); });
 
     headerLayout_->insertWidget(index + 1, button);
@@ -157,4 +160,10 @@ int TabbedPageWidget::count() const
 int TabbedPageWidget::indexOf(QWidget* widget) const
 {
     return stackWidget_->indexOf(widget);
+}
+
+void TabbedPageWidget::refreshColor()
+{
+    for (auto& button : headers_)
+        button->setStyleSheet(getNoFrameToolButtonStyleSheet());
 }

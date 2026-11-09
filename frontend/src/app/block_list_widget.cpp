@@ -46,7 +46,6 @@ public:
         setContentsMargins(ITEM_MARGIN, ITEM_MARGIN, ITEM_MARGIN, ITEM_MARGIN);
         setMinimumSize(ITEM_MIN_SIZE, ITEM_MIN_SIZE);
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-        setCursor(Qt::PointingHandCursor);
 
         refreshText();
     }

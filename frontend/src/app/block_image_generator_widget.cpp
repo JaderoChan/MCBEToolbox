@@ -14,8 +14,8 @@ BlockImageGeneratorWidget::BlockImageGeneratorWidget(QWidget* parent)
 
     container_->addTab(imagePage_, "", QIcon());
     container_->addTab(videoPage_, "", QIcon());
-    container_->tabHeader(0)->setFixedHeight(36);
-    container_->tabHeader(1)->setFixedHeight(36);
+    container_->tabHeader(0)->setFixedSize(72, 36);
+    container_->tabHeader(1)->setFixedSize(72, 36);
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -27,8 +27,8 @@ BlockImageGeneratorWidget::BlockImageGeneratorWidget(QWidget* parent)
 
 void BlockImageGeneratorWidget::refreshText()
 {
-    container_->setTabText(0, EASYTR("Image"));
-    container_->setTabText(1, EASYTR("Video"));
+    container_->setTabToolTip(0, EASYTR("Image"));
+    container_->setTabToolTip(1, EASYTR("Video"));
 }
 
 void BlockImageGeneratorWidget::refreshColor()
