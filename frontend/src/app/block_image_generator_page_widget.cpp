@@ -112,10 +112,12 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
     commonOptionWidget_->setNumThreadsRange(1, 16);
 
     // 配置默认值（未来需要根据程序配置进行设置）。
-    availableBlockWidget_->setBlocks(getAppConfiguration().baseBlocks);
+    const auto& config = AppConfiguration::instance();
+
+    availableBlockWidget_->setBlocks(config.baseBlocks);
     commonOptionWidget_->setSurfaceDirection(DEFAULT_DESIRED_SURFACE);
     commonOptionWidget_->fallbackBlockSelector_->setModeButtonVisible(FallbackBlockSelector::AirBlockMode, false);
-    commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(getAppConfiguration().baseBlocks);
+    commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(config.baseBlocks);
     commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(DEFAULT_FALLBACK_BLOCK_ID);
     commonOptionWidget_->setMaxFrameSize(mode_ == ImageMode ? QSize(1024, 1024) : QSize(240, 128));
     commonOptionWidget_->setMaxFrameCount(360);

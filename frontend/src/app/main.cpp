@@ -53,12 +53,13 @@ int main(int argc, char* argv[])
     a.setStyle(QStyleFactory::create("Fusion"));
 #endif // Q_OS_MAC
 
-    // 加载程序设置。
-    setAppConfiguration(loadConfiguration());
-
-    // 设置语言与色彩主题。
-    LanguageManager::instance().setLanguage(getAppConfiguration().language);
-    ColorSchemeManager::instance().setColorScheme(getAppConfiguration().colorScheme);
+    {
+        // 加载程序设置。
+        const auto& config = AppConfiguration::instance();
+        // 设置语言与色彩主题。
+        LanguageManager::instance().setLanguage(config.language);
+        ColorSchemeManager::instance().setColorScheme(config.colorScheme);
+    }
 
     MainWidget w;
     w.show();

@@ -186,10 +186,11 @@ protected:
 
     void refreshText() override
     {
-        if (getAppConfiguration().blockEntries.count(std::string(block_.first)) == 0)
+        const auto& config = AppConfiguration::instance();
+        if (config.blockEntries.count(std::string(block_.first)) == 0)
             return;
 
-        const auto& entry             = getAppConfiguration().blockEntries.at(std::string(block_.first));
+        const auto& entry             = config.blockEntries.at(std::string(block_.first));
         const auto& localizationNames = entry.localizationNames;
         auto it = localizationNames.find(easytr::currentLanguage());
         if (it != localizationNames.end()) name_ = QString::fromStdString(it->second);

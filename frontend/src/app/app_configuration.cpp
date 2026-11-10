@@ -1,61 +1,68 @@
 #include "app_configuration.h"
 
-#include <stdio.h>
-
 #include <qsettings.h>
+#include <qtimer.h>
 
 #include <app_defines.h>
+#include <utils/debug_output.h>
 #include <utils/directory_scope.h>
 
-ConfigurationData loadConfiguration()
+AppConfiguration::AppConfiguration()
+    : QObject(nullptr)
 {
-    ConfigurationData config;
-    QSettings         qsettings;
+    timer_ = new QTimer(this);
+    timer_->setSingleShot(true);
+    connect(timer_, &QTimer::timeout, this, &AppConfiguration::save);
+    reload();
+}
 
-    config.colorScheme = qsettings.value(QStringLiteral("ColorScheme"), ColorSchemeManager::COLOR_SCHEME_AUTO)
+AppConfiguration::~AppConfiguration()
+{
+    save();
+}
+
+AppConfiguration& AppConfiguration::instance()
+{
+    static AppConfiguration data;
+    return data;
+}
+
+void AppConfiguration::reload()
+{
+    QSettings qsettings;
+
+    colorScheme = qsettings
+        .value(QStringLiteral("ColorScheme"), ColorSchemeManager::COLOR_SCHEME_AUTO)
         .value<ColorSchemeManager::ColorScheme>();
-    config.language    = qsettings.value(QStringLiteral("Language"),    LanguageManager::LANGUAGE_AUTO)
+    language    = qsettings
+        .value(QStringLiteral("Language"),    LanguageManager::LANGUAGE_AUTO)
         .value<LanguageManager::Language>();
 
     try
     {
         DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
-        config.blockEntries = parseBlockEntriesFromFile(APP_BLOCK_ENTRIES_FILEPATH);
+        blockEntries = parseBlockEntriesFromFile(APP_BLOCK_ENTRIES_FILEPATH);
     }
     catch (std::exception& e)
     {
-        fprintf(
-            stderr,
-            "loadConfiguration() Failed to parse block entries from file '%s'\n",
+        debugOut
+            (qWarning(),
+            "loadConfiguration() Failed to parse block entries from file '%1'",
             APP_BLOCK_ENTRIES_FILEPATH
         );
     }
-    config.baseBlocks = resolveBlockEntries(config.blockEntries);
-
-    return config;
+    baseBlocks = resolveBlockEntries(blockEntries);
 }
 
-void saveConfiguration(const ConfigurationData& config)
+void AppConfiguration::save() const
 {
     QSettings qsettings;
 
-    qsettings.setValue(QStringLiteral("ColorScheme"), config.colorScheme);
-    qsettings.setValue(QStringLiteral("Language"),    config.language);
+    qsettings.setValue(QStringLiteral("ColorScheme"), colorScheme);
+    qsettings.setValue(QStringLiteral("Language"),    language);
 }
 
-static ConfigurationData AppConfig;
-
-const ConfigurationData& getAppConfiguration()
+void AppConfiguration::saveLater(int delayMs) const
 {
-    return AppConfig;
-}
-
-ConfigurationData& getAppConfigurationRef()
-{
-    return AppConfig;
-}
-
-void setAppConfiguration(ConfigurationData config)
-{
-    AppConfig = std::move(config);
+    timer_->start(delayMs);
 }

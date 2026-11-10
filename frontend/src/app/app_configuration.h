@@ -5,22 +5,29 @@
 
 #include <block.hpp>
 
-/** 程序的设置/配置结构体。 */
-struct ConfigurationData
+class QTimer;
+
+/** 程序的设置/配置单例类。 */
+class AppConfiguration : public QObject
 {
+    Q_OBJECT
+
+public:
+    static AppConfiguration& instance();
+
+    void reload();
+    void save() const;
+    void saveLater(int delayMs) const;
+
     ColorSchemeManager::ColorScheme colorScheme;
     LanguageManager::Language       language;
 
     BlockEntryMap blockEntries;
     BlockDataMap  baseBlocks;
+
+private:
+    AppConfiguration();
+    ~AppConfiguration();
+
+    QTimer* timer_;
 };
-
-ConfigurationData loadConfiguration();
-
-void saveConfiguration(const ConfigurationData& config);
-
-const ConfigurationData& getAppConfiguration();
-
-ConfigurationData& getAppConfigurationRef();
-
-void setAppConfiguration(ConfigurationData config);

@@ -242,7 +242,7 @@ void FallbackBlockSelector::refreshCustomButtonTextIcon()
         customBlockButton_->setIcon(QIcon());
     }
 
-    const auto& entries = getAppConfiguration().blockEntries;
+    const auto& entries = AppConfiguration::instance().blockEntries;
     const auto  blockId = std::string(selectedCustomBlock_.first);
     if (entries.count(blockId) > 0)
     {

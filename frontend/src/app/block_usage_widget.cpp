@@ -161,7 +161,8 @@ void BlockUsageWidget::refreshText()
 {
     updateHeaderLabels();
 
-    const auto& entries = getAppConfiguration().blockEntries;
+    const auto& config  = AppConfiguration::instance();
+    const auto& entries = config.blockEntries;
     for (int row = 0; row < tableWidget_->rowCount(); ++row)
     {
         const auto programId = tableWidget_->item(row, COLUMN_ID)->data(ProgramBlockIdRole).toString().toStdString();
@@ -195,7 +196,8 @@ void BlockUsageWidget::rebuildTableWidget()
     tableWidget_->setRowCount(blockUsage_.size());
 
     int row = 0;
-    const auto& entries = getAppConfiguration().blockEntries;
+    const auto& config  = AppConfiguration::instance();
+    const auto& entries = config.blockEntries;
     for (const auto& [programId, usage] : blockUsage_)
     {
         const auto entryIt = entries.find(programId);
