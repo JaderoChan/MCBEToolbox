@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
 
 #ifdef Q_OS_MAC
     a.setStyle(QStyleFactory::create("Fusion"));
-#endif
+#endif // Q_OS_MAC
 
     // 加载程序设置。
     setAppConfiguration(loadConfiguration());
