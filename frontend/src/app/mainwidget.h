@@ -11,8 +11,10 @@ public:
     explicit MainWidget(QWidget* parent = nullptr);
 
 protected:
-    void refreshText() override;
+    void refreshText()  override;
     void refreshColor() override;
+
+    void closeEvent(QCloseEvent* e) override;
 
 private:
     SidebarWidget*  sidebarWidget_ = nullptr;

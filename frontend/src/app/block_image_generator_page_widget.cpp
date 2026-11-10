@@ -112,7 +112,7 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
     commonOptionWidget_->setNumThreadsRange(1, 16);
 
     // 配置默认值（未来需要根据程序配置进行设置）。
-    const auto& config = AppConfiguration::instance();
+    const auto& config = appConfig.dataCache;
 
     availableBlockWidget_->setBlocks(config.baseBlocks);
     commonOptionWidget_->setSurfaceDirection(DEFAULT_DESIRED_SURFACE);

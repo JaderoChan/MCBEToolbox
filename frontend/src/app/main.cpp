@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 
     {
         // 加载程序设置。
-        const auto& config = AppConfiguration::instance();
+        const auto& config = appConfig.mainGroup;
         // 设置语言与色彩主题。
         LanguageManager::instance().setLanguage(config.language);
         ColorSchemeManager::instance().setColorScheme(config.colorScheme);

@@ -186,7 +186,7 @@ protected:
 
     void refreshText() override
     {
-        const auto& config = AppConfiguration::instance();
+        const auto& config = appConfig.dataCache;
         if (config.blockEntries.count(std::string(block_.first)) == 0)
             return;
 

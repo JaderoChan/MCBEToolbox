@@ -49,7 +49,40 @@ MainWidget::MainWidget(QWidget* parent)
 
     connect(sidebarWidget_, &SidebarWidget::currentIndexChanged, stackedWidget_, &QStackedWidget::setCurrentIndex);
 
-    resize(1080, 720);
+    // 加载程序配置。
+    const auto& config = appConfig.mainGroup;
+    if (!restoreGeometry(config.windowGeometry))
+        resize(1000, 700);
+    config.sidebarExpanded ? sidebarWidget_->expand() : sidebarWidget_->fold();
+    sidebarWidget_->setCurrentIndex(config.sidebarCurrentIndex);
+
+    connect(
+        &LanguageManager::instance(), &LanguageManager::languageChanged,
+        &LanguageManager::instance(), [](LanguageManager::Language language)
+        {
+            appConfig.mainGroup.language = language;
+            appConfig.saveLater(AppConfiguration::MainGroup);
+        }
+    );
+    connect(
+        &ColorSchemeManager::instance(), &ColorSchemeManager::colorSchemeChanged,
+        &ColorSchemeManager::instance(), [](ColorSchemeManager::ColorScheme scheme)
+        {
+            appConfig.mainGroup.colorScheme = scheme;
+            appConfig.saveLater(AppConfiguration::MainGroup);
+        }
+    );
+    connect(sidebarWidget_, &SidebarWidget::expandedChanged, sidebarWidget_, [](bool expanded)
+    {
+        appConfig.mainGroup.sidebarExpanded = expanded;
+        appConfig.saveLater(AppConfiguration::MainGroup);
+    });
+    connect(sidebarWidget_, &SidebarWidget::currentIndexChanged, sidebarWidget_, [](int index)
+    {
+        appConfig.mainGroup.sidebarCurrentIndex = index;
+        appConfig.saveLater(AppConfiguration::MainGroup);
+    });
+
     refreshText();
     refreshColor();
 }
@@ -93,4 +126,11 @@ void MainWidget::refreshColor()
         sidebarWidget_->setEntryIcon(2, QIcon(QStringLiteral(":/icons/app/nbt_editor_dark.svg")));
         sidebarWidget_->setEntryIcon(3, QIcon(QStringLiteral(":/icons/app/settings_dark.svg")));
     }
+}
+
+void MainWidget::closeEvent(QCloseEvent* e)
+{
+    appConfig.mainGroup.windowGeometry = saveGeometry();
+    appConfig.save(AppConfiguration::MainGroup);
+    AdaptiveWidget::closeEvent(e);
 }
