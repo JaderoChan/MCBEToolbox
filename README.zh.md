@@ -1,6 +1,6 @@
 # MCBE Toolbox
 
-![MCBE Toolbox](assets/app_icon.png)
+![MCBE Toolbox](docs/assets/app_icon.png)
 
 ![Version](https://img.shields.io/badge/version-0.1.0-blue)
 ![C++](https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&logoColor=white)
@@ -9,7 +9,7 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 [![License](https://img.shields.io/badge/license-MIT-green)](../LICENSE)
 
-[**简体中文** | [English](README_EN.md)]
+[**简体中文** | [English](README.md)]
 
 > 此文档大部分内容由 AI 总结，待审查
 
@@ -110,11 +110,11 @@ cmake --build build --config Release
 
 ## 已知限制与规划
 
-当前设计与实现存在一些限制（如最低兼容游戏版本（1.21.50）、方块摆放方向假设等），详见 [限制说明](限制.md)；后续开发计划见 [TODO](TODO.md)。
+当前设计与实现存在一些限制（如最低兼容游戏版本（1.21.50）、方块摆放方向假设等），详见 [限制说明](docs/限制.md)；后续开发计划见 [TODO](docs/TODO.md)。
 
 ## 许可证
 
-本项目基于 [MIT 许可证](../LICENSE) 开源。`3rdparty/` 下的第三方依赖各自保留其原始许可证（见各自目录下的 `LICENSE` 文件）。
+本项目基于 [MIT 许可证](LICENSE) 开源。`3rdparty/` 下的第三方依赖各自保留其原始许可证（见各自目录下的 `LICENSE` 文件）。
 
 ## 作者信息
 
