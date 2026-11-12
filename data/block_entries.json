@@ -1814,7 +1814,7 @@
     "base": {
       "id": "minecraft:bedrock",
       "textures": "1.21.50.7/bedrock.png",
-      "colors": "##6C6C6C",
+      "colors": "#6C6C6C",
       "attributes": {
         "is_creative": true
       }
