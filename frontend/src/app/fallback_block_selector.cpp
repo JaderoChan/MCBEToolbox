@@ -104,7 +104,7 @@ FallbackBlockSelector::FallbackBlockSelector(QWidget* parent)
     {
         CustomBlockSelectorDialog dialog(customBlocks_);
         dialog.setSelected(QString::fromStdString(std::string(selectedCustomBlock_.first)));
-        if (dialog.exec() == QDialog::Accepted)
+        if (dialog.exec() == QDialog::Accepted && dialog.selected().first != std::string_view())
         {
             selectedCustomBlock_ = std::move(dialog.selected());
             refreshCustomButtonTextIcon();
