@@ -45,10 +45,11 @@ BlockEntryMap loadBlockEntries()
     }
     catch (std::exception& e)
     {
-        debugOut
-            (qWarning(),
-            "loadBlockEntries() Failed to parse block entries from file '%1'",
-            APP_BLOCK_ENTRIES_FILEPATH
+        debugOut(
+            qWarning(),
+            "loadBlockEntries() Failed to parse block entries from file '%1': %2",
+            APP_BLOCK_ENTRIES_FILEPATH,
+            e.what()
         );
         return BlockEntryMap();
     }
