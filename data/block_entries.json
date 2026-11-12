@@ -1287,7 +1287,8 @@
       "textures": "1.21.50.7/glowstone.png",
       "colors": "#8C5C33",
       "attributes": {
-        "is_luminous": true
+        "is_luminous": true,
+        "has_pattern": true,
       }
     }
   },
@@ -4835,9 +4836,7 @@
         "bottom": "#35928E",
         "side": "#35928E"
       },
-      "attributes": {
-        "has_pattern": true
-      }
+      "attributes": {}
     }
   },
   "minecraft:woods_group:warped_hyphae": {
@@ -4855,7 +4854,9 @@
         "bottom": "#4A2639",
         "side": "#4A2639"
       },
-      "attributes": {}
+      "attributes": {
+        "has_pattern": true
+      }
     }
   },
   "minecraft:wool_carpet_group:black_carpet": {
