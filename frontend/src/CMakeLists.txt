@@ -28,6 +28,7 @@ set(
     ./app/fallback_block_selector.h
     ./app/generator_common_option_widget.h
     ./app/generator_overlay_widget.h
+    ./app/generator_page_widget_base.h
     ./app/mainwidget.h
     ./app/mcpack_generator_option_widget.h
     ./app/pixel_art_generator_page_widget.h
@@ -54,6 +55,7 @@ set(
     ./nbt_editor/nbt_utils.h
     ./nbt_editor/snbt_syntax_highlighter.h
 
+    ./utils/clamp.h
     ./utils/debug_output.h
     ./utils/directory_scope.h
     ./utils/file_io.h
@@ -78,6 +80,7 @@ set(
     ./app/fallback_block_selector.cpp
     ./app/generator_common_option_widget.cpp
     ./app/generator_overlay_widget.cpp
+    ./app/generator_page_widget_base.cpp
     ./app/main.cpp
     ./app/mainwidget.cpp
     ./app/mcpack_generator_option_widget.cpp

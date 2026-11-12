@@ -1,79 +1,38 @@
 #pragma once
 
-#include <cstddef>
-#include <atomic>
+#include "generator_page_widget_base.h"
 
-#include <mcbe_toolbox_api.hpp>
-#include <components/adaptive_widget.h>
-#include "app_configuration.h"
-
-class QScrollArea;
-class QStackedLayout;
-class QThread;
-class QToolButton;
-
-class ExtendedBlockListWidget;
-class GeneratorCommonOptionWidget;
-class GeneratorOverlayWidget;
 class MCPackGeneratorOptionWidget;
 
-class PixelArtGeneratorPageWidget : public AdaptiveWidget
+class PixelArtGeneratorPageWidget : public GeneratorPageWidgetBase
 {
     Q_OBJECT
 
 public:
-    enum Mode
-    {
-        ImageMode,
-        VideoMode
-    };
-
     explicit PixelArtGeneratorPageWidget(Mode mode, QWidget* parent = nullptr);
     ~PixelArtGeneratorPageWidget() override;
 
-    Mode mode() const;
-
-    void startGenerate();
-    void stopGenerate();
-
 protected:
-    void refreshText() override;
-    void resizeEvent(QResizeEvent* e) override;
+    AppConfiguration::CommonOptionConfig& commonConfigRef() const override;
+    void                                  syncConfig()      const override;
+
+    void          refreshFileFilters()                                  override;
+    ImageOStream* createInputStream(const QString& inputFilePath) const override;
+    void          launchGenerateThread()                                override;
+    bool          validateExtraOptions()                                override;
+    QWidget*      createExtraOptionWidget()                             override;
+    int           videoProgressUpdateInterval()                   const override;
 
 private:
     friend class PixelArtGeneratorWidget;
 
-    static void progressCallback(std::size_t current, std::size_t total, bool& stop, void* userdata);
+    AppConfiguration::PixelArtGeneratorConfig& configRef()       const;
+    AppConfiguration::MCPackOptionConfig&      mcpackConfigRef() const;
 
-    bool validateOptionAndOpenStream();
-    void onGenerationFinished(FactoryResult result);
-    void returnToOptionView();
-    void updateStartButtonGeometry();
-
-    AppConfiguration::PixelArtGeneratorConfig& configRef() const;
-    void syncConfig() const;
-
-    Mode mode_;
-
-    GeneratorCommonOptionWidget* commonOptionWidget_   = nullptr;
-    MCPackGeneratorOptionWidget* mcpackOptionWidget_   = nullptr;
-    ExtendedBlockListWidget*     availableBlockWidget_ = nullptr;
-    QScrollArea*                 optionWidget_         = nullptr;
-    QToolButton*                 startButton_          = nullptr;
-    GeneratorOverlayWidget*      overlayWidget_        = nullptr;
-    QStackedLayout*              mainLayout_           = nullptr;
+    MCPackGeneratorOptionWidget* mcpackOptionWidget_ = nullptr;
 
     MCStructureFactory* structureFactory_ = nullptr;
     MCFunctionFactory*  functionFactory_  = nullptr;
-    QThread*            workThread_       = nullptr;
-    ImageOStream*       stream_           = nullptr;
-    BlockDataPair       fallbackBlock_{std::string_view(), nullptr};
-    QSize               streamFrameSize_;
-    int                 streamFrameCount_;
 
-    BlockDataMap             lastAvailableBlocks_;
-    std::atomic<bool>        cancelRequested_{false};
-    std::atomic<std::size_t> progressCounter_{0};
-    int                      progressInterval_ = 1;
+    BlockDataMap lastAvailableBlocks_;
 };
-
