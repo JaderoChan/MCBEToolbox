@@ -1288,7 +1288,7 @@
       "colors": "#8C5C33",
       "attributes": {
         "is_luminous": true,
-        "has_pattern": true,
+        "has_pattern": true
       }
     }
   },
