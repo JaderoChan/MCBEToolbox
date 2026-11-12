@@ -168,7 +168,7 @@ void ExtendedBlockListWidget::unselectAll()
 void ExtendedBlockListWidget::setCheckedBlockAttributes(int blockAttributes)
 {
     for (auto& box : attributeCheckBoxes_)
-        box->setChecked(box->property("blockAttribute").toInt() & blockAttributes != 0);
+        box->setChecked((box->property("blockAttribute").toInt() & blockAttributes) != 0);
     emit checkedBlockAttributesChanged(blockAttributes);
 }
 

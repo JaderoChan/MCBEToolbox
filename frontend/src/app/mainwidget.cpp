@@ -47,6 +47,8 @@ MainWidget::MainWidget(QWidget* parent)
     mainLayout->addWidget(sidebarWidget_);
     mainLayout->addWidget(stackedWidget_);
 
+    connect(sidebarWidget_, &SidebarWidget::currentIndexChanged, stackedWidget_, &QStackedWidget::setCurrentIndex);
+
     // 加载程序配置。
     const auto& config = appConfig.mainGroup;
     if (!restoreGeometry(config.windowGeometry))
@@ -54,7 +56,6 @@ MainWidget::MainWidget(QWidget* parent)
     config.sidebarExpanded ? sidebarWidget_->expand() : sidebarWidget_->fold();
     sidebarWidget_->setCurrentIndex(config.sidebarCurrentIndex);
 
-    connect(sidebarWidget_, &SidebarWidget::currentIndexChanged, stackedWidget_, &QStackedWidget::setCurrentIndex);
     connect(
         &LanguageManager::instance(), &LanguageManager::languageChanged,
         &LanguageManager::instance(), [](LanguageManager::Language language)

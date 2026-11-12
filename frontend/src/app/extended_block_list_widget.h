@@ -15,6 +15,8 @@ class BlockListWidget;
 /** 作为 #BlockListWidget 的父控件，扩展一些功能。 */
 class ExtendedBlockListWidget : public AdaptiveWidget
 {
+    Q_OBJECT
+
 public:
     explicit ExtendedBlockListWidget(QWidget* parent = nullptr);
 

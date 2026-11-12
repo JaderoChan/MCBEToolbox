@@ -98,7 +98,7 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
     // Connections
     connect(
         packTypeButtonGroup, &QButtonGroup::buttonToggled,
-        this, [this]() { refreshAssistFunctionUiState; emit packTypeChanged(packType()); }
+        this, [this]() { refreshAssistFunctionUiState(); emit packTypeChanged(packType()); }
     );
     connect(
         packNameInputer_, &QLineEdit::textChanged,
@@ -196,8 +196,6 @@ void MCPackGeneratorOptionWidget::setAssistFunctionEnabled(bool enabled)
 
 void MCPackGeneratorOptionWidget::setAutoFillPackName(bool enabled)
 {
-    if (packNameAutoFillCheck_->isChecked() == enabled)
-        return;
     const bool old = packNameAutoFillCheck_->blockSignals(true);
     packNameAutoFillCheck_->setChecked(enabled);
     packNameAutoFillCheck_->blockSignals(old);
@@ -207,8 +205,6 @@ void MCPackGeneratorOptionWidget::setAutoFillPackName(bool enabled)
 
 void MCPackGeneratorOptionWidget::setAutoFillPackDescription(bool enabled)
 {
-    if (packNameAutoFillCheck_->isChecked() == enabled)
-        return;
     const bool old = packDescriptionAutoFillCheck_->blockSignals(true);
     packDescriptionAutoFillCheck_->setChecked(enabled);
     packDescriptionAutoFillCheck_->blockSignals(old);
