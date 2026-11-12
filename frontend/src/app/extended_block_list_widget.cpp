@@ -127,6 +127,10 @@ ExtendedBlockListWidget::ExtendedBlockListWidget(QWidget* parent)
         this, [this]() { emit blockFilterModeChanged(blockFilterMode()); }
     );
     connect(
+        filterToggleButton_, &QPushButton::clicked,
+        this, [this]() { emit filterPanelExpandedToggled(filterPanelExpanded()); }
+    );
+    connect(
         blockListWidget_, &BlockListWidget::selectionChanged,
         this, [this]() { refreshSelectionCountLabel(); emit selectionChanged(); }
     );

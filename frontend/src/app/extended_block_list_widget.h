@@ -42,6 +42,7 @@ public:
 signals:
     void checkedBlockAttributesChanged(int blockAttributes);
     void blockFilterModeChanged(BlockAttributeFilterMode mode);
+    void filterPanelExpandedToggled(bool expanded);
     void selectionChanged();
 
 protected:
