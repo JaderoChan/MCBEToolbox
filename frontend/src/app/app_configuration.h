@@ -1,6 +1,8 @@
 #pragma once
 
 #include <qbytearray.h>
+#include <qlist.h>
+#include <qstring.h>
 
 #include <components/color_scheme_manager.h>
 #include <components/language_manager.h>
@@ -17,15 +19,19 @@ class AppConfiguration : public QObject
 public:
     enum ConfigGroup : int
     {
-        MainGroup = 0x0001,
-        AllGroup  = 0xFFFF
+        MainGroup            = 0x0001,
+        BlockImageImageGroup = 0x0002,
+        BlockImageVideoGroup = 0x0004,
+        PixelArtImageGroup   = 0x0008,
+        PixelArtVideoGroup   = 0x0010,
+        AllGroup             = 0xFFFF
     };
 
     static AppConfiguration& instance();
 
     void reload();
     void save(int groups = AllGroup) const;
-    void saveLater(int groups = AllGroup, int delayMs = 3000) const;
+    void saveLater(int groups = AllGroup, int delayMs = 5000) const;
 
     struct
     {
@@ -35,6 +41,48 @@ public:
         bool                            sidebarExpanded;
         int                             sidebarCurrentIndex;
     } mainGroup;
+
+    struct CommonOptionConfig
+    {
+        // 共有部分
+        int            outputFileMode;
+        QString        customOutputDirectory;
+
+        int            desiredSurface;
+
+        int            fallbackSelectorMode;
+        QString        selectedCustomBlock;
+
+        QSize          maxFrameSize;
+
+        int            checkedBlockAttributes;
+        int            blockFilterMode;
+        bool           filterPanelExpaned;
+        QList<QString> selectedBlocks;
+
+        // 视频部分
+        int            maxFrameCount;
+        int            numThreads;
+    };
+
+    struct MCPackOpionConfig
+    {
+        int     packType;
+        QString packName;
+        QString packDescription;
+        QString packNamespace;
+        Version packVersion;
+        bool    autoFillPackName;
+        bool    autoFillPackDescription;
+        bool    assistFunctionEnabled;
+    };
+
+    CommonOptionConfig blockImageImageGroup, blockImageVideoGroup;
+    struct PixelArtGeneratorConfig
+    {
+        CommonOptionConfig commonConfig;
+        MCPackOpionConfig  mcpackConfig;
+    } pixelArtImageGroup, pixelArtVideoGroup;
 
     struct
     {

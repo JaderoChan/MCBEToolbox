@@ -5,6 +5,7 @@
 
 #include <mcbe_toolbox_api.hpp>
 #include <components/adaptive_widget.h>
+#include "app_configuration.h"
 
 class QScrollArea;
 class QStackedLayout;
@@ -47,6 +48,9 @@ private:
     void onGenerationFinished(FactoryResult result);
     void returnToOptionView();
     void updateStartButtonGeometry();
+
+    AppConfiguration::CommonOptionConfig& configRef() const;
+    void syncConfig() const;
 
     Mode mode_;
 

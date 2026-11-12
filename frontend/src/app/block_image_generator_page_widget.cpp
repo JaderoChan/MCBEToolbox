@@ -15,7 +15,6 @@
 
 #include <app_defines.h>
 #include <utils/qstring_path.h>
-#include "app_configuration.h"
 #include "extended_block_list_widget.h"
 #include "generator_common_option_widget.h"
 #include "generator_overlay_widget.h"
@@ -30,9 +29,30 @@ constexpr int START_BUTTON_RADIUS = START_BUTTON_SIZE / 2;
 constexpr int IMAGE_MODE_PROGRESS_UPDATE_INTERVAL = 10000;
 constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 1;
 
+constexpr int   MAX_FRAME_COUNT_RANGE_MIN      = 1;
+constexpr int   MAX_FRAME_COUNT_RANGE_MAX      = INT32_MAX;
+constexpr int   NUM_THREADS_RANGE_MIN          = 1;
+constexpr int   NUM_THREADS_RANGE_MAX          = 16;
 constexpr QSize MAX_FRAME_SIZE_RANGE_MIN       = QSize(1,    1   );
 constexpr QSize IMAGE_MAX_FRAME_SIZE_RANGE_MAX = QSize(4096, 4096);
 constexpr QSize VIDEO_MAX_FRAME_SIZE_RANGE_MAX = QSize(256,  128 );
+
+template <typename T>
+inline T clamp(const T& value, const T& min, const T& max)
+{
+    assert(min <= max);
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
+
+inline QSize clampSize(const QSize& value, const QSize& min, const QSize& max)
+{
+    return QSize(
+        clamp(value.width(),  min.width(),  max.width()),
+        clamp(value.height(), min.height(), max.height())
+    );
+}
 
 } // namespace
 
@@ -77,9 +97,6 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
     overlayWidget_ = new GeneratorOverlayWidget(this);
     overlayWidget_->setVisible(false);
 
-    // 工厂实例。
-    factory_ = new BlockImageFactory(BlockDataMap(), DEFAULT_DESIRED_SURFACE);
-
     // 主布局。
     mainLayout_ = new QStackedLayout(this);
     mainLayout_->setContentsMargins(0, 0, 0, 0);
@@ -88,7 +105,141 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
     mainLayout_->addWidget(overlayWidget_);
     mainLayout_->setCurrentWidget(optionWidget_);
 
+    // 配置硬编码值。
+    commonOptionWidget_->setOutputFileExtension(mode_ == ImageMode ? QStringLiteral("png") : QStringLiteral("mp4"));
+    commonOptionWidget_->setMaxFrameSizeRange(
+        MAX_FRAME_SIZE_RANGE_MIN,
+        mode_ == ImageMode ? IMAGE_MAX_FRAME_SIZE_RANGE_MAX : VIDEO_MAX_FRAME_SIZE_RANGE_MAX
+    );
+    commonOptionWidget_->setMaxFrameCountRange(MAX_FRAME_COUNT_RANGE_MIN, MAX_FRAME_COUNT_RANGE_MAX);
+    commonOptionWidget_->setNumThreadsRange(NUM_THREADS_RANGE_MIN, NUM_THREADS_RANGE_MAX);
+    commonOptionWidget_->fallbackBlockSelector_->setModeButtonVisible(FallbackBlockSelector::AirBlockMode, false);
+
+    // 复原配置。
+    const auto& dataCache = appConfig.dataCache;
+    const auto& config    = mode_ == ImageMode ? appConfig.blockImageImageGroup : appConfig.blockImageVideoGroup;
+
+    // 工厂实例。
+    factory_ = new BlockImageFactory(BlockDataMap(), static_cast<SurfaceDirection>(config.desiredSurface));
+
+    commonOptionWidget_->outputFileSelector_->setMode(static_cast<OutputFileSelector::Mode>(config.outputFileMode));
+    commonOptionWidget_->outputFileSelector_->setCustomOutputDirectoryPath(config.customOutputDirectory);
+
+    commonOptionWidget_->setSurfaceDirection(static_cast<SurfaceDirection>(config.desiredSurface));
+
+    commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(dataCache.baseBlocks);
+    commonOptionWidget_->fallbackBlockSelector_->setMode(static_cast<FallbackBlockSelector::Mode>(config.fallbackSelectorMode));
+    commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(config.selectedCustomBlock);
+
+    commonOptionWidget_->setMaxFrameSize(clampSize(
+        config.maxFrameSize,
+        MAX_FRAME_SIZE_RANGE_MIN,
+        mode_ == ImageMode ? IMAGE_MAX_FRAME_SIZE_RANGE_MAX : VIDEO_MAX_FRAME_SIZE_RANGE_MAX
+    ));
+
+    commonOptionWidget_->setMaxFrameCount(config.maxFrameCount);
+    commonOptionWidget_->setNumThreads(config.numThreads);
+
+    availableBlockWidget_->setBlocks(dataCache.baseBlocks);
+    availableBlockWidget_->setCheckedBlockAttributes(config.checkedBlockAttributes);
+    availableBlockWidget_->setBlockFilterMode(static_cast<BlockAttributeFilterMode>(config.blockFilterMode));
+    availableBlockWidget_->setFilterPanelExpanded(config.filterPanelExpaned);
+    availableBlockWidget_->unselectAll();
+    availableBlockWidget_->select(config.selectedBlocks);
+
     // Connections
+    connect(
+        commonOptionWidget_->outputFileSelector_, &OutputFileSelector::modeChanged,
+        this, [this](OutputFileSelector::Mode mode)
+        {
+            configRef().outputFileMode = mode;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_->outputFileSelector_, &OutputFileSelector::customOutputDirectoryChanged,
+        this, [this](QString dirPath)
+        {
+            configRef().customOutputDirectory = dirPath;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_->fallbackBlockSelector_, &FallbackBlockSelector::modeChanged,
+        this, [this](FallbackBlockSelector::Mode mode)
+        {
+            configRef().fallbackSelectorMode = mode;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_->fallbackBlockSelector_, &FallbackBlockSelector::selectedCustomBlockChanged,
+        this, [this](QString blockId)
+        {
+            configRef().selectedCustomBlock = blockId;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_, &GeneratorCommonOptionWidget::maxFrameSizeChanged,
+        this, [this](QSize size)
+        {
+            configRef().maxFrameSize = size;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_, &GeneratorCommonOptionWidget::maxFrameCountChanged,
+        this, [this](int count)
+        {
+            configRef().maxFrameCount = count;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_, &GeneratorCommonOptionWidget::numThreadsChanged,
+        this, [this](int num)
+        {
+            configRef().numThreads = num;
+            syncConfig();
+        }
+    );
+
+    connect(
+        availableBlockWidget_, &ExtendedBlockListWidget::checkedBlockAttributesChanged,
+        this, [this](int attributes)
+        {
+            configRef().checkedBlockAttributes = attributes;
+            syncConfig();
+        }
+    );
+    connect(
+        availableBlockWidget_, &ExtendedBlockListWidget::blockFilterModeChanged,
+        this, [this](BlockAttributeFilterMode mode)
+        {
+            configRef().blockFilterMode = mode;
+            syncConfig();
+        }
+    );
+    connect(
+        availableBlockWidget_, &ExtendedBlockListWidget::selectionChanged,
+        this, [this]()
+        {
+            configRef().selectedBlocks.clear();
+            for (const auto& [k, v] : availableBlockWidget_->selecteds())
+                configRef().selectedBlocks.append(QString::fromStdString(std::string(k)));
+            syncConfig();
+        }
+    );
+    connect(
+        availableBlockWidget_, &ExtendedBlockListWidget::filterPanelExpandedToggled,
+        this, [this](bool expanded)
+        {
+            configRef().filterPanelExpaned = expanded;
+            syncConfig();
+        }
+    );
+
     connect(
         startButton_,   &QToolButton::clicked,
         this,           &BlockImageGeneratorPageWidget::startGenerate
@@ -101,28 +252,6 @@ BlockImageGeneratorPageWidget::BlockImageGeneratorPageWidget(Mode mode, QWidget*
         overlayWidget_, &GeneratorOverlayWidget::confirmed,
         this,           &BlockImageGeneratorPageWidget::returnToOptionView
     );
-
-    // 配置范围限制。
-    commonOptionWidget_->setOutputFileExtension(mode_ == ImageMode ? QStringLiteral("png") : QStringLiteral("mp4"));
-    commonOptionWidget_->setMaxFrameSizeRange(
-        MAX_FRAME_SIZE_RANGE_MIN,
-        mode_ == ImageMode ? IMAGE_MAX_FRAME_SIZE_RANGE_MAX : VIDEO_MAX_FRAME_SIZE_RANGE_MAX
-    );
-    commonOptionWidget_->setMaxFrameCountRange(1, INT32_MAX);
-    commonOptionWidget_->setNumThreadsRange(1, 16);
-
-    // 配置默认值（未来需要根据程序配置进行设置）。
-    const auto& config = appConfig.dataCache;
-
-    availableBlockWidget_->setBlocks(config.baseBlocks);
-    commonOptionWidget_->setSurfaceDirection(DEFAULT_DESIRED_SURFACE);
-    commonOptionWidget_->fallbackBlockSelector_->setModeButtonVisible(FallbackBlockSelector::AirBlockMode, false);
-    commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(config.baseBlocks);
-    commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(DEFAULT_FALLBACK_BLOCK_ID);
-    commonOptionWidget_->setMaxFrameSize(mode_ == ImageMode ? QSize(1024, 1024) : QSize(240, 128));
-    commonOptionWidget_->setMaxFrameCount(360);
-    commonOptionWidget_->setMaxFrameCount(-1);
-    commonOptionWidget_->setNumThreads(8);
 
     // 初始化文本和刷新 Start 按钮位置。
     refreshText();
@@ -352,4 +481,18 @@ void BlockImageGeneratorPageWidget::updateStartButtonGeometry()
         height() - START_BUTTON_MARGIN - START_BUTTON_SIZE
     );
     startButton_->raise();
+}
+
+AppConfiguration::CommonOptionConfig& BlockImageGeneratorPageWidget::configRef() const
+{
+    return mode_ == ImageMode ? appConfig.blockImageImageGroup : appConfig.blockImageVideoGroup;
+}
+
+void BlockImageGeneratorPageWidget::syncConfig() const
+{
+    appConfig.saveLater(
+        mode_ == ImageMode
+        ? AppConfiguration::BlockImageImageGroup
+        : AppConfiguration::BlockImageVideoGroup
+    );
 }

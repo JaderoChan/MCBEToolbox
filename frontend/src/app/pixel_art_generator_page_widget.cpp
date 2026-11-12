@@ -14,7 +14,6 @@
 #include <qtoolbutton.h>
 
 #include <app_defines.h>
-#include "app_configuration.h"
 #include "extended_block_list_widget.h"
 #include "generator_common_option_widget.h"
 #include "generator_overlay_widget.h"
@@ -31,6 +30,10 @@ constexpr int START_BUTTON_RADIUS = START_BUTTON_SIZE / 2;
 constexpr int IMAGE_MODE_PROGRESS_UPDATE_INTERVAL = 10000;
 constexpr int VIDEO_MODE_PROGRESS_UPDATE_INTERVAL = 4;
 
+constexpr int   MAX_FRAME_COUNT_RANGE_MIN      = 1;
+constexpr int   MAX_FRAME_COUNT_RANGE_MAX      = INT32_MAX;
+constexpr int   NUM_THREADS_RANGE_MIN          = 1;
+constexpr int   NUM_THREADS_RANGE_MAX          = 16;
 constexpr QSize MAX_FRAME_SIZE_RANGE_MIN       = QSize(1,    1   );
 constexpr QSize MAX_FRAME_SIZE_RANGE_MAX_FLOOR = QSize(1024, 1024);
 constexpr QSize MAX_FRAME_SIZE_RANGE_MAX_WALL  = QSize(720,  380 );
@@ -100,10 +103,6 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
     overlayWidget_ = new GeneratorOverlayWidget(this);
     overlayWidget_->setVisible(false);
 
-    // 工厂实例。
-    structureFactory_ = new MCStructureFactory(BlockDataMap(), DEFAULT_DESIRED_SURFACE);
-    functionFactory_  = new MCFunctionFactory(BlockDataMap(),  DEFAULT_DESIRED_SURFACE);
-
     // 主布局。
     mainLayout_ = new QStackedLayout(this);
     mainLayout_->setContentsMargins(0, 0, 0, 0);
@@ -112,7 +111,214 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
     mainLayout_->addWidget(overlayWidget_);
     mainLayout_->setCurrentWidget(optionWidget_);
 
+    // 配置硬编码值。
+    commonOptionWidget_->setOutputFileExtension(QStringLiteral("mcpack"));
+    commonOptionWidget_->setMaxFrameSizeRange(MAX_FRAME_SIZE_RANGE_MIN, MAX_FRAME_SIZE_RANGE_MAX_WALL);
+    commonOptionWidget_->setMaxFrameCountRange(1, INT32_MAX);
+    commonOptionWidget_->setNumThreadsRange(1, 16);
+
+    // 复原配置。
+    const auto& dataCache = appConfig.dataCache;
+    const auto& config    = mode_ == ImageMode ? appConfig.pixelArtImageGroup : appConfig.pixelArtVideoGroup;
+
+    // 工厂实例。
+    structureFactory_ = new MCStructureFactory(BlockDataMap(), static_cast<SurfaceDirection>(config.commonConfig.desiredSurface));
+    functionFactory_  = new MCFunctionFactory(BlockDataMap(),  static_cast<SurfaceDirection>(config.commonConfig.desiredSurface));
+
+    commonOptionWidget_->outputFileSelector_->setMode(static_cast<OutputFileSelector::Mode>(config.commonConfig.outputFileMode));
+    commonOptionWidget_->outputFileSelector_->setCustomOutputDirectoryPath(config.commonConfig.customOutputDirectory);
+
+    commonOptionWidget_->setSurfaceDirection(static_cast<SurfaceDirection>(config.commonConfig.desiredSurface));
+
+    commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(dataCache.baseBlocks);
+    commonOptionWidget_->fallbackBlockSelector_->setMode(static_cast<FallbackBlockSelector::Mode>(config.commonConfig.fallbackSelectorMode));
+    commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(config.commonConfig.selectedCustomBlock);
+
+    commonOptionWidget_->setMaxFrameSize(clampSize(
+        config.commonConfig.maxFrameSize,
+        MAX_FRAME_SIZE_RANGE_MIN,
+        (config.commonConfig.desiredSurface == SURFACE_DIRECTION_UP ||
+         config.commonConfig.desiredSurface == SURFACE_DIRECTION_BOTTOM )
+        ? MAX_FRAME_SIZE_RANGE_MAX_FLOOR : MAX_FRAME_SIZE_RANGE_MAX_WALL
+    ));
+
+    commonOptionWidget_->setMaxFrameCount(config.commonConfig.maxFrameCount);
+    commonOptionWidget_->setNumThreads(config.commonConfig.numThreads);
+
+    availableBlockWidget_->setBlocks(dataCache.baseBlocks);
+    availableBlockWidget_->setCheckedBlockAttributes(config.commonConfig.checkedBlockAttributes);
+    availableBlockWidget_->setBlockFilterMode(static_cast<BlockAttributeFilterMode>(config.commonConfig.blockFilterMode));
+    availableBlockWidget_->setFilterPanelExpanded(config.commonConfig.filterPanelExpaned);
+    availableBlockWidget_->unselectAll();
+    availableBlockWidget_->select(config.commonConfig.selectedBlocks);
+
+    mcpackOptionWidget_->setPackType(static_cast<MCPackGeneratorOptionWidget::PackType>(config.mcpackConfig.packType));
+    mcpackOptionWidget_->setPackName(config.mcpackConfig.packName);
+    mcpackOptionWidget_->setPackDescription(config.mcpackConfig.packDescription);
+    mcpackOptionWidget_->setPackNamespace(config.mcpackConfig.packNamespace);
+    mcpackOptionWidget_->setPackVersion(config.mcpackConfig.packVersion);
+    mcpackOptionWidget_->setAutoFillPackName(config.mcpackConfig.autoFillPackName);
+    mcpackOptionWidget_->setAutoFillPackDescription(config.mcpackConfig.autoFillPackDescription);
+    mcpackOptionWidget_->setAssistFunctionEnabled(config.mcpackConfig.assistFunctionEnabled);
+
     // Connections
+    connect(
+        commonOptionWidget_->outputFileSelector_, &OutputFileSelector::modeChanged,
+        this, [this](OutputFileSelector::Mode mode)
+        {
+            configRef().commonConfig.outputFileMode = mode;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_->outputFileSelector_, &OutputFileSelector::customOutputDirectoryChanged,
+        this, [this](QString dirPath)
+        {
+            configRef().commonConfig.customOutputDirectory = dirPath;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_->fallbackBlockSelector_, &FallbackBlockSelector::modeChanged,
+        this, [this](FallbackBlockSelector::Mode mode)
+        {
+            configRef().commonConfig.fallbackSelectorMode = mode;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_->fallbackBlockSelector_, &FallbackBlockSelector::selectedCustomBlockChanged,
+        this, [this](QString blockId)
+        {
+            configRef().commonConfig.selectedCustomBlock = blockId;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_, &GeneratorCommonOptionWidget::maxFrameSizeChanged,
+        this, [this](QSize size)
+        {
+            configRef().commonConfig.maxFrameSize = size;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_, &GeneratorCommonOptionWidget::maxFrameCountChanged,
+        this, [this](int count)
+        {
+            configRef().commonConfig.maxFrameCount = count;
+            syncConfig();
+        }
+    );
+    connect(
+        commonOptionWidget_, &GeneratorCommonOptionWidget::numThreadsChanged,
+        this, [this](int num)
+        {
+            configRef().commonConfig.numThreads = num;
+            syncConfig();
+        }
+    );
+
+    connect(
+        availableBlockWidget_, &ExtendedBlockListWidget::checkedBlockAttributesChanged,
+        this, [this](int attributes)
+        {
+            configRef().commonConfig.checkedBlockAttributes = attributes;
+            syncConfig();
+        }
+    );
+    connect(
+        availableBlockWidget_, &ExtendedBlockListWidget::blockFilterModeChanged,
+        this, [this](BlockAttributeFilterMode mode)
+        {
+            configRef().commonConfig.blockFilterMode = mode;
+            syncConfig();
+        }
+    );
+    connect(
+        availableBlockWidget_, &ExtendedBlockListWidget::selectionChanged,
+        this, [this]()
+        {
+            configRef().commonConfig.selectedBlocks.clear();
+            for (const auto& [k, v] : availableBlockWidget_->selecteds())
+                configRef().commonConfig.selectedBlocks.append(QString::fromStdString(std::string(k)));
+            syncConfig();
+        }
+    );
+    connect(
+        availableBlockWidget_, &ExtendedBlockListWidget::filterPanelExpandedToggled,
+        this, [this](bool expanded)
+        {
+            configRef().commonConfig.filterPanelExpaned = expanded;
+            syncConfig();
+        }
+    );
+
+    connect(
+        mcpackOptionWidget_, &MCPackGeneratorOptionWidget::packTypeChanged,
+        this, [this](MCPackGeneratorOptionWidget::PackType type)
+        {
+            configRef().mcpackConfig.packType = type;
+            syncConfig();
+        }
+    );
+    connect(
+        mcpackOptionWidget_, &MCPackGeneratorOptionWidget::packNameChanged,
+        this, [this](QString name)
+        {
+            configRef().mcpackConfig.packName = name;
+            syncConfig();
+        }
+    );
+    connect(
+        mcpackOptionWidget_, &MCPackGeneratorOptionWidget::packDescriptionChanged,
+        this, [this](QString description)
+        {
+            configRef().mcpackConfig.packDescription = description;
+            syncConfig();
+        }
+    );
+    connect(
+        mcpackOptionWidget_, &MCPackGeneratorOptionWidget::packNamespaceChanged,
+        this, [this](QString nameSpace)
+        {
+            configRef().mcpackConfig.packNamespace = nameSpace;
+            syncConfig();
+        }
+    );
+    connect(
+        mcpackOptionWidget_, &MCPackGeneratorOptionWidget::packVersionChanged,
+        this, [this](Version version)
+        {
+            configRef().mcpackConfig.packVersion = version;
+            syncConfig();
+        }
+    );
+    connect(
+        mcpackOptionWidget_, &MCPackGeneratorOptionWidget::autoFillNameToggled,
+        this, [this](bool enabled)
+        {
+            configRef().mcpackConfig.autoFillPackName = enabled;
+            syncConfig();
+        }
+    );
+    connect(
+        mcpackOptionWidget_, &MCPackGeneratorOptionWidget::autoFillDescriptionToggled,
+        this, [this](bool enabled)
+        {
+            configRef().mcpackConfig.autoFillPackDescription = enabled;
+            syncConfig();
+        }
+    );
+    connect(
+        mcpackOptionWidget_, &MCPackGeneratorOptionWidget::assistFunctionEnabledToggled,
+        this, [this](bool enabled)
+        {
+            configRef().mcpackConfig.assistFunctionEnabled = enabled;
+            syncConfig();
+        }
+    );
+
     connect(
         startButton_,   &QToolButton::clicked,
         this,           &PixelArtGeneratorPageWidget::startGenerate
@@ -144,28 +350,6 @@ PixelArtGeneratorPageWidget::PixelArtGeneratorPageWidget(Mode mode, QWidget* par
             }
         }
     );
-
-    commonOptionWidget_->setOutputFileExtension(QStringLiteral("mcpack"));
-    commonOptionWidget_->setMaxFrameSizeRange(MAX_FRAME_SIZE_RANGE_MIN, MAX_FRAME_SIZE_RANGE_MAX_WALL);
-    commonOptionWidget_->setMaxFrameCountRange(1, INT32_MAX);
-    commonOptionWidget_->setNumThreadsRange(1, 16);
-
-    // 配置默认值（未来需要根据程序配置进行设置）。
-    const auto& config = appConfig.dataCache;
-
-    availableBlockWidget_->setBlocks(config.baseBlocks);
-    commonOptionWidget_->setSurfaceDirection(DEFAULT_DESIRED_SURFACE);
-    commonOptionWidget_->fallbackBlockSelector_->setCustomBlocks(config.baseBlocks);
-    commonOptionWidget_->fallbackBlockSelector_->setSelectedCustomBlock(DEFAULT_FALLBACK_BLOCK_ID);
-    commonOptionWidget_->setMaxFrameSize(QSize(560, 360));
-    commonOptionWidget_->setMaxFrameCount(360);
-    commonOptionWidget_->setMaxFrameCount(-1);
-    commonOptionWidget_->setNumThreads(8);
-    mcpackOptionWidget_->setPackNamespace(DEFAULT_MCPACK_NAMESPACE);
-    mcpackOptionWidget_->setPackVersion(Version(1, 0, 0));
-    mcpackOptionWidget_->setAutoFillPackName(true);
-    mcpackOptionWidget_->setAutoFillPackDescription(true);
-    mcpackOptionWidget_->setAssistFunctionEnabled(true);
 
     // 初始化文本和刷新 Start 按钮位置。
     refreshText();
@@ -447,4 +631,18 @@ void PixelArtGeneratorPageWidget::updateStartButtonGeometry()
         height() - START_BUTTON_MARGIN - START_BUTTON_SIZE
     );
     startButton_->raise();
+}
+
+AppConfiguration::PixelArtGeneratorConfig& PixelArtGeneratorPageWidget::configRef() const
+{
+    return mode_ == ImageMode ? appConfig.pixelArtImageGroup : appConfig.pixelArtVideoGroup;
+}
+
+void PixelArtGeneratorPageWidget::syncConfig() const
+{
+    appConfig.saveLater(
+        mode_ == ImageMode
+        ? AppConfiguration::PixelArtImageGroup
+        : AppConfiguration::PixelArtVideoGroup
+    );
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <qapplication.h>
+#include <qstandardpaths.h>
 #include <qstring.h>
 
 #define APP_ORGANIZATION            "@APP_ORGANIZATION@"
@@ -19,14 +20,11 @@
 #define APP_BLOCK_ENTRIES_FILEPATH  "data/block_entries.json"
 #define APP_BLOCK_TEXTURES_DIRPATH  "data/textures"
 
-#define APP_DIRPATH QApplication::applicationDirPath()
+#define APP_DIRPATH        QApplication::applicationDirPath()
+#define APP_CONFIG_DIRPATH QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation)
 #ifdef Q_OS_MAC
-    #define APP_RESOURCES_DIRPATH    (APP_DIRPATH + "/../Resources")
     #define APP_BUNDLE_IDENTIFIER    "@APP_ORGANIZATION_DOMAIN@.@PROJECT_NAME@"
+    #define APP_RESOURCES_DIRPATH    (APP_DIRPATH + "/../Resources")
 #else
     #define APP_RESOURCES_DIRPATH    APP_DIRPATH
 #endif // Q_OS_MAC
-
-#define DEFAULT_FALLBACK_BLOCK_ID "minecraft:glass_group:glass"
-#define DEFAULT_DESIRED_SURFACE   SURFACE_DIRECTION_NORTH
-#define DEFAULT_MCPACK_NAMESPACE  "mcbetoolbox"
