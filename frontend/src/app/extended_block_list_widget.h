@@ -27,10 +27,20 @@ public:
 
     void setCheckedBlockAttributes(int blockAttributes);
     void setBlockFilterMode(BlockAttributeFilterMode mode);
+    int  checkdBlockAttributes() const;
+    BlockAttributeFilterMode blockFilterMode() const;
+
+    void setFilterPanelExpanded(bool expanded);
+    bool filterPanelExpanded() const;
 
     void setBlocks(BlockDataMap blocks);
     const BlockDataMap& blocks()    const;
     const BlockDataMap& selecteds() const;
+
+signals:
+    void checkedBlockAttributesChanged(int blockAttributes);
+    void blockFilterModeChanged(BlockAttributeFilterMode mode);
+    void selectionChanged();
 
 protected:
     void refreshText() override;

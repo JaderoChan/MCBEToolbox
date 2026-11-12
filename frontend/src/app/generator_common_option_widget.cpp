@@ -107,9 +107,30 @@ GeneratorCommonOptionWidget::GeneratorCommonOptionWidget(QWidget* parent)
         maxFrameCountInfCheck_, &QCheckBox::toggled,
         this,                   &GeneratorCommonOptionWidget::refreshUiState
     );
+
     connect(
         surfaceDirectionSelector_, &QComboBox::currentIndexChanged,
-        this,                      [this]() { emit surfaceDirectionChanged(surfaceDirection()); }
+        this, [this]() { emit surfaceDirectionChanged(surfaceDirection()); }
+    );
+    connect(
+        maxFrameSizeWidthInputer_, &QSpinBox::valueChanged,
+        this, [this]() { emit maxFrameSizeChanged(maxFrameSize()); }
+    );
+    connect(
+        maxFrameSizeHeightInputer_, &QSpinBox::valueChanged,
+        this, [this]() { emit maxFrameSizeChanged(maxFrameSize()); }
+    );
+    connect(
+        maxFrameCountInputer_, &QSpinBox::valueChanged,
+        this, [this]() { emit maxFrameCountChanged(maxFrameCount()); }
+    );
+    connect(
+        maxFrameCountInfCheck_, &QCheckBox::toggled,
+        this, [this]() { emit maxFrameCountChanged(maxFrameCount()); }
+    );
+    connect(
+        numThreadsInputer_, &QSpinBox::valueChanged,
+        this, [this]() { emit numThreadsChanged(numThreads()); }
     );
 
     refreshText();
@@ -194,6 +215,7 @@ void GeneratorCommonOptionWidget::setMaxFrameSize(const QSize& size)
     {
         maxFrameSizeWidthInputer_->setValue(size.width());
         maxFrameSizeHeightInputer_->setValue(size.height());
+        emit maxFrameSizeChanged(size);
     }
 }
 
@@ -208,11 +230,14 @@ void GeneratorCommonOptionWidget::setMaxFrameCount(int count)
     {
         maxFrameCountInputer_->setValue(count);
     }
+
+    emit maxFrameCountChanged(count);
 }
 
 void GeneratorCommonOptionWidget::setNumThreads(int num)
 {
     numThreadsInputer_->setValue(num);
+    emit numThreadsChanged(num);
 }
 
 QString GeneratorCommonOptionWidget::inputFilePath() const

@@ -97,7 +97,27 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
 
     // Connections
     connect(
-        packNameAutoFillCheck_,        &QCheckBox::toggled,
+        packTypeButtonGroup, &QButtonGroup::buttonToggled,
+        this, [this]() { refreshAssistFunctionUiState; emit packTypeChanged(packType()); }
+    );
+    connect(
+        packNameInputer_, &QLineEdit::textChanged,
+        this, [this](const QString& text) { emit packNameChanged(text); }
+    );
+    connect(
+        packDescriptionInputer_, &QLineEdit::textChanged,
+        this, [this](const QString& text) { emit packDescriptionChanged(text); }
+    );
+    connect(
+        packNamespaceInputer_, &QLineEdit::textChanged,
+        this, [this](const QString& text) { emit packNamespaceChanged(text); }
+    );
+    connect(
+        packVersionInputer_, &QLineEdit::textChanged,
+        this, [this]() { emit packVersionChanged(packVersion()); }
+    );
+    connect(
+        packNameAutoFillCheck_, &QCheckBox::toggled,
         this, &MCPackGeneratorOptionWidget::setAutoFillPackName
     );
     connect(
@@ -105,8 +125,8 @@ MCPackGeneratorOptionWidget::MCPackGeneratorOptionWidget(QWidget* parent)
         this, &MCPackGeneratorOptionWidget::setAutoFillPackDescription
     );
     connect(
-        packTypeButtonGroup, &QButtonGroup::buttonToggled,
-        this, &MCPackGeneratorOptionWidget::refreshAssistFunctionUiState
+        assistFunctionEnabledCheck_, &QCheckBox::toggled,
+        this, [this](bool enabled) { emit assistFunctionEnabledToggled(enabled); }
     );
 
     refreshText();
@@ -132,6 +152,7 @@ void MCPackGeneratorOptionWidget::setPackType(PackType type)
     if      (type == StructurePackType) packTypeStructureButton_->setChecked(true);
     else if (type == FunctionPackType)  packTypeFunctionButton_->setChecked(true);
     refreshAssistFunctionUiState();
+    emit packTypeChanged(type);
 }
 
 void MCPackGeneratorOptionWidget::setPackName(const QString& name)
@@ -140,12 +161,14 @@ void MCPackGeneratorOptionWidget::setPackName(const QString& name)
         return;
     packNameInputer_->setText(name);
     packNameInputer_->setToolTip(name);
+    emit packNameChanged(name);
 }
 
 void MCPackGeneratorOptionWidget::setPackDescription(const QString& description)
 {
     packDescriptionInputer_->setText(description);
     packDescriptionInputer_->setToolTip(description);
+    emit packDescriptionChanged(description);
 }
 
 void MCPackGeneratorOptionWidget::setPackNamespace(const QString& nameSpace)
@@ -154,32 +177,43 @@ void MCPackGeneratorOptionWidget::setPackNamespace(const QString& nameSpace)
         return;
     packNamespaceInputer_->setText(nameSpace);
     packNamespaceInputer_->setToolTip(nameSpace);
+    emit packNamespaceChanged(nameSpace);
 }
 
 void MCPackGeneratorOptionWidget::setPackVersion(const Version& version)
 {
     packVersionInputer_->setText(QString::fromStdString(version.toString(false)));
+    packVersionChanged(version);
 }
 
 void MCPackGeneratorOptionWidget::setAssistFunctionEnabled(bool enabled)
 {
+    if (assistFunctionEnabledCheck_->isChecked() == enabled)
+        return;
     assistFunctionEnabledCheck_->setChecked(enabled);
+    emit assistFunctionEnabledToggled(enabled);
 }
 
 void MCPackGeneratorOptionWidget::setAutoFillPackName(bool enabled)
 {
+    if (packNameAutoFillCheck_->isChecked() == enabled)
+        return;
     const bool old = packNameAutoFillCheck_->blockSignals(true);
     packNameAutoFillCheck_->setChecked(enabled);
     packNameAutoFillCheck_->blockSignals(old);
     packNameInputer_->setEnabled(!enabled);
+    emit autoFillNameToggled(enabled);
 }
 
 void MCPackGeneratorOptionWidget::setAutoFillPackDescription(bool enabled)
 {
+    if (packNameAutoFillCheck_->isChecked() == enabled)
+        return;
     const bool old = packDescriptionAutoFillCheck_->blockSignals(true);
     packDescriptionAutoFillCheck_->setChecked(enabled);
     packDescriptionAutoFillCheck_->blockSignals(old);
     packDescriptionInputer_->setEnabled(!enabled);
+    emit autoFillDescriptionToggled(enabled);
 }
 
 bool MCPackGeneratorOptionWidget::autoFillPackName() const

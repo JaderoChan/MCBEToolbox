@@ -50,6 +50,16 @@ public:
     Version  packVersion()           const;
     bool     assistFunctionEnabled() const;
 
+signals:
+    void packTypeChanged(PackType type);
+    void packNameChanged(QString name);
+    void packDescriptionChanged(QString description);
+    void packNamespaceChanged(QString nameSpace);
+    void packVersionChanged(Version version);
+    void autoFillNameToggled(bool enabled);
+    void autoFillDescriptionToggled(bool enabled);
+    void assistFunctionEnabledToggled(bool enabled);
+
 protected:
     void refreshText() override;
 

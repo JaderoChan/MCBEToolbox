@@ -62,6 +62,9 @@ public:
 
 signals:
     void surfaceDirectionChanged(SurfaceDirection surfaceDirection);
+    void maxFrameSizeChanged(QSize size);
+    void maxFrameCountChanged(int maxFrameCount);
+    void numThreadsChanged(int numThreads);
 
 protected:
     void refreshText() override;

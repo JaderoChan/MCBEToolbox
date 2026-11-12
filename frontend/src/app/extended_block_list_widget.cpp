@@ -68,6 +68,11 @@ ExtendedBlockListWidget::ExtendedBlockListWidget(QWidget* parent)
             static_cast<int>(i) / FILTER_ATTRIBUTE_COLUMNS,
             static_cast<int>(i) % FILTER_ATTRIBUTE_COLUMNS
         );
+
+        connect(
+            checkBox, &QCheckBox::toggled,
+            this, [this]() { emit checkedBlockAttributesChanged(checkdBlockAttributes()); }
+        );
     }
 
     // 方块属性筛选模式。
@@ -118,8 +123,12 @@ ExtendedBlockListWidget::ExtendedBlockListWidget(QWidget* parent)
     connect(excludeButton_,      &QPushButton::clicked, this,             [this]() { applyFilter(false); });
     connect(supplementButton_,   &QPushButton::clicked, this,             [this]() { applyFilter(true);  });
     connect(
+        filterModeCombo_, &QComboBox::currentIndexChanged,
+        this, [this]() { emit blockFilterModeChanged(blockFilterMode()); }
+    );
+    connect(
         blockListWidget_, &BlockListWidget::selectionChanged,
-        this, &ExtendedBlockListWidget::refreshSelectionCountLabel
+        this, [this]() { refreshSelectionCountLabel(); emit selectionChanged(); }
     );
 
     refreshText();
@@ -160,6 +169,7 @@ void ExtendedBlockListWidget::setCheckedBlockAttributes(int blockAttributes)
 {
     for (auto& box : attributeCheckBoxes_)
         box->setChecked(box->property("blockAttribute").toInt() & blockAttributes != 0);
+    emit checkedBlockAttributesChanged(blockAttributes);
 }
 
 void ExtendedBlockListWidget::setBlockFilterMode(BlockAttributeFilterMode mode)
@@ -168,10 +178,46 @@ void ExtendedBlockListWidget::setBlockFilterMode(BlockAttributeFilterMode mode)
     {
         if (filterModeCombo_->itemData(i).toInt() == mode)
         {
-            filterModeCombo_->setCurrentIndex(i);
+            if (filterModeCombo_->currentIndex() != i)
+            {
+                filterModeCombo_->setCurrentIndex(i);
+                emit blockFilterModeChanged(mode);
+            }
             break;
         }
     }
+}
+
+int ExtendedBlockListWidget::checkdBlockAttributes() const
+{
+    int attributes = 0;
+    for (const auto& box : attributeCheckBoxes_)
+    {
+        if (box->isChecked())
+            attributes |= box->property("blockAttribute").toInt();
+    }
+    return attributes;
+}
+
+BlockAttributeFilterMode ExtendedBlockListWidget::blockFilterMode() const
+{
+    for (int i = 0; i < filterModeCombo_->count(); ++i)
+    {
+        if (filterModeCombo_->currentIndex() == i)
+            return static_cast<BlockAttributeFilterMode>(filterModeCombo_->itemData(i).toInt());
+    }
+    return BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY;
+}
+
+void ExtendedBlockListWidget::setFilterPanelExpanded(bool expanded)
+{
+    if (filterToggleButton_->isChecked() != expanded)
+        filterToggleButton_->toggle();
+}
+
+bool ExtendedBlockListWidget::filterPanelExpanded() const
+{
+    return filterToggleButton_->isChecked();
 }
 
 void ExtendedBlockListWidget::setBlocks(BlockDataMap blocks)
