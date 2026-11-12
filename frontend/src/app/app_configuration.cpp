@@ -85,9 +85,9 @@ AppConfiguration::CommonOptionConfig getDefaultCommonOptionConfig(const QSize& m
     };
 }
 
-AppConfiguration::MCPackOpionConfig getDefaultMCPackOptionConfig()
+AppConfiguration::MCPackOptionConfig getDefaultMCPackOptionConfig()
 {
-    return AppConfiguration::MCPackOpionConfig
+    return AppConfiguration::MCPackOptionConfig
     {
         DEFAULT_PACK_TYPE,
         QString(),
@@ -119,7 +119,7 @@ AppConfiguration::CommonOptionConfig parseCommonOptionConfig(const nlohmann::jso
 
     config.checkedBlockAttributes = json.value("checked_block_attributes", DEFAULT_CHECKED_BLOCK_ATTRIBUTES);
     config.blockFilterMode        = json.value("block_filter_mode",        DEFAULT_BLOCK_FILTER_MODE);
-    config.filterPanelExpaned     = json.value("filter_panel_expanded",    false);
+    config.filterPanelExpanded    = json.value("filter_panel_expanded",    false);
 
     if (json.contains("selected_blocks") && json["selected_blocks"].is_array())
     {
@@ -158,12 +158,12 @@ AppConfiguration::CommonOptionConfig parseCommonOptionConfig(const nlohmann::jso
     return config;
 }
 
-AppConfiguration::MCPackOpionConfig parseMCPackOptionConfig(const nlohmann::json& json)
+AppConfiguration::MCPackOptionConfig parseMCPackOptionConfig(const nlohmann::json& json)
 {
     if (json.is_discarded() || !json.is_object())
         return getDefaultMCPackOptionConfig();
 
-    AppConfiguration::MCPackOpionConfig config;
+    AppConfiguration::MCPackOptionConfig config;
 
     config.packType                = json.value("pack_type", DEFAULT_PACK_TYPE);
     config.packName                = QString::fromStdString(json.value("pack_name",        std::string()));
@@ -205,7 +205,7 @@ nlohmann::json serializeCommonOptionConfig(const AppConfiguration::CommonOptionC
     json["max_frame_size_height"]    = config.maxFrameSize.height();
     json["checked_block_attributes"] = config.checkedBlockAttributes;
     json["block_filter_mode"]        = config.blockFilterMode;
-    json["filter_panel_expanded"]    = config.filterPanelExpaned;
+    json["filter_panel_expanded"]    = config.filterPanelExpanded;
     json["max_frame_count"]          = config.maxFrameCount;
     json["num_threads"]              = config.numThreads;
 
@@ -217,7 +217,7 @@ nlohmann::json serializeCommonOptionConfig(const AppConfiguration::CommonOptionC
     return json;
 }
 
-nlohmann::json serializeMCPackOptionConfig(const AppConfiguration::MCPackOpionConfig& config)
+nlohmann::json serializeMCPackOptionConfig(const AppConfiguration::MCPackOptionConfig& config)
 {
     nlohmann::json json = nlohmann::json::object();
 

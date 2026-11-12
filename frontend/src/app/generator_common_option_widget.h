@@ -50,6 +50,8 @@ public:
     void setMaxFrameCount(int count);
     void setNumThreads(int num);
 
+    void setModeButtonVisible(FallbackBlockSelector::Mode mode, bool visible);
+
     QString          inputFilePath()    const;
     /** @sa \ref OutputFileSelector::outputFilePath() */
     QString          outputFilePath(QString fileName = QString(), bool attachTimestamp = false) const;
@@ -70,8 +72,7 @@ protected:
     void refreshText() override;
 
 private:
-    friend class BlockImageGeneratorPageWidget;
-    friend class PixelArtGeneratorPageWidget;
+    friend class GeneratorPageWidgetBase;
 
     void onInputFileSelectorClicked();
 

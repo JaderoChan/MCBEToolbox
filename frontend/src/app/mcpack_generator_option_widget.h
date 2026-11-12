@@ -8,7 +8,7 @@ class QCheckBox;
 class QLabel;
 class QLineEdit;
 class QRadioButton;
-class QSpibBox;
+class QSpinBox;
 
 /** MC Pack Generator（Pixel Art Generator）使用的选项配置界面。 */
 class MCPackGeneratorOptionWidget : public AdaptiveWidget

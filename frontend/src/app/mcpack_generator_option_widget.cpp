@@ -149,48 +149,65 @@ void MCPackGeneratorOptionWidget::setPackType(PackType type)
 {
     if (packType() == type)
         return;
-    if      (type == StructurePackType) packTypeStructureButton_->setChecked(true);
-    else if (type == FunctionPackType)  packTypeFunctionButton_->setChecked(true);
+
+    auto* button = (type == StructurePackType) ? packTypeStructureButton_ : packTypeFunctionButton_;
+    const bool old = button->blockSignals(true);
+    button->setChecked(true);
+    button->blockSignals(old);
     refreshAssistFunctionUiState();
     emit packTypeChanged(type);
 }
 
 void MCPackGeneratorOptionWidget::setPackName(const QString& name)
 {
-    if (!isValidName(name))
+    if (!isValidName(name) || packName() == name)
         return;
+    const bool old = packNameInputer_->blockSignals(true);
     packNameInputer_->setText(name);
+    packNameInputer_->blockSignals(old);
     packNameInputer_->setToolTip(name);
     emit packNameChanged(name);
 }
 
 void MCPackGeneratorOptionWidget::setPackDescription(const QString& description)
 {
+    if (packDescription() == description)
+        return;
+    const bool old = packDescriptionInputer_->blockSignals(true);
     packDescriptionInputer_->setText(description);
+    packDescriptionInputer_->blockSignals(old);
     packDescriptionInputer_->setToolTip(description);
     emit packDescriptionChanged(description);
 }
 
 void MCPackGeneratorOptionWidget::setPackNamespace(const QString& nameSpace)
 {
-    if (!isValidNamespace(nameSpace))
+    if (!isValidNamespace(nameSpace) || packNamespace() == nameSpace)
         return;
+    const bool old = packNamespaceInputer_->blockSignals(true);
     packNamespaceInputer_->setText(nameSpace);
+    packNamespaceInputer_->blockSignals(old);
     packNamespaceInputer_->setToolTip(nameSpace);
     emit packNamespaceChanged(nameSpace);
 }
 
 void MCPackGeneratorOptionWidget::setPackVersion(const Version& version)
 {
+    if (packVersion() == version)
+        return;
+    const bool old = packVersionInputer_->blockSignals(true);
     packVersionInputer_->setText(QString::fromStdString(version.toString(false)));
-    packVersionChanged(version);
+    packVersionInputer_->blockSignals(old);
+    emit packVersionChanged(version);
 }
 
 void MCPackGeneratorOptionWidget::setAssistFunctionEnabled(bool enabled)
 {
     if (assistFunctionEnabledCheck_->isChecked() == enabled)
         return;
+    const bool old = assistFunctionEnabledCheck_->blockSignals(true);
     assistFunctionEnabledCheck_->setChecked(enabled);
+    assistFunctionEnabledCheck_->blockSignals(old);
     emit assistFunctionEnabledToggled(enabled);
 }
 

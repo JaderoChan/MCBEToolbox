@@ -57,7 +57,7 @@ public:
 
         int            checkedBlockAttributes;
         int            blockFilterMode;
-        bool           filterPanelExpaned;
+        bool           filterPanelExpanded;
         QList<QString> selectedBlocks;
 
         // 视频部分
@@ -65,7 +65,7 @@ public:
         int            numThreads;
     };
 
-    struct MCPackOpionConfig
+    struct MCPackOptionConfig
     {
         int     packType;
         QString packName;
@@ -81,7 +81,7 @@ public:
     struct PixelArtGeneratorConfig
     {
         CommonOptionConfig commonConfig;
-        MCPackOpionConfig  mcpackConfig;
+        MCPackOptionConfig mcpackConfig;
     } pixelArtImageGroup, pixelArtVideoGroup;
 
     struct

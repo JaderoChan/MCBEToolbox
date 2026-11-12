@@ -71,7 +71,7 @@ ExtendedBlockListWidget::ExtendedBlockListWidget(QWidget* parent)
 
         connect(
             checkBox, &QCheckBox::toggled,
-            this, [this]() { emit checkedBlockAttributesChanged(checkdBlockAttributes()); }
+            this, [this]() { emit checkedBlockAttributesChanged(checkedBlockAttributes()); }
         );
     }
 
@@ -151,12 +151,12 @@ void ExtendedBlockListWidget::select(const QList<QString>& blockIds)
 
 void ExtendedBlockListWidget::unselect(const QString& blockId)
 {
-    blockListWidget_->select(blockId);
+    blockListWidget_->unselect(blockId);
 }
 
 void ExtendedBlockListWidget::unselect(const QList<QString>& blockIds)
 {
-    blockListWidget_->select(blockIds);
+    blockListWidget_->unselect(blockIds);
 }
 
 void ExtendedBlockListWidget::selectAll()
@@ -171,8 +171,15 @@ void ExtendedBlockListWidget::unselectAll()
 
 void ExtendedBlockListWidget::setCheckedBlockAttributes(int blockAttributes)
 {
+    if (checkedBlockAttributes() == blockAttributes)
+        return;
+
     for (auto& box : attributeCheckBoxes_)
+    {
+        const bool old = box->blockSignals(true);
         box->setChecked((box->property("blockAttribute").toInt() & blockAttributes) != 0);
+        box->blockSignals(old);
+    }
     emit checkedBlockAttributesChanged(blockAttributes);
 }
 
@@ -184,7 +191,9 @@ void ExtendedBlockListWidget::setBlockFilterMode(BlockAttributeFilterMode mode)
         {
             if (filterModeCombo_->currentIndex() != i)
             {
+                const bool old = filterModeCombo_->blockSignals(true);
                 filterModeCombo_->setCurrentIndex(i);
+                filterModeCombo_->blockSignals(old);
                 emit blockFilterModeChanged(mode);
             }
             break;
@@ -192,7 +201,7 @@ void ExtendedBlockListWidget::setBlockFilterMode(BlockAttributeFilterMode mode)
     }
 }
 
-int ExtendedBlockListWidget::checkdBlockAttributes() const
+int ExtendedBlockListWidget::checkedBlockAttributes() const
 {
     int attributes = 0;
     for (const auto& box : attributeCheckBoxes_)

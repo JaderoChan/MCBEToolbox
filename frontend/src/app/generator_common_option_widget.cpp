@@ -197,6 +197,11 @@ void GeneratorCommonOptionWidget::setNumThreadsRange(int min, int max)
     numThreadsInputer_->setRange(min, max);
 }
 
+void GeneratorCommonOptionWidget::setModeButtonVisible(FallbackBlockSelector::Mode mode, bool visible)
+{
+    fallbackBlockSelector_->setModeButtonVisible(mode, visible);
+}
+
 void GeneratorCommonOptionWidget::setSurfaceDirection(SurfaceDirection surfaceDirection)
 {
     for (int i = 0; i < surfaceDirectionSelector_->count(); ++i)
@@ -213,22 +218,33 @@ void GeneratorCommonOptionWidget::setMaxFrameSize(const QSize& size)
 {
     if (maxFrameSize() != size)
     {
+        const bool oldW = maxFrameSizeWidthInputer_->blockSignals(true);
+        const bool oldH = maxFrameSizeHeightInputer_->blockSignals(true);
         maxFrameSizeWidthInputer_->setValue(size.width());
         maxFrameSizeHeightInputer_->setValue(size.height());
+        maxFrameSizeWidthInputer_->blockSignals(oldW);
+        maxFrameSizeHeightInputer_->blockSignals(oldH);
         emit maxFrameSizeChanged(size);
     }
 }
 
 void GeneratorCommonOptionWidget::setMaxFrameCount(int count)
 {
+    if (maxFrameCount() == count)
+        return;
+
     if (count == -1)
     {
+        const bool old = maxFrameCountInfCheck_->blockSignals(true);
         maxFrameCountInfCheck_->setChecked(true);
+        maxFrameCountInfCheck_->blockSignals(old);
         refreshUiState();
     }
     else
     {
+        const bool old = maxFrameCountInputer_->blockSignals(true);
         maxFrameCountInputer_->setValue(count);
+        maxFrameCountInputer_->blockSignals(old);
     }
 
     emit maxFrameCountChanged(count);
@@ -236,7 +252,12 @@ void GeneratorCommonOptionWidget::setMaxFrameCount(int count)
 
 void GeneratorCommonOptionWidget::setNumThreads(int num)
 {
+    if (numThreads() == num)
+        return;
+
+    const bool old = numThreadsInputer_->blockSignals(true);
     numThreadsInputer_->setValue(num);
+    numThreadsInputer_->blockSignals(old);
     emit numThreadsChanged(num);
 }
 

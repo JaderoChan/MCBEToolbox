@@ -29,7 +29,7 @@ public:
 
     void setCheckedBlockAttributes(int blockAttributes);
     void setBlockFilterMode(BlockAttributeFilterMode mode);
-    int  checkdBlockAttributes() const;
+    int  checkedBlockAttributes() const;
     BlockAttributeFilterMode blockFilterMode() const;
 
     void setFilterPanelExpanded(bool expanded);
