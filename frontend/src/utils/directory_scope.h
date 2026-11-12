@@ -10,7 +10,7 @@ public:
     explicit DirectoryScope(const QString& path)
     {
         originDir_ = QDir::currentPath();
-        QDir::setCurrent(path);
+        isOk_      = QDir::setCurrent(path);
     }
 
     ~DirectoryScope()
@@ -18,6 +18,13 @@ public:
         QDir::setCurrent(originDir_);
     }
 
+    /** 如果切换目录失败返回 false（例如目标目录不存在），否则返回 true。 */
+    bool isOk() const
+    {
+        return isOk_;
+    }
+
 private:
+    bool    isOk_;
     QString originDir_;
 };
