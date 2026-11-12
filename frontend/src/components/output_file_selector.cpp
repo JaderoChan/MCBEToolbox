@@ -64,6 +64,7 @@ void OutputFileSelector::setMode(Mode mode)
     {
         mode_ = mode;
         refreshUiState();
+        emit modeChanged(mode_);
     }
 }
 
@@ -88,6 +89,7 @@ void OutputFileSelector::setCustomOutputDirectoryPath(QString dirPath)
             customFilePathInputer_->setText(customOutputDirectoryPath_);
             customFilePathInputer_->blockSignals(old);
         }
+        emit customOutputDirectoryChanged(customOutputDirectoryPath_);
     }
 }
 
@@ -102,6 +104,7 @@ void OutputFileSelector::setCustomOutputFilePath(QString filePath)
             customFilePathInputer_->setText(customOutputFilePath_);
             customFilePathInputer_->blockSignals(old);
         }
+        emit customOutputFileChanged(customOutputFilePath_);
     }
 }
 
@@ -217,8 +220,8 @@ void OutputFileSelector::onCustomFilePathTextChanged(const QString& text)
 {
     switch (mode_)
     {
-        case ToCustomDirectoryMode: customOutputDirectoryPath_ = text; break;
-        case ToCustomFileMode:      customOutputFilePath_      = text; break;
+        case ToCustomDirectoryMode: setCustomOutputDirectoryPath(text); break;
+        case ToCustomFileMode:      setCustomOutputFilePath(text);      break;
         default: break;
     }
 }

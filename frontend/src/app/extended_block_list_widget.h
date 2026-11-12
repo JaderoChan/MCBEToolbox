@@ -18,7 +18,15 @@ class ExtendedBlockListWidget : public AdaptiveWidget
 public:
     explicit ExtendedBlockListWidget(QWidget* parent = nullptr);
 
-    BlockListWidget* blockListWidget() const;
+    void select(const QString& blockId);
+    void select(const QList<QString>& blockIds);
+    void unselect(const QString& blockId);
+    void unselect(const QList<QString>& blockIds);
+    void selectAll();
+    void unselectAll();
+
+    void setCheckedBlockAttributes(int blockAttributes);
+    void setBlockFilterMode(BlockAttributeFilterMode mode);
 
     void setBlocks(BlockDataMap blocks);
     const BlockDataMap& blocks()    const;

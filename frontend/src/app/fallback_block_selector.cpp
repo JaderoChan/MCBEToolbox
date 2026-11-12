@@ -108,6 +108,7 @@ FallbackBlockSelector::FallbackBlockSelector(QWidget* parent)
         {
             selectedCustomBlock_ = std::move(dialog.selected());
             refreshCustomButtonTextIcon();
+            emit selectedCustomBlockChanged(QString::fromStdString(std::string(selectedCustomBlock_.first)));
         }
     });
 
@@ -134,6 +135,7 @@ void FallbackBlockSelector::setMode(Mode mode)
     {
         mode_ = mode;
         refreshButtonState();
+        emit modeChanged(mode_);
     }
 }
 
@@ -183,6 +185,7 @@ void FallbackBlockSelector::setSelectedCustomBlock(const QString& blockId)
 
     selectedCustomBlock_ = {it->first, it->second};
     refreshCustomButtonTextIcon();
+    emit selectedCustomBlockChanged(blockId);
 }
 
 BlockDataPair FallbackBlockSelector::fallbackBlock() const

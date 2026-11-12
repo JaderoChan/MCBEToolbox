@@ -126,9 +126,52 @@ ExtendedBlockListWidget::ExtendedBlockListWidget(QWidget* parent)
     refreshSelectionCountLabel();
 }
 
-BlockListWidget* ExtendedBlockListWidget::blockListWidget() const
+void ExtendedBlockListWidget::select(const QString& blockId)
 {
-    return blockListWidget_;
+    blockListWidget_->select(blockId);
+}
+
+void ExtendedBlockListWidget::select(const QList<QString>& blockIds)
+{
+    blockListWidget_->select(blockIds);
+}
+
+void ExtendedBlockListWidget::unselect(const QString& blockId)
+{
+    blockListWidget_->select(blockId);
+}
+
+void ExtendedBlockListWidget::unselect(const QList<QString>& blockIds)
+{
+    blockListWidget_->select(blockIds);
+}
+
+void ExtendedBlockListWidget::selectAll()
+{
+    blockListWidget_->selectAll();
+}
+
+void ExtendedBlockListWidget::unselectAll()
+{
+    blockListWidget_->unselectAll();
+}
+
+void ExtendedBlockListWidget::setCheckedBlockAttributes(int blockAttributes)
+{
+    for (auto& box : attributeCheckBoxes_)
+        box->setChecked(box->property("blockAttribute").toInt() & blockAttributes != 0);
+}
+
+void ExtendedBlockListWidget::setBlockFilterMode(BlockAttributeFilterMode mode)
+{
+    for (int i = 0; i < filterModeCombo_->count(); ++i)
+    {
+        if (filterModeCombo_->itemData(i).toInt() == mode)
+        {
+            filterModeCombo_->setCurrentIndex(i);
+            break;
+        }
+    }
 }
 
 void ExtendedBlockListWidget::setBlocks(BlockDataMap blocks)

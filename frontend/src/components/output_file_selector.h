@@ -49,6 +49,11 @@ public:
      */
     QString outputFilePath(QString fileName = QString(), bool attachTimestamp = false) const;
 
+signals:
+    void modeChanged(Mode mode);
+    void customOutputDirectoryChanged(QString dirPath);
+    void customOutputFileChanged(QString filePath);
+
 protected:
     void refreshText() override;
 

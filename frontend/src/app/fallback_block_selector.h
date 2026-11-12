@@ -36,6 +36,10 @@ public:
 
     BlockDataPair fallbackBlock() const;
 
+signals:
+    void modeChanged(Mode mode);
+    void selectedCustomBlockChanged(QString blockId);
+
 protected:
     void refreshText() override;
 
