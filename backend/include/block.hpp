@@ -37,7 +37,9 @@ constexpr BlockAttributes BLOCK_ATTRI_NONE = 0x00000000; ///< 不包含任何方
 constexpr BlockAttributes BLOCK_ATTRI_ALL  = 0xFFFFFFFF; ///< 包含所有方块属性（可用于筛选 #BlockDataMap）
 
 // 判断 value 是否包含 attris 指定的所有方块属性。
-#define HAS_BLOCK_ATTRIS(value, attris) !!(attris == (value & attris))
+#define HAS_ALL_BLOCK_ATTRIS(value, attris) !!(attris == (value & attris))
+// 判断 value 是否包含 attris 指定的任意方块属性。
+#define HAS_ANY_BLOCK_ATTRIS(value, attris) !!((value & attris) != 0)
 // 将 attris 指定的方块属性加入 value。
 #define SET_BLOCK_ATTRIS(value, attris) (value = (value | attris))
 // 将 attris 指定的方块属性从 value 中移除。
