@@ -92,7 +92,7 @@
       "colors": {
         "up": "#FBB628",
         "bottom": "#E87B0C",
-        "side": "#FAAF20"
+        "side": "#FCAB1C"
       },
       "attributes": {}
     }
@@ -1814,7 +1814,7 @@
     "base": {
       "id": "minecraft:bedrock",
       "textures": "1.21.50.7/bedrock.png",
-      "colors": "#303030",
+      "colors": "##6C6C6C",
       "attributes": {
         "is_creative": true
       }
@@ -1848,7 +1848,7 @@
     "base": {
       "id": "minecraft:coarse_dirt",
       "textures": "1.21.50.7/coarse_dirt.png",
-      "colors": "#654730",
+      "colors": "#735239",
       "attributes": {
         "enderman_pickable": true
       }
@@ -2220,7 +2220,7 @@
     "base": {
       "id": "minecraft:obsidian",
       "textures": "1.21.50.7/obsidian.png",
-      "colors": "#0A0712",
+      "colors": "#171424",
       "attributes": {}
     }
   },
