@@ -32,7 +32,7 @@ QString getBlockAttributeFilterModeText(BlockAttributeFilterMode filterMode)
 QString makeBlockAttributesText(BlockAttributes attributes)
 {
 #define APPEND_ATTRIBUTE_TEXT(attribute)                                        \
-    if (HAS_ALL_BLOCK_ATTRIS(attributes, attribute)) text =                         \
+    if (HAS_ALL_BLOCK_ATTRIS(attributes, attribute)) text =                     \
         text +                                                                  \
         (text.isEmpty() ? QString() : QStringLiteral("; ")) +                   \
         getBlockAttributeText(attribute)
