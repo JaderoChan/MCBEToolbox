@@ -7,7 +7,7 @@
 ![CMake](https://img.shields.io/badge/CMake-3.26%2B-064F8C?logo=cmake&logoColor=white)
 ![Qt](https://img.shields.io/badge/Qt-6.7%2B-41CD52?logo=qt&logoColor=white)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
-[![License](https://img.shields.io/badge/license-MIT-green)](../LICENSE)
+[![License](https://img.shields.io/badge/license-BSD3Clause-green)](LICENSE)
 
 [**简体中文** | [English](README.md)]
 
