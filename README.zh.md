@@ -114,7 +114,7 @@ cmake --build build --config Release
 
 ## 许可证
 
-本项目基于 [MIT 许可证](LICENSE) 开源。`3rdparty/` 下的第三方依赖各自保留其原始许可证（见各自目录下的 `LICENSE` 文件）。
+本项目基于 [BSD 3-Clause 许可证](LICENSE) 开源。`3rdparty/` 下的第三方依赖各自保留其原始许可证（见各自目录下的 `LICENSE` 文件）。
 
 ## 作者信息
 

@@ -114,7 +114,7 @@ The current design has a few known limitations (minimum supported game version (
 
 ## License
 
-This project is open-sourced under the [MIT License](LICENSE). Each third-party dependency under `3rdparty/` retains its own original license (see the `LICENSE` file in its respective directory).
+This project is open-sourced under the [BSD 3-Clause License](LICENSE). Each third-party dependency under `3rdparty/` retains its own original license (see the `LICENSE` file in its respective directory).
 
 ## Author
 
