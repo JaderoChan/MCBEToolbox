@@ -11,9 +11,7 @@
 
 [**简体中文** | [English](README.md)]
 
-> 此文档大部分内容由 AI 总结，待审查
-
-一个面向 **Minecraft 基岩版（MCBE）** 内容创作者的工具箱：将图片 / 视频 / GIF 转换为方块图片、方块视频、像素画结构文件或函数文件，并内置一个 NBT 编辑器。
+一个面向 **Minecraft 基岩版（MCBE）** 内容创作者的工具箱：将图片 / 视频 / GIF 转换为方块图片、方块视频、像素画结构文件或函数文件；对 NBT 文件进行读写、互转 Java 版与基岩版的 NBT、SNBT 的序列化与反序列化等。
 
 ## 目录
 
@@ -34,12 +32,12 @@
 
 ## 简介
 
-MCBE Toolbox 由后端生成库（`backend/`）与 Qt6 前端界面（`frontend/`）组成：后端负责图像 / 视频采样、方块颜色匹配、NBT 结构与函数生成等核心算法，前端提供可视化的参数配置、方块选择、进度展示与 NBT 编辑能力。
+MCBE Toolbox 由后端库（`backend/`）与 Qt6 前端界面（`frontend/`）组成：后端负责图像 / 视频采样、方块颜色匹配、NBT 结构与函数生成等核心算法，前端提供可视化的参数配置、方块选择、进度展示与 NBT 编辑能力。
 
 ## 功能
 
 - **方块图片 / 视频生成器**：将图片转换为方块拼图（PNG），将视频转换为方块拼图视频（MP4）。
-- **像素画生成器**：将图片 / 视频 / GIF 转换为 Minecraft 结构文件（`.mcstructure`）或函数文件（`.mcfunction`）打包的行为包（`.mcpack`），支持单文件与逐帧拆分两种模式。（当前前端仅提供逐帧拆分模式）
+- **像素画生成器**：将图片 / 视频 / GIF 转换为 Minecraft 基岩版结构文件（`.mcstructure`）或函数文件（`.mcfunction`）打包的行为包（`.mcpack`），支持单文件与逐帧拆分两种模式。（当前前端仅提供逐帧拆分模式）
 - **方块筛选与管理**：按方块属性（透明、发光、重力等）筛选可用方块，支持 Fallback 方块（透明像素填充方块）与方块用量统计。
 - **NBT 编辑器**：查看与编辑 NBT 文件，NBT 与 SNBT 互转，大小端序转换，GZip 压缩 / 解压缩。
 - **多语言界面**：内置简体中文 / English，基于 [easy_translate](https://github.com/JaderoChan/easy_translate) 的运行时翻译系统，易于扩展更多语言。
@@ -47,13 +45,11 @@ MCBE Toolbox 由后端生成库（`backend/`）与 Qt6 前端界面（`frontend/
 
 ## 界面截图
 
-> 暂时预留位置。
+![像素画生成器](docs/assets/screenshots/pixel_art_generator_dark_zh.png)
 
-![方块图片/视频生成器](assets/screenshots/block_image_generator.png)
+![方块图片/视频生成器](docs/assets/screenshots/block_image_generator_light_zh.png)
 
-![像素画生成器](assets/screenshots/pixel_art_generator.png)
-
-![NBT 编辑器](assets/screenshots/nbt_editor.png)
+![NBT 编辑器](docs/assets/screenshots/nbt_editor_dark_zh.png)
 
 ## 构建
 
