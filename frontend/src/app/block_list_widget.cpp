@@ -31,18 +31,9 @@ class BlockListItemWidget : public AdaptiveWidget
     Q_OBJECT
 
 public:
-    explicit BlockListItemWidget(BlockDataPair block, QWidget* parent = nullptr)
-        : AdaptiveWidget(parent), block_(std::move(block))
+    explicit BlockListItemWidget(QWidget* parent = nullptr)
+        : AdaptiveWidget(parent)
     {
-        if (block.second)
-        {
-            DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
-            const auto texturePath = QStringLiteral("%1/%2")
-                .arg(APP_BLOCK_TEXTURES_DIRPATH)
-                .arg(QString::fromStdString(block.second->surfaceData.side.first));
-            textureRaw_ = QPixmap(texturePath);
-        }
-
         setContentsMargins(ITEM_MARGIN, ITEM_MARGIN, ITEM_MARGIN, ITEM_MARGIN);
         setMinimumSize(ITEM_MIN_SIZE, ITEM_MIN_SIZE);
         setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -50,9 +41,33 @@ public:
         refreshText();
     }
 
+    void setBlock(BlockDataPair block)
+    {
+        block_ = std::move(block);
+        refreshs();
+    }
+
+    void setSurfaceDirection(SurfaceDirection surfaceDirection)
+    {
+        surfaceDirection_ = surfaceDirection;
+        refreshs();
+    }
+
+    void reset(BlockDataPair block, SurfaceDirection surfaceDirection)
+    {
+        block_            = std::move(block);
+        surfaceDirection_ = surfaceDirection;
+        refreshs();
+    }
+
     const BlockDataPair& block() const
     {
         return block_;
+    }
+
+    SurfaceDirection surfaceDirection() const
+    {
+        return surfaceDirection_;
     }
 
     void setSelected(bool selected)
@@ -162,7 +177,7 @@ protected:
         );
         if (block_.second)
         {
-            const auto color = block_.second->surfaceData.side.second;
+            const auto color = block_.second->surfaceData.get(surfaceDirection_).second;
             painter.setPen(Qt::NoPen);
             painter.setBrush(QColor(color.r, color.g, color.b));
             painter.drawRect(colorBarRect);
@@ -213,12 +228,29 @@ protected:
         update();
     }
 
+    void refreshs()
+    {
+        textureRaw_    = QPixmap();
+        textureScaled_ = QPixmap();
+        if (block_.second)
+        {
+            DirectoryScope dirScope(APP_RESOURCES_DIRPATH);
+            const auto texturePath = QStringLiteral("%1/%2")
+                .arg(APP_BLOCK_TEXTURES_DIRPATH)
+                .arg(QString::fromStdString(block_.second->surfaceData.get(surfaceDirection_).first));
+            textureRaw_        = QPixmap(texturePath);
+            textureScaledSize_ = -1;
+        }
+        refreshText();
+    }
+
 private:
-    BlockDataPair block_;
-    QString       name_;
-    QPixmap       textureRaw_;
-    QPixmap       textureScaled_;
-    int           textureScaledSize_ = -1;
+    BlockDataPair    block_;
+    SurfaceDirection surfaceDirection_;
+    QString          name_;
+    QPixmap          textureRaw_;
+    QPixmap          textureScaled_;
+    int              textureScaledSize_ = -1;
 
     bool selected_ = false;
     bool hovered_  = false;
@@ -376,9 +408,40 @@ void BlockListWidget::setBlocks(BlockDataMap blocks)
     rebuildBlocks();
 }
 
+void BlockListWidget::setSurfaceDirection(SurfaceDirection surfaceDirection)
+{
+    if (surfaceDirection_ == surfaceDirection)
+        return;
+
+    const bool needUpdate =
+        surfaceDirection_ == SURFACE_DIRECTION_UP     ||
+        surfaceDirection_ == SURFACE_DIRECTION_BOTTOM ||
+        surfaceDirection  == SURFACE_DIRECTION_UP     ||
+        surfaceDirection  == SURFACE_DIRECTION_BOTTOM;
+    surfaceDirection_ = surfaceDirection;
+
+    if (needUpdate)
+    {
+        for (auto& item : items_)
+            item->setSurfaceDirection(surfaceDirection_);
+    }
+}
+
+void BlockListWidget::reset(BlockDataMap blocks, SurfaceDirection surfaceDirection)
+{
+    blocks_           = std::move(blocks);
+    surfaceDirection_ = surfaceDirection;
+    rebuildBlocks();
+}
+
 const BlockDataMap& BlockListWidget::blocks() const
 {
     return blocks_;
+}
+
+const SurfaceDirection BlockListWidget::surfaceDirection() const
+{
+    return surfaceDirection_;
 }
 
 const BlockDataMap& BlockListWidget::selecteds() const
@@ -421,7 +484,8 @@ void BlockListWidget::rebuildItems()
     {
         const auto qid = QString::fromStdString(std::string(id));
 
-        auto* item = new BlockListItemWidget({id, block}, gridContainer_);
+        auto* item = new BlockListItemWidget(gridContainer_);
+        item->reset({id, block}, surfaceDirection_);
         item->setSelected(selecteds_.count(id) > 0);
 
         connect(item, &BlockListItemWidget::clicked, this, [this, qid, item, index]()

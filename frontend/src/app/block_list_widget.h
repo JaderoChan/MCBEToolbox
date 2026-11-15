@@ -42,8 +42,11 @@ public:
     void appendBlocks(const BlockAttributes& attributes, BlockAttributeFilterMode filterMode);
 
     void setBlocks(BlockDataMap blocks);
-    const BlockDataMap& blocks()    const;
-    const BlockDataMap& selecteds() const;
+    void setSurfaceDirection(SurfaceDirection surfaceDirection);
+    void reset(BlockDataMap blocks, SurfaceDirection surfaceDirection);
+    const BlockDataMap&    blocks()           const;
+    const SurfaceDirection surfaceDirection() const;
+    const BlockDataMap&    selecteds()        const;
 
 signals:
     void selectionChanged();
@@ -58,9 +61,10 @@ private:
     void setItemSelected(const QString& blockId, bool selected);
     void onSelectedsChanged();
 
-    BlockDataMap blocks_;
-    BlockDataMap selecteds_;
-    bool         multiSelectEnabled_ = true;
+    BlockDataMap     blocks_;
+    BlockDataMap     selecteds_;
+    SurfaceDirection surfaceDirection_   = SURFACE_DIRECTION_UP;
+    bool             multiSelectEnabled_ = true;
 
     QScrollArea* scrollArea_    = nullptr;
     QWidget*     gridContainer_ = nullptr;

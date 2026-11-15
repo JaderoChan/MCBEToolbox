@@ -111,7 +111,7 @@ void GeneratorPageWidgetBase::setupGeneratorUi()
     commonOptionWidget_->setMaxFrameCount(config.maxFrameCount);
     commonOptionWidget_->setNumThreads(config.numThreads);
 
-    availableBlockWidget_->setBlocks(dataCache.baseBlocks);
+    availableBlockWidget_->reset(dataCache.baseBlocks, static_cast<SurfaceDirection>(config.desiredSurface));
     availableBlockWidget_->setCheckedBlockAttributes(config.checkedBlockAttributes);
     availableBlockWidget_->setBlockFilterMode(static_cast<BlockAttributeFilterMode>(config.blockFilterMode));
     availableBlockWidget_->setFilterPanelExpanded(config.filterPanelExpanded);
@@ -158,6 +158,15 @@ void GeneratorPageWidgetBase::setupGeneratorUi()
     GENERATOR_CONFIG_CONNECT(
         availableBlockWidget_, &ExtendedBlockListWidget::filterPanelExpandedToggled,
         (bool expanded), commonConfigRef().filterPanelExpanded = expanded
+    );
+    connect(
+        commonOptionWidget_, &GeneratorCommonOptionWidget::surfaceDirectionChanged,
+        this, [this](SurfaceDirection surfaceDirection)
+        {
+            availableBlockWidget_->setSurfaceDirection(surfaceDirection);
+            commonConfigRef().desiredSurface = surfaceDirection;
+            syncConfig();
+        }
     );
     connect(
         availableBlockWidget_, &ExtendedBlockListWidget::selectionChanged,

@@ -239,6 +239,17 @@ void ExtendedBlockListWidget::setBlocks(BlockDataMap blocks)
     refreshSelectionCountLabel();
 }
 
+void ExtendedBlockListWidget::setSurfaceDirection(SurfaceDirection surfaceDirection)
+{
+    blockListWidget_->setSurfaceDirection(surfaceDirection);
+}
+
+void ExtendedBlockListWidget::reset(BlockDataMap blocks, SurfaceDirection surfaceDirection)
+{
+    blockListWidget_->reset(blocks, surfaceDirection);
+    refreshSelectionCountLabel();
+}
+
 const BlockDataMap& ExtendedBlockListWidget::blocks() const
 {
     return blockListWidget_->blocks();

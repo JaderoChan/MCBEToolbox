@@ -50,7 +50,7 @@ constexpr BlockAttributes BLOCK_ATTRI_ALL  = 0xFFFFFFFF; ///< 包含所有方块
  *
  * 可用于筛选 #BlockDataMap
  */
-enum BlockAttributeFilterMode
+enum BlockAttributeFilterMode : unsigned char
 {
     BLOCK_ATTRI_FILTER_MODE_CONTAINS_ANY, ///> 方块包含给定的任一属性
     BLOCK_ATTRI_FILTER_MODE_CONTAINS_ALL  ///> 方块包含给定的全部属性
@@ -65,7 +65,7 @@ enum BlockAttributeFilterMode
  *
  * 可用于指定使用的方块面数据与结构体朝向。
  */
-enum SurfaceDirection
+enum SurfaceDirection : unsigned char
 {
     SURFACE_DIRECTION_UP,     ///< 使用顶面方块材质，结构体朝向为 Y 轴正方向
     SURFACE_DIRECTION_BOTTOM, ///< 使用底面方块材质，结构体朝向为 Y 轴负方向

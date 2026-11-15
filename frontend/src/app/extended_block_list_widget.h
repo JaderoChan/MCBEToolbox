@@ -36,6 +36,8 @@ public:
     bool filterPanelExpanded() const;
 
     void setBlocks(BlockDataMap blocks);
+    void setSurfaceDirection(SurfaceDirection surfaceDirection);
+    void reset(BlockDataMap blocks, SurfaceDirection surfaceDirection);
     const BlockDataMap& blocks()    const;
     const BlockDataMap& selecteds() const;
 

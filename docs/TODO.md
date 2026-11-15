@@ -22,4 +22,4 @@
 - [ ] 给 `PixelArtGenerator` 增加输出结构预览（使用缩略图生成方块图）。
 - [ ] 增加白模与彩模生成功能。
 - [ ] 增加输出结构方位示意图。
-- [ ] 增加 `BlockListWidget` 的修改 `SurfaceDirection` 接口。
+- [x] 增加 `BlockListWidget` 的修改 `SurfaceDirection` 接口。
