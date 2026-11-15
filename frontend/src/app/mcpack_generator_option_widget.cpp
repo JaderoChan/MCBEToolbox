@@ -354,7 +354,7 @@ void MCPackGeneratorOptionWidget::refreshText()
 
     if (packType() == FunctionPackType)
     {
-        const QString tooltip = EASYTR("Assist function is not available in the Function Pack for the time being.");
+        const QString tooltip = EASYTR("Assist function is not available in the Function Pack for the time being");
         assistFunctionEnabledLabel_->setToolTip(tooltip);
         assistFunctionEnabledCheck_->setToolTip(tooltip);
     }
@@ -376,7 +376,7 @@ void MCPackGeneratorOptionWidget::refreshAssistFunctionUiState()
 {
     if (packType() == FunctionPackType)
     {
-        const QString tooltip = EASYTR("Assist function is not available in the Function Pack for the time being.");
+        const QString tooltip = EASYTR("Assist function is not available in the Function Pack for the time being");
         assistFunctionEnabledLabel_->setToolTip(tooltip);
         assistFunctionEnabledCheck_->setToolTip(tooltip);
         assistFunctionEnabledLabel_->setDisabled(true);
