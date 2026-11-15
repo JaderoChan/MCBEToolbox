@@ -263,9 +263,11 @@ void BlockListWidget::unselect(const QList<QString>& blockIds)
         setItemSelected(blockId, false);
 }
 
-void BlockListWidget::selectRange(int start, int end)
+void BlockListWidget::selectRange(int pos1, int pos2)
 {
-    if (start > end || start < 0 || end >= static_cast<int>(items_.size()))
+    int start = qMin(pos1, pos2);
+    int end   = qMax(pos1, pos2);
+    if (start < 0 || end >= static_cast<int>(items_.size()))
         return;
 
     if (!multiSelectEnabled_)
@@ -283,9 +285,11 @@ void BlockListWidget::selectRange(int start, int end)
     emit selectionChanged();
 }
 
-void BlockListWidget::unselectRange(int start, int end)
+void BlockListWidget::unselectRange(int pos1, int pos2)
 {
-    if (start > end || start < 0 || end >= static_cast<int>(items_.size()))
+    int start = qMin(pos1, pos2);
+    int end   = qMax(pos1, pos2);
+    if (start < 0 || end >= static_cast<int>(items_.size()))
         return;
 
     auto it = items_.begin();
@@ -393,9 +397,9 @@ void BlockListWidget::keyReleaseEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Shift)
     {
-        rangeSelectStart_ = -1;
-        rangeSelectEnd_   = -1;
-        shiftPressed_     = false;
+        rangeSelectPos1_ = -1;
+        rangeSelectPos2_ = -1;
+        shiftPressed_    = false;
     }
     AdaptiveWidget::keyReleaseEvent(e);
 }
@@ -424,19 +428,22 @@ void BlockListWidget::rebuildItems()
         {
             if (shiftPressed_ && multiSelectEnabled_)
             {
-                if (rangeSelectStart_ < 0)
+                if (rangeSelectPos1_ < 0)
                 {
-                    rangeSelectStart_ = index;
-                    startIsSelected_  = item->isSelected();
+                    rangeSelectPos1_ = index;
+                    startIsSelected_ = item->isSelected();
                     setItemSelected(qid, !item->isSelected());
                 }
                 else
                 {
-                    rangeSelectEnd_ = index;
-                    const auto begin = std::min(rangeSelectStart_, rangeSelectEnd_);
-                    const auto end   = std::max(rangeSelectStart_, rangeSelectEnd_);
-                    if (startIsSelected_) unselectRange(begin, end);
-                    else                  selectRange(begin,   end);
+                    if (rangeSelectPos2_ != -1)
+                    {
+                        if (startIsSelected_) selectRange(rangeSelectPos1_, rangeSelectPos2_);
+                        else                  unselectRange(rangeSelectPos1_, rangeSelectPos2_);
+                    }
+                    rangeSelectPos2_     = index;
+                    if (startIsSelected_) unselectRange(rangeSelectPos1_, rangeSelectPos2_);
+                    else                  selectRange(rangeSelectPos1_, rangeSelectPos2_);
                 }
             }
             else
