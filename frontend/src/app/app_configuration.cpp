@@ -32,7 +32,7 @@ constexpr int              DEFAULT_MAX_FRAME_COUNT          = -1;
 constexpr int              DEFAULT_NUM_THREADS              = 8;
 constexpr int              DEFAULT_PACK_TYPE                = MCPackGeneratorOptionWidget::StructurePackType;
 constexpr const char*      DEFAULT_SELECTED_CUSTOM_BLOCK    = "minecraft:glass_group:glass";
-constexpr const char*      DEFAULT_PACK_NAMESPACE           = "mcbetoolbox";
+constexpr const char*      DEFAULT_PACK_NAMESPACE           = "jc";
 constexpr Version          DEFAULT_PACK_VERSION             = Version(1, 0, 0);
 constexpr SurfaceDirection DEFAULT_DESIRED_SURFACE          = SURFACE_DIRECTION_NORTH;
 
