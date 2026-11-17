@@ -116,7 +116,13 @@ set(WITH_VTK                OFF CACHE BOOL "" FORCE)
 set(WITH_PROTOBUF           OFF CACHE BOOL "" FORCE)
 set(WITH_QUIRC              OFF CACHE BOOL "" FORCE)
 set(WITH_FLATBUFFERS        OFF CACHE BOOL "" FORCE)
+set(WITH_CAROTENE           OFF CACHE BOOL "" FORCE)
 add_subdirectory("${3RDPARTY_DIR}/opencv")
+if(APPLE AND TARGET libpng)
+    # 新版 macOS SDK 下 clang 会预定义 TARGET_OS_MAC，使 pngpriv.h 误判为经典 macOS 工具链，
+    # 进而 #include <fp.h>（该头文件已不存在于现代 SDK）。强制预包含 math.h 使其判定分支短路。
+    target_compile_options(libpng PRIVATE -include math.h)
+endif()
 foreach(_mcbt_ocv_module core imgproc imgcodecs videoio)
     target_include_directories(
         opencv_${_mcbt_ocv_module}
