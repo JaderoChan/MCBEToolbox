@@ -61,16 +61,24 @@ MCBE Toolbox consists of a backend generator library (`backend/`) and a Qt6 fron
 | Compiler | Any C++17-capable compiler |
 | CMake | 3.26 or newer |
 | Qt | 6.7 or newer (`Widgets` component) |
-| OpenCV | `core`, `imgcodecs`, `videoio` components |
+| OpenCV | `core`, `imgproc`, `imgcodecs`, `videoio` components (vendored, see below) |
 | Python 3 | Optional, used by a few build helper scripts (e.g. macOS RPATH fix-up, block color data generation) |
 
 The remaining third-party dependencies (zlib, nlohmann/json, minizip-ng, mcnbt, easy_translate) are vendored directly in the repository under `3rdparty/`, so no extra installation is required.
 
+OpenCV is handled a bit differently: to **minimize the final executable's size**, MCBEToolbox does not depend on an officially distributed OpenCV build (which would drag in dozens of unused modules and third-party libraries). Instead, `3rdparty/opencv` is a git submodule pointing at [mcbetoolbox_opencv](https://github.com/JaderoChan/mcbetoolbox_opencv) — a trimmed copy of the OpenCV 4.8.0 source containing only the `core`/`imgproc`/`imgcodecs`/`videoio` modules this project actually uses, built entirely as static libraries via `add_subdirectory()`.
+
 ### Getting the Source
 
 ```bash
-git clone https://github.com/JaderoChan/MCBEToolbox.git
+git clone --recurse-submodules https://github.com/JaderoChan/MCBEToolbox.git
 cd MCBEToolbox
+```
+
+If you already cloned the repository without `--recurse-submodules`, fetch the OpenCV submodule with:
+
+```bash
+git submodule update --init --recursive
 ```
 
 ### Configure and Build
@@ -98,7 +106,7 @@ Build outputs are placed under `build/frontend/bin/` (the `MCBEToolbox` executab
 
 - Languages: C++17, CMake, Python 3 (build helper scripts)
 - GUI framework: [Qt 6](https://www.qt.io/) (Widgets)
-- Image/video processing: [OpenCV](https://github.com/opencv/opencv)
+- Image/video processing: [OpenCV](https://github.com/opencv/opencv), vendored as a trimmed, statically-built submodule — [mcbetoolbox_opencv](https://github.com/JaderoChan/mcbetoolbox_opencv)
 - JSON: [nlohmann/json](https://github.com/nlohmann/json)
 - NBT reading/writing: [mcnbt](https://github.com/JaderoChan/mcnbt)
 - Compression and packaging: [zlib](https://github.com/madler/zlib), [minizip-ng](https://github.com/zlib-ng/minizip-ng)

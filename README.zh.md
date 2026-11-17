@@ -61,16 +61,24 @@ MCBE Toolbox 由后端库（`backend/`）与 Qt6 前端界面（`frontend/`）�
 | 编译器 | 支持 C++17 的编译器 |
 | CMake | 3.26 及以上 |
 | Qt | 6.7 及以上（`Widgets` 组件） |
-| OpenCV | `core`、`imgcodecs`、`videoio` 组件 |
+| OpenCV | `core`、`imgproc`、`imgcodecs`、`videoio` 组件（已随仓库提供，详见下文） |
 | Python 3 | 可选，用于部分构建辅助脚本（如 macOS 平台的 RPATH 修复、方块颜色数据生成） |
 
 其余第三方依赖（zlib、nlohmann/json、minizip-ng、mcnbt、easy_translate）已随仓库一同提供（位于 `3rdparty/` 目录下），无需额外安装。
 
+OpenCV 的处理方式有所不同：为了**最大限度地优化最终可执行程序的体积**，MCBEToolbox 并未直接依赖官方发布的完整 OpenCV 构建（那样会引入大量本项目用不到的模块与第三方库）。`3rdparty/opencv` 是一个指向 [mcbetoolbox_opencv](https://github.com/JaderoChan/mcbetoolbox_opencv) 的 git 子模块 —— 它是 OpenCV 4.8.0 源码的精简版本，只保留本项目实际用到的 `core`/`imgproc`/`imgcodecs`/`videoio` 模块，并通过 `add_subdirectory()` 以纯静态库的方式编译。
+
 ### 获取源码
 
 ```bash
-git clone https://github.com/JaderoChan/MCBEToolbox.git
+git clone --recurse-submodules https://github.com/JaderoChan/MCBEToolbox.git
 cd MCBEToolbox
+```
+
+如果已经在未加 `--recurse-submodules` 的情况下克隆过仓库，可通过以下命令补充拉取 OpenCV 子模块：
+
+```bash
+git submodule update --init --recursive
 ```
 
 ### 配置与构建
@@ -98,7 +106,7 @@ cmake --build build --config Release
 
 - 语言：C++17、CMake、Python 3（构建辅助脚本）
 - GUI 框架：[Qt 6](https://www.qt.io/)（Widgets）
-- 图像 / 视频处理：[OpenCV](https://github.com/opencv/opencv)
+- 图像 / 视频处理：[OpenCV](https://github.com/opencv/opencv)，以精简且纯静态编译的子模块形式提供 —— [mcbetoolbox_opencv](https://github.com/JaderoChan/mcbetoolbox_opencv)
 - JSON：[nlohmann/json](https://github.com/nlohmann/json)
 - NBT 读写：[mcnbt](https://github.com/JaderoChan/mcnbt)
 - 压缩与打包：[zlib](https://github.com/madler/zlib)、[minizip-ng](https://github.com/zlib-ng/minizip-ng)
