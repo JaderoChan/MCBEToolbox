@@ -73,12 +73,20 @@ if(MCNBT_BUILD_ZLIB)
             zlib
             SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/zlib
         )
+        set(ZLIB_BUILD_SHARED ON)
+        set(ZLIB_BUILD_STATIC OFF)
         FetchContent_MakeAvailable(zlib)
-    elseif(NOT TARGET zlib)
-        find_package(zlib REQUIRED)
+        target_link_libraries(${PROJECT_NAME} INTERFACE ZLIB::ZLIB)
+    else()
+        if(TARGET ZLIB::ZLIB)
+            target_link_libraries(${PROJECT_NAME} INTERFACE ZLIB::ZLIB)
+        elseif(TARGET ZLIB::ZLIBSTATIC)
+            target_link_libraries(${PROJECT_NAME} INTERFACE ZLIB::ZLIBSTATIC)
+        else()
+            find_package(ZLIB REQUIRED)
+            target_link_libraries(${PROJECT_NAME} INTERFACE ZLIB::ZLIB)
+        endif()
     endif()
-
-    target_link_libraries(${PROJECT_NAME} INTERFACE ZLIB::ZLIB)
 endif()
 
 ###########
