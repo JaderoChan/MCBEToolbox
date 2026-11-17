@@ -4,6 +4,8 @@ project(MCBEToolbox VERSION 1.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_SKIP_INSTALL_RULES ON)
+
 # 默认使用 Release 构建
 if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build with Release when not build type be specified." FORCE)
@@ -54,18 +56,76 @@ endif()
 include(FetchContent)
 set(3RDPARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty")
 
-# 配置 OpenCV 库
-find_package(OpenCV REQUIRED COMPONENTS core imgcodecs videoio)
-# 查找 OpenCV MSMF 插件
-if(WIN32)
-    get_filename_component(OPENCV_BIN_DIR "${OpenCV_DIR}/../bin" ABSOLUTE)
-    file(GLOB OPENCV_MSMF_DLLS "${OPENCV_BIN_DIR}/opencv_videoio_msmf*.dll")
+# 配置 zlib 库
+if(NOT TARGET ZLIB::ZLIB)
+    set(ZLIB_BUILD_SHARED ON)
+    set(ZLIB_BUILD_STATIC OFF)
+    add_subdirectory("${3RDPARTY_DIR}/zlib")
 endif()
 
-# 配置 zlib 库
-set(ZLIB_BUILD_SHARED ON)
-set(ZLIB_BUILD_STATIC OFF)
-add_subdirectory("${3RDPARTY_DIR}/zlib")
+# 配置 OpenCV 库
+set(BUILD_SHARED_LIBS       OFF CACHE BOOL "" FORCE)
+set(BUILD_WITH_STATIC_CRT   OFF CACHE BOOL "" FORCE)
+set(BUILD_opencv_apps       OFF CACHE BOOL "" FORCE)
+set(BUILD_EXAMPLES          OFF CACHE BOOL "" FORCE)
+set(BUILD_DOCS              OFF CACHE BOOL "" FORCE)
+set(BUILD_TESTS             OFF CACHE BOOL "" FORCE)
+set(BUILD_PERF_TESTS        OFF CACHE BOOL "" FORCE)
+set(BUILD_JAVA              OFF CACHE BOOL "" FORCE)
+set(BUILD_ZLIB              OFF CACHE BOOL "" FORCE)
+set(BUILD_JPEG              ON  CACHE BOOL "" FORCE)
+set(BUILD_PNG               ON  CACHE BOOL "" FORCE)
+set(BUILD_TIFF              ON  CACHE BOOL "" FORCE)
+set(BUILD_WEBP              ON  CACHE BOOL "" FORCE)
+set(WITH_JPEG               ON  CACHE BOOL "" FORCE)
+set(WITH_PNG                ON  CACHE BOOL "" FORCE)
+set(WITH_TIFF               ON  CACHE BOOL "" FORCE)
+set(WITH_WEBP               ON  CACHE BOOL "" FORCE)
+set(VIDEOIO_ENABLE_PLUGINS  OFF CACHE BOOL "" FORCE)
+set(WITH_MSMF               OFF CACHE BOOL "" FORCE)
+set(WITH_DSHOW              OFF CACHE BOOL "" FORCE)
+set(WITH_AVFOUNDATION       OFF CACHE BOOL "" FORCE)
+set(WITH_FFMPEG             OFF CACHE BOOL "" FORCE)
+if(WIN32)
+    set(WITH_MSMF           ON  CACHE BOOL "" FORCE)
+    set(WITH_DSHOW          ON  CACHE BOOL "" FORCE)
+elseif(APPLE)
+    set(WITH_AVFOUNDATION   ON  CACHE BOOL "" FORCE)
+else()
+    # Linux 平台上，需自行安装 ffmpeg 开发库，例如 Debian/Ubuntu 的 libavcodec-dev。
+    set(WITH_FFMPEG         ON  CACHE BOOL "" FORCE)
+endif()
+set(WITH_GSTREAMER          OFF CACHE BOOL "" FORCE)
+set(WITH_1394               OFF CACHE BOOL "" FORCE)
+set(WITH_OBSENSOR           OFF CACHE BOOL "" FORCE)
+set(WITH_OPENEXR            OFF CACHE BOOL "" FORCE)
+set(WITH_JASPER             OFF CACHE BOOL "" FORCE)
+set(WITH_OPENJPEG           OFF CACHE BOOL "" FORCE)
+set(WITH_AVIF               OFF CACHE BOOL "" FORCE)
+set(WITH_SPNG               OFF CACHE BOOL "" FORCE)
+set(WITH_GDCM               OFF CACHE BOOL "" FORCE)
+set(WITH_GDAL               OFF CACHE BOOL "" FORCE)
+set(WITH_IPP                OFF CACHE BOOL "" FORCE)
+set(WITH_ITT                OFF CACHE BOOL "" FORCE)
+set(WITH_TBB                OFF CACHE BOOL "" FORCE)
+set(WITH_EIGEN              OFF CACHE BOOL "" FORCE)
+set(WITH_LAPACK             OFF CACHE BOOL "" FORCE)
+set(WITH_OPENCL             OFF CACHE BOOL "" FORCE)
+set(WITH_DIRECTX            OFF CACHE BOOL "" FORCE)
+set(WITH_VTK                OFF CACHE BOOL "" FORCE)
+set(WITH_PROTOBUF           OFF CACHE BOOL "" FORCE)
+set(WITH_QUIRC              OFF CACHE BOOL "" FORCE)
+set(WITH_FLATBUFFERS        OFF CACHE BOOL "" FORCE)
+add_subdirectory("${3RDPARTY_DIR}/opencv")
+foreach(_mcbt_ocv_module core imgproc imgcodecs videoio)
+    target_include_directories(
+        opencv_${_mcbt_ocv_module}
+        SYSTEM PUBLIC
+        "${3RDPARTY_DIR}/opencv/modules/${_mcbt_ocv_module}/include"
+        "${CMAKE_BINARY_DIR}"
+    )
+endforeach()
+
 # 配置 Json 库
 add_subdirectory("${3RDPARTY_DIR}/json")
 # 配置 Easy Translate 库
@@ -100,14 +160,6 @@ function(copy_runtime_dependencies TARGET_NAME)
             "$<TARGET_FILE_DIR:${TARGET_NAME}>"
             COMMAND_EXPAND_LISTS
         )
-        if(OPENCV_MSMF_DLLS)
-            add_custom_command(
-                TARGET ${TARGET_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                ${OPENCV_MSMF_DLLS}
-                "$<TARGET_FILE_DIR:${TARGET_NAME}>"
-            )
-        endif()
     endif()
 endfunction()
 
