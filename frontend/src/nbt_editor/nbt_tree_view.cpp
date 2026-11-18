@@ -33,6 +33,13 @@ NbtTreeView::NbtTreeView(QWidget* parent)
         selectionModel(), &QItemSelectionModel::selectionChanged, this,
         [this]() { emit selectedItemChanged(selectedItem()); }
     );
+    connect(
+        this, &NbtTreeView::expanded, this, [this](const QModelIndex& index)
+        {
+            auto* item = model_->itemFromIndex(index);
+            loadAllElement(item);
+        }
+    );
 }
 
 void NbtTreeView::setRootName(QString rootName)
@@ -106,6 +113,8 @@ const nbt::Tag* NbtTreeView::itemTag(const QStandardItem* item) const
 
 bool NbtTreeView::addItem(QStandardItem* parentItem, nbt::Tag value, const QString& key)
 {
+    loadAllElement(parentItem);
+
     auto* parentTag = itemTag(parentItem);
     if (parentTag->isArray())
     {
@@ -331,6 +340,8 @@ bool NbtTreeView::invokeAddItem(QStandardItem* parentItem, nbt::TagType type)
 
     if (parentTag->isArray() || parentTag->isContainer())
     {
+        loadAllElement(parentItem);
+
         bool isNamingTag = true;
         if (parentTag->isArray())
         {
@@ -618,7 +629,14 @@ QStandardItem* NbtTreeView::buildItem(
 
     if (value.isArray())
     {
-        for (std::size_t i = 0; i < value.size(); ++i)
+        std::size_t count = value.size();
+        if (count > LAZY_LOADING_THRESHOLD)
+        {
+            count = LAZY_LOADING_THRESHOLD;
+            item->setData(true, IsPartLoadingRole);
+        }
+
+        for (std::size_t i = 0; i < count; ++i)
         {
             auto* child = createArrayItem(&value, static_cast<qulonglong>(i));
             item->appendRow(child);
@@ -626,7 +644,14 @@ QStandardItem* NbtTreeView::buildItem(
     }
     else if (value.isList())
     {
-        for (std::size_t i = 0; i < value.size(); ++i)
+        std::size_t count = value.size();
+        if (count > LAZY_LOADING_THRESHOLD)
+        {
+            count = LAZY_LOADING_THRESHOLD;
+            item->setData(true, IsPartLoadingRole);
+        }
+
+        for (std::size_t i = 0; i < count; ++i)
             (void)buildItem(item, false, QString(), static_cast<qulonglong>(i), value[i]);
     }
     else if (value.isCompound())
@@ -641,8 +666,44 @@ QStandardItem* NbtTreeView::buildItem(
     return item;
 }
 
+bool NbtTreeView::isPartLoading(const QStandardItem* item) const
+{
+    const auto data = item->data(IsPartLoadingRole);
+    return data.isValid() && data.toBool();
+}
+
+void NbtTreeView::loadAllElement(QStandardItem* parentItem)
+{
+    if (!parentItem || !isPartLoading(parentItem))
+        return;
+
+    auto* tag = itemTag(parentItem);
+    if (!tag || (!tag->isArray() && !tag->isList()))
+        return;
+
+    if (tag->isArray())
+    {
+        for (std::size_t i = LAZY_LOADING_THRESHOLD; i < tag->size(); ++i)
+        {
+            auto* child = createArrayItem(tag, static_cast<qulonglong>(i));
+            parentItem->appendRow(child);
+        }
+    }
+    else
+    {
+        for (std::size_t i = LAZY_LOADING_THRESHOLD; i < tag->size(); ++i)
+        {
+            (void)buildItem(parentItem, false, QString(), static_cast<qulonglong>(i), tag->at(i));
+        }
+    }
+
+    parentItem->setData(false, IsPartLoadingRole);
+}
+
 bool NbtTreeView::insertItem(QStandardItem* parentItem, nbt::Tag value, qulonglong index)
 {
+    loadAllElement(parentItem);
+
     auto* parentTag = itemTag(parentItem);
     if (parentTag->isArray())
     {
@@ -718,6 +779,8 @@ void NbtTreeView::updateElementItemData(QStandardItem* parentItem, qulonglong be
     const auto* parentTag = itemTag(parentItem);
     if (!parentTag || (!parentTag->isArray() && !parentTag->isList()))
         return;
+
+    loadAllElement(parentItem);
 
     const bool blocked          = model_->blockSignals(true);
     const auto parentModelIndex = parentItem->index();

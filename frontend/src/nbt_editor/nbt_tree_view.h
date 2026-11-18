@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include <qicon.h>
 #include <qstring.h>
 #include <qstringlist.h>
@@ -20,6 +22,8 @@ class NbtTreeItemDelegate;
 class NbtTreeView : public QTreeView
 {
     Q_OBJECT
+
+    static constexpr std::size_t LAZY_LOADING_THRESHOLD = 10000;
 
 public:
     explicit NbtTreeView(QWidget* parent = nullptr);
@@ -100,7 +104,8 @@ private:
         TagKeyRole,
         TagIndexRole,
         IsCompoundSummaryRole,
-        SummaryValueRole
+        SummaryValueRole,
+        IsPartLoadingRole
     };
 
     enum class RowEditType
@@ -120,6 +125,9 @@ private:
     QStandardItem* createItem(bool isNamingTag, const QString& key, qulonglong index, const nbt::Tag& value);
     QStandardItem* buildItem(
         QStandardItem* parentItem, bool isNamingTag, const QString& key, qulonglong index, nbt::Tag& value);
+
+    bool isPartLoading(const QStandardItem* item) const;
+    void loadAllElement(QStandardItem* parentItem);
 
     /**
      * 插入子项至给定项（此函数用于实现增量撤销/重做功能）。
