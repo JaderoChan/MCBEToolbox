@@ -1,8 +1,11 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
+#include <deque>
 
 #include <qicon.h>
+#include <qlist.h>
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qtreeview.h>
@@ -24,6 +27,7 @@ class NbtTreeView : public QTreeView
     Q_OBJECT
 
     static constexpr std::size_t LAZY_LOADING_THRESHOLD = 10000;
+    static constexpr std::size_t MAX_UNDO_STEP          = 100;
 
 public:
     explicit NbtTreeView(QWidget* parent = nullptr);
@@ -73,6 +77,16 @@ public:
     /** 在给定项上唤起 GUI 式元素值编辑；如果给定项值不可编辑返回 false。 */
     bool invokeEditItemValue(QStandardItem* item);
 
+    bool canUndo() const;
+    bool canRedo() const;
+    bool undo();
+    bool redo();
+
+    /** 当前状态是否与最近一次 markSaved() 时的状态不同（从未调用过则以加载完成时的状态为准）。 */
+    bool isModified() const;
+    /** 将当前状态标记为已保存。 */
+    void markSaved();
+
     /** 获取根项；返回值可能为 nullptr。 */
     QStandardItem* rootItem()     const;
     /** 获取当前选中项；返回值可能为 nullptr。 */
@@ -81,6 +95,9 @@ public:
 signals:
     void rootNameChanged();
     void tagChanged();
+    void canUndoChanged(bool canUndo);
+    void canRedoChanged(bool canRedo);
+    void modifiedChanged(bool modified);
 
     /** 选中项发生更改时发出，item 可能为 nullptr。 */
     void selectedItemChanged(QStandardItem* item);
@@ -115,6 +132,39 @@ private:
         Modify
     };
 
+    enum class EditActionType
+    {
+        Add,
+        Rename,
+        Change,
+        Remove
+    };
+
+    struct EditStep
+    {
+        explicit EditStep(EditActionType type) : type(type) {}
+
+        EditActionType type;
+        /** Add/Remove：被添加/删除项的路径；Rename：改名前项的路径；Change：项的路径。 */
+        QList<int>     path;
+        /** Rename：改名后项的路径。 */
+        QList<int>     newPath;
+        /** Add/Remove：项名；Rename：旧名。 */
+        QString        key;
+        /** Rename：新名。 */
+        QString        newKey;
+        /** Add/Remove：项值；Change：旧值。 */
+        nbt::Tag       value;
+        /** Change：新值。 */
+        nbt::Tag       newValue;
+    };
+
+    struct EditAction
+    {
+        std::int64_t    id = 0;
+        QList<EditStep> steps;
+    };
+
     static QString defaultValueText(nbt::TagType type);
 
     nbt::Tag* itemParentTag(const QStandardItem* item);
@@ -130,12 +180,21 @@ private:
     void loadAllElement(QStandardItem* parentItem);
 
     /**
-     * 插入子项至给定项（此函数用于实现增量撤销/重做功能）。
+     * 插入子项至给定项的指定位置。
      *
-     * 如果给定项不是 Array 或 List 类型、给定子项不符合父项类型返回 false。
+     * 如果给定项不是容器类型、给定子项不符合父项类型、索引越界或名称已存在返回 false。
      * 对于给定项是 Array 类型，则子项仅保留数值。
+     * 对于给定项是 Compound 类型，则参数 index 是无效的；
+     * 对于给定项是 Array 或 List 类型，则参数 key 是无效的。
      */
-    bool insertItem(QStandardItem* parentItem, nbt::Tag value, qulonglong index);
+    bool insertItem(QStandardItem* parentItem, nbt::Tag value, const QString& key, qulonglong index);
+
+    /** 获取给定项的 Tag 值副本（支持 Array 子元素）。 */
+    nbt::Tag itemValue(const QStandardItem* item) const;
+    /** 获取给定项从根项起每一级的行号；根项返回空列表。 */
+    QList<int> itemPath(const QStandardItem* item) const;
+    /** 通过路径获取项；路径无效返回 nullptr。 */
+    QStandardItem* itemFromPath(const QList<int>& path);
 
     void updateSummaryValue(QStandardItem* item, const nbt::Tag& tag);
     /**
@@ -152,6 +211,19 @@ private:
 
     void showContextMenu(const QPoint& position);
 
+    void recordStep(EditStep step);
+    void beginEditGroup();
+    void endEditGroup();
+    void pushEditAction(EditAction action);
+    void trimEditAction();
+    void clearHistory(bool clean = true);
+    void emitHistoryChanged();
+    std::int64_t currentActionId() const;
+
+    /** 按正向或逆向执行给定操作；返回 false 表示执行失败。 */
+    bool applyAction(const EditAction& action, bool reverse, QList<int>& focusPath);
+    bool applyStep(const EditStep& step, bool reverse, QList<int>& focusPath);
+
     QString  rootName_;
     nbt::Tag rootTag_;
 
@@ -161,4 +233,13 @@ private:
     RowEditType          editType_  = RowEditType::None;
     QStandardItem*       editItem_  = nullptr;
     NbtRowEditor*        editor_    = nullptr;
+
+    std::deque<EditAction> undoStack_;
+    std::deque<EditAction> redoStack_;
+    EditAction             pendingAction_;
+    int                    editGroupDepth_  = 0;
+    bool                   applyingHistory_ = false;
+    std::int64_t           nextActionId_    = 1;
+    std::int64_t           savePointId_     = 0;   // -1 表示保存点已丢失。
+    bool                   lastModified_    = false;
 };

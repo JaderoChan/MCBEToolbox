@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 
+#include <qaction.h>
 #include <qbuttongroup.h>
 #include <qfiledialog.h>
 #include <qlayout.h>
@@ -179,6 +180,12 @@ private:
 NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     : AdaptiveWidget(parent)
 {
+    // NBT 视图。
+    nbtView_ = new NbtTreeView(this);
+    connect(nbtView_, &NbtTreeView::selectedItemChanged, this, &NbtEditorTabPage::refreshButtonState);
+    connect(nbtView_, &NbtTreeView::tagChanged, this, [this]() { needUpdateSnbt_ = true; refreshButtonState(); });
+    connect(nbtView_, &NbtTreeView::modifiedChanged, this, [this]() { emit modifiedChanged(isModified()); });
+
     // 构建顶部工具栏 UI。
     auto* toolbarWidget = new QWidget(this);
     auto* toolbarLayout = new QHBoxLayout(toolbarWidget);
@@ -189,7 +196,10 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     renameButton_ = new QToolButton(this);
     editButton_   = new QToolButton(this);
     removeButton_ = new QToolButton(this);
-    for (auto& button : {renameButton_, editButton_, removeButton_})
+    undoButton_   = new QToolButton(this);
+    redoButton_   = new QToolButton(this);
+
+    for (auto& button : {renameButton_, editButton_, removeButton_, undoButton_, redoButton_})
     {
         button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         button->setFocusPolicy(Qt::ClickFocus);
@@ -197,6 +207,7 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
 
         toolbarLayout->addWidget(button);
     }
+
     connect(
         removeButton_, &QToolButton::clicked,
         this, [this]() { nbtView_->removeItem(nbtView_->selectedItem());          }
@@ -209,6 +220,23 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
         editButton_,   &QToolButton::clicked,
         this, [this]() { nbtView_->invokeEditItemValue(nbtView_->selectedItem()); }
     );
+    connect(undoButton_, &QToolButton::clicked,        nbtView_, &NbtTreeView::undo);
+    connect(redoButton_, &QToolButton::clicked,        nbtView_, &NbtTreeView::redo);
+    connect(nbtView_,    &NbtTreeView::canUndoChanged, this,     &NbtEditorTabPage::refreshButtonState);
+    connect(nbtView_,    &NbtTreeView::canRedoChanged, this,     &NbtEditorTabPage::refreshButtonState);
+
+    auto* undoAction = new QAction(this);
+    auto* redoAction = new QAction(this);
+    undoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    redoAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    undoAction->setShortcut(QKeySequence(QKeyCombination(Qt::CTRL, Qt::Key_Z)));
+    redoAction->setShortcuts({
+        QKeySequence(QKeyCombination(Qt::CTRL, Qt::Key_Y)),
+        QKeySequence(QKeyCombination(Qt::CTRL | Qt::SHIFT, Qt::Key_Z))
+    });
+    connect(undoAction, &QAction::triggered, this, &NbtEditorTabPage::undo);
+    connect(redoAction, &QAction::triggered, this, &NbtEditorTabPage::redo);
+    addActions({undoAction, redoAction});
 
     toolbarLayout->addSpacing(3);
 
@@ -250,11 +278,6 @@ NbtEditorTabPage::NbtEditorTabPage(QWidget* parent)
     connect(snbtButton_, &QToolButton::clicked, this, &NbtEditorTabPage::togglePage);
 
     toolbarLayout->addWidget(snbtButton_);
-
-    // NBT 视图。
-    nbtView_ = new NbtTreeView(this);
-    connect(nbtView_, &NbtTreeView::selectedItemChanged, this, &NbtEditorTabPage::refreshButtonState);
-    connect(nbtView_, &NbtTreeView::tagChanged, this, [this]() { needUpdateSnbt_ = true; refreshButtonState(); });
 
     // SNBT 页面。
     snbtWidget_ = new CodeTextEdit(this);
@@ -404,15 +427,19 @@ void NbtEditorTabPage::saveNbt()
     if (!hasValidRootTag())
         return;
 
-    if (!fileInfo_.valid)
+    auto fileInfo = fileInfo_;
+    if (!fileInfo.valid)
     {
-        auto fileInfo = popupDialogForFileInfo(fileInfo_);
+        fileInfo = popupDialogForFileInfo(fileInfo_);
         if (!fileInfo.valid)
             return;
-        setFileInfo(std::move(fileInfo));
     }
 
-    saveNbt(fileInfo_);
+    if (!saveNbt(fileInfo))
+        return;
+
+    setFileInfo(std::move(fileInfo));
+    nbtView_->markSaved();
 }
 
 void NbtEditorTabPage::saveNbtAs()
@@ -431,6 +458,8 @@ void NbtEditorTabPage::refreshText()
     renameButton_->setText(EASYTR("Rename"));
     editButton_->setText(EASYTR("Edit"));
     removeButton_->setText(EASYTR("Remove"));
+    undoButton_->setText(EASYTR("Undo"));
+    redoButton_->setText(EASYTR("Redo"));
     snbtButton_->setText(EASYTR("SNBT"));
     addButtons_[nbt::TT_BYTE]->setToolTip(EASYTR("Add Byte Tag"));
     addButtons_[nbt::TT_SHORT]->setToolTip(EASYTR("Add Short Tag"));
@@ -449,7 +478,7 @@ void NbtEditorTabPage::refreshText()
 
 void NbtEditorTabPage::refreshColor()
 {
-    for (auto& button : {renameButton_, editButton_, removeButton_, snbtButton_})
+    for (auto& button : {renameButton_, editButton_, removeButton_, undoButton_, redoButton_, snbtButton_})
         button->setStyleSheet(getNoFrameToolButtonStyleSheet());
 }
 
@@ -517,6 +546,9 @@ void NbtEditorTabPage::refreshButtonState()
     if (stackedWidget_->currentIndex() == 1)
         return;
 
+    undoButton_->setEnabled(nbtView_->canUndo());
+    redoButton_->setEnabled(nbtView_->canRedo());
+
     auto* item = nbtView_->selectedItem();
     // 如果没有选中项直接返回。
     if (!item)
@@ -574,14 +606,15 @@ void NbtEditorTabPage::setFileInfo(NbtFileInfo fileInfo)
     refreshStateBarText();
     if (pathChanged)
         emit filePathChanged(fileInfo_.filePath);
+    emit modifiedChanged(isModified());
 }
 
-void NbtEditorTabPage::saveNbt(const NbtFileInfo& fileInfo)
+bool NbtEditorTabPage::saveNbt(const NbtFileInfo& fileInfo)
 {
     const auto  rootName = nbtView_->rootName();
     const auto& rootTag  = nbtView_->rootTag();
     if (!rootTag.isCompound() || !fileInfo.valid)
-        return;
+        return false;
 
     std::filesystem::path path;
 #ifdef Q_OS_WIN
@@ -599,7 +632,7 @@ void NbtEditorTabPage::saveNbt(const NbtFileInfo& fileInfo)
             QMessageBox::Close,
             this
         ).exec();
-        return;
+        return false;
     }
 
     if (fileInfo.hasHeader)
@@ -625,6 +658,24 @@ void NbtEditorTabPage::saveNbt(const NbtFileInfo& fileInfo)
     // 写入 NBT。
     if (fileInfo.compressed) rootTag.dumpCompressed(ofs, fileInfo.bigEndian, rootName.toStdString());
     else                     rootTag.dump(ofs, fileInfo.bigEndian, rootName.toStdString());
+    return true;
+}
+
+void NbtEditorTabPage::undo()
+{
+    if (stackedWidget_->currentIndex() == 0)
+        nbtView_->undo();
+}
+
+void NbtEditorTabPage::redo()
+{
+    if (stackedWidget_->currentIndex() == 0)
+        nbtView_->redo();
+}
+
+bool NbtEditorTabPage::isModified() const
+{
+    return !fileInfo_.valid || nbtView_->isModified();
 }
 
 #include "nbt_editor_tab_page.moc"

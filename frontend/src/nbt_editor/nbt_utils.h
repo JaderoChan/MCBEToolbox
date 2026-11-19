@@ -10,7 +10,7 @@ namespace nbt_utils
 {
 
 /** 判断给定类型是否为标量。 */
-static inline bool isScalarTagType(nbt::TagType type)
+inline bool isScalarTagType(nbt::TagType type)
 {
     return
         type == nbt::TT_BYTE || type == nbt::TT_SHORT || type == nbt::TT_INT    ||
@@ -19,22 +19,41 @@ static inline bool isScalarTagType(nbt::TagType type)
 }
 
 /** 判断给定类型的键名是否可编辑。 */
-static inline bool isTagKeyEditable(nbt::TagType type, bool isNamingTag)
+inline bool isTagKeyEditable(nbt::TagType type, bool isNamingTag)
 {
     return isNamingTag && type != nbt::TT_END;
 }
 
 /** 判断给定类型的键值是否可编辑。 */
-static inline bool isTagValueEditable(nbt::TagType type, bool isNamingTag)
+inline bool isTagValueEditable(nbt::TagType type, bool isNamingTag)
 {
     (void)isNamingTag;
     return isScalarTagType(type);
 }
 
 /** 判断给定类型是否可编辑（键名/键值任一可编辑）。 */
-static inline bool isTagEditable(nbt::TagType type, bool isNamingTag)
+inline bool isTagEditable(nbt::TagType type, bool isNamingTag)
 {
     return isTagKeyEditable(type, isNamingTag) || isTagValueEditable(type, isNamingTag);
+}
+
+/** 判断两个标量类型的 Tag 值是否相等。 */
+inline bool isEqualScalarTag(const nbt::Tag& lhs, const nbt::Tag& rhs)
+{
+    if (lhs.type() != rhs.type())
+        return false;
+
+    switch (lhs.type())
+    {
+        case nbt::TT_BYTE:   return lhs.getByte()   == rhs.getByte();
+        case nbt::TT_SHORT:  return lhs.getShort()  == rhs.getShort();
+        case nbt::TT_INT:    return lhs.getInt()    == rhs.getInt();
+        case nbt::TT_LONG:   return lhs.getLong()   == rhs.getLong();
+        case nbt::TT_FLOAT:  return lhs.getFloat()  == rhs.getFloat();
+        case nbt::TT_DOUBLE: return lhs.getDouble() == rhs.getDouble();
+        case nbt::TT_STRING: return lhs.getString() == rhs.getString();
+        default:             return false;
+    }
 }
 
 /** 获取指定 Tag 可添加的子元素类型列表；如果 \p tag 为 nullptr 则返回除 #TT_END 外所有类型组成的列表。 */

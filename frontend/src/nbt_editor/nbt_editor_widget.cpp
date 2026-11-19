@@ -219,7 +219,7 @@ void NbtEditorWidget::newNbt()
 {
     auto* page = new NbtEditorTabPage(this);
     page->nbtView()->setRootTag(nbt::Tag::compound());
-    addPage(page, EASYTR("Untitled"));
+    addPage(page);
 }
 
 void NbtEditorWidget::openNbt()
@@ -240,7 +240,7 @@ void NbtEditorWidget::openNbt()
     if (!page)
         return;
 
-    addPage(page, QFileInfo(filePath).fileName());
+    addPage(page);
 }
 
 void NbtEditorWidget::saveCurrentPage()
@@ -282,22 +282,30 @@ void NbtEditorWidget::parseSnbt()
 
     auto* page = new NbtEditorTabPage(this);
     page->nbtView()->setRootTag(std::move(tag));
-    addPage(page, EASYTR("Untitled"));
+    addPage(page);
 }
 
-void NbtEditorWidget::addPage(NbtEditorTabPage* page, const QString& title)
+void NbtEditorWidget::addPage(NbtEditorTabPage* page)
 {
-    const int index = tabWidget_->addTab(page, title);
-    tabWidget_->setTabToolTip(index, title);
+    const int index = tabWidget_->addTab(page, QString());
+    refreshPageTitle(page);
     connect(page->nbtView(), &NbtTreeView::tagChanged,   this, &NbtEditorWidget::refreshButtonState);
     connect(page->nbtView(), &NbtTreeView::filesDropped, this, &NbtEditorWidget::onFilesDropped);
-    connect(page, &NbtEditorTabPage::filePathChanged, this, [this, page](const QString& filePath)
-    {
-        const int index = tabWidget_->indexOf(page);
-        if (index >= 0)
-            tabWidget_->setTabText(index, filePath.isEmpty() ? EASYTR("Untitled") : QFileInfo(filePath).fileName());
-    });
+    connect(page, &NbtEditorTabPage::filePathChanged, this, [this, page]() { refreshPageTitle(page); });
+    connect(page, &NbtEditorTabPage::modifiedChanged, this, [this, page]() { refreshPageTitle(page); });
     tabWidget_->setCurrentIndex(index);
+}
+
+void NbtEditorWidget::refreshPageTitle(NbtEditorTabPage* page)
+{
+    const int index = tabWidget_->indexOf(page);
+    if (index < 0)
+        return;
+
+    const auto filePath = page->filePath();
+    const auto name     = filePath.isEmpty() ? QString(EASYTR("Untitled")) : QFileInfo(filePath).fileName();
+    tabWidget_->setTabText(index, page->isModified() ? name + QStringLiteral("*") : name);
+    tabWidget_->setTabToolTip(index, name);
 }
 
 void NbtEditorWidget::removePage(int index)
@@ -324,7 +332,7 @@ void NbtEditorWidget::onFilesDropped(const QStringList& filePaths)
     {
         auto* page = NbtEditorTabPage::createFromFile(filePath, this);
         if (page)
-            addPage(page, QFileInfo(filePath).fileName());
+            addPage(page);
     }
 }
 

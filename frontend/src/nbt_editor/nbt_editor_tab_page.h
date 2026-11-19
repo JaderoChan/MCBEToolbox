@@ -34,9 +34,16 @@ public:
     /** 弹出配置对话框以指定配置保存 NBT。 */
     void saveNbtAs();
 
+    /** 关联文件的路径；未关联文件时返回空字符串。 */
+    QString filePath() const { return fileInfo_.valid ? fileInfo_.filePath : QString(); }
+    /** 是否存在未保存的修改；未关联磁盘文件的页面始终返回 true。 */
+    bool isModified() const;
+
 signals:
     /** 关联文件的路径发生变化时发出。 */
     void filePathChanged(const QString& filePath);
+    /** 修改状态发生变化时发出。 */
+    void modifiedChanged(bool modified);
 
 protected:
     void refreshText() override;
@@ -61,17 +68,21 @@ private:
     static NbtFileInfo popupDialogForFileInfo(const NbtFileInfo& defaultValue = NbtFileInfo());
 
     void togglePage();
+    void undo();
+    void redo();
     void refreshButtonState();
     void refreshStateBarText();
 
     void setFileInfo(NbtFileInfo fileInfo);
-    void saveNbt(const NbtFileInfo& fileInfo);
+    bool saveNbt(const NbtFileInfo& fileInfo);
 
     NbtFileInfo fileInfo_;
 
     QToolButton*    renameButton_    = nullptr;
     QToolButton*    editButton_      = nullptr;
     QToolButton*    removeButton_    = nullptr;
+    QToolButton*    undoButton_      = nullptr;
+    QToolButton*    redoButton_      = nullptr;
     QToolButton*    snbtButton_      = nullptr;
 
     std::map<nbt::TagType, QToolButton*> addButtons_;

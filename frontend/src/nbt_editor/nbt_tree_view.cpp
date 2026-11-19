@@ -1,5 +1,7 @@
 #include "nbt_tree_view.h"
 
+#include <utility>
+
 #include <qevent.h>
 #include <qmenu.h>
 #include <qmimedata.h>
@@ -47,7 +49,7 @@ void NbtTreeView::setRootName(QString rootName)
     if (rootName_ == rootName)
         return;
 
-    rootName_ = std::move(rootName);
+    auto oldName = std::exchange(rootName_, std::move(rootName));
     if (model_->rowCount() > 0)
     {
         auto* rootItem = model_->item(0);
@@ -55,6 +57,11 @@ void NbtTreeView::setRootName(QString rootName)
         rootItem->setText(text);
         rootItem->setToolTip(text);
         rootItem->setData(rootName_, TagKeyRole);
+
+        EditStep step(EditActionType::Rename);
+        step.key    = std::move(oldName);
+        step.newKey = rootName_;
+        recordStep(std::move(step));
     }
     emit rootNameChanged();
 }
@@ -70,6 +77,7 @@ void NbtTreeView::setRootTag(nbt::Tag rootTag)
     {
         rootTag_ = std::move(rootTag);
         rebuild();
+        clearHistory();
         emit tagChanged();
     }
 }
@@ -113,76 +121,24 @@ const nbt::Tag* NbtTreeView::itemTag(const QStandardItem* item) const
 
 bool NbtTreeView::addItem(QStandardItem* parentItem, nbt::Tag value, const QString& key)
 {
+    if (!parentItem)
+        return false;
+
     loadAllElement(parentItem);
 
-    auto* parentTag = itemTag(parentItem);
-    if (parentTag->isArray())
-    {
-        switch (parentTag->type())
-        {
-            case nbt::TT_BYTE_ARRAY:
-                if (!value.isByte()) return false;
-                parentTag->getByteArray().push_back(value.getByte());
-                break;
-            case nbt::TT_INT_ARRAY:
-                if (!value.isInt()) return false;
-                parentTag->getIntArray().push_back(value.getInt());
-                break;
-            case nbt::TT_LONG_ARRAY:
-                if (!value.isLong()) return false;
-                parentTag->getLongArray().push_back(value.getLong());
-                break;
-            default:
-                return false;
-        }
-
-        auto* child = createArrayItem(parentTag, static_cast<qulonglong>(parentTag->size() - 1));
-        parentItem->appendRow(child);
-    }
-    else if (parentTag->isList())
-    {
-        if (parentTag->listItemType() != nbt::TT_END && value.type() != parentTag->listItemType())
-            return false;
-
-        parentTag->pushBack(std::move(value));
-        (void)buildItem(parentItem, false, QString(), parentTag->size() - 1, parentTag->back());
-    }
-    else if (parentTag->isCompound())
-    {
-        const auto stdKey = key.toStdString();
-        auto&      target = (*parentTag)[stdKey];
-        if (!target.isEnd())
-            return false;
-        target = std::move(value);
-
-        // 保证 QStandardItem 顺序与 Tag 顺序一致。
-        qulonglong i = 0;
-        for (const auto& [k, v] : parentTag->items())
-        {
-            if (k == stdKey) break;
-            ++i;
-        }
-
-        auto* item = createItem(true, key, 0, target);
-        if (target.isCompound())
-        {
-            for (auto& [k, v] : target.items())
-                (void)buildItem(item, true, QString::fromStdString(k), 0, v);
-        }
-        parentItem->insertRow(i, item);
-    }
-    else
-    {
+    const auto* parentTag = itemTag(parentItem);
+    if (!parentTag)
         return false;
-    }
 
-    updateSummaryValue(parentItem, *parentTag);
-    emit tagChanged();
-    return true;
+    const qulonglong index = parentTag->isCompound() ? 0 : static_cast<qulonglong>(parentTag->size());
+    return insertItem(parentItem, std::move(value), key, index);
 }
 
 bool NbtTreeView::removeItem(QStandardItem* item)
 {
+    if (!item)
+        return false;
+
     auto* parentTag = itemParentTag(item);
     if (!parentTag)
     {
@@ -191,6 +147,16 @@ bool NbtTreeView::removeItem(QStandardItem* item)
     }
 
     auto* parentItem = item->parent();
+    loadAllElement(parentItem);
+
+    EditStep step(EditActionType::Remove);
+    if (!applyingHistory_)
+    {
+        step.path  = itemPath(item);
+        step.key   = isNamingTag(item) ? itemTagKey(item).toString() : QString();
+        step.value = itemValue(item);
+    }
+
     if (isNamingTag(item))
     {
         parentTag->erase(itemTagKey(item).toString().toStdString());
@@ -209,6 +175,7 @@ bool NbtTreeView::removeItem(QStandardItem* item)
 
     model_->removeRow(item->row(), item->index().parent());
     updateSummaryValue(parentItem, *parentTag);
+    recordStep(std::move(step));
     emit tagChanged();
     return true;
 }
@@ -230,6 +197,10 @@ bool NbtTreeView::changeItemKey(QStandardItem* item, const QString& newKey)
     if (parentTag->contains(stdNewKey))
         return false;
 
+    EditStep step(EditActionType::Rename);
+    step.key  = itemTagKey(item).toString();
+    step.path = itemPath(item);
+
     // 更改 Tag 中的名称。
     auto       tag       = std::move(*itemTag(item));
     const auto valueText = nbt_utils::makeTextFromTag(tag);
@@ -250,6 +221,9 @@ bool NbtTreeView::changeItemKey(QStandardItem* item, const QString& newKey)
     }
     item->parent()->insertRow(i, item->parent()->takeRow(item->row())[0]);
 
+    step.newPath = itemPath(item);
+    step.newKey  = newKey;
+    recordStep(std::move(step));
     emit tagChanged();
     return true;
 }
@@ -262,6 +236,13 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
         // 不允许直接更改根项值。
         return false;
     }
+
+    EditStep step(EditActionType::Change);
+    step.path  = itemPath(item);
+    step.value = itemValue(item);
+    if (nbt_utils::isEqualScalarTag(step.value, newValue))
+        return true;
+    step.newValue = newValue;
 
     if (parentTag->isArray())
     {
@@ -328,6 +309,7 @@ bool NbtTreeView::changeItemValue(QStandardItem* item, nbt::Tag newValue)
         return false;
     }
 
+    recordStep(std::move(step));
     emit tagChanged();
     return true;
 }
@@ -416,9 +398,92 @@ bool NbtTreeView::invokeEditItemValue(QStandardItem* item)
     return true;
 }
 
+bool NbtTreeView::canUndo() const
+{
+    return !undoStack_.empty();
+}
+
+bool NbtTreeView::canRedo() const
+{
+    return !redoStack_.empty();
+}
+
+bool NbtTreeView::undo()
+{
+    if (undoStack_.empty())
+        return false;
+
+    if (editor_)
+        endRowEdit(false);
+
+    auto action = std::move(undoStack_.back());
+    undoStack_.pop_back();
+
+    QList<int> focusPath;
+    if (!applyAction(action, true, focusPath))
+    {
+        clearHistory(false);
+        return false;
+    }
+
+    redoStack_.push_back(std::move(action));
+    emitHistoryChanged();
+
+    if (auto* item = itemFromPath(focusPath))
+    {
+        for (auto* p = item->parent(); p; p = p->parent())
+            expand(p->index());
+        setCurrentIndex(item->index());
+        scrollTo(item->index());
+    }
+    return true;
+}
+
+bool NbtTreeView::redo()
+{
+    if (redoStack_.empty())
+        return false;
+
+    if (editor_)
+        endRowEdit(false);
+
+    auto action = std::move(redoStack_.back());
+    redoStack_.pop_back();
+
+    QList<int> focusPath;
+    if (!applyAction(action, false, focusPath))
+    {
+        clearHistory(false);
+        return false;
+    }
+
+    undoStack_.push_back(std::move(action));
+    emitHistoryChanged();
+
+    if (auto* item = itemFromPath(focusPath))
+    {
+        for (auto* p = item->parent(); p; p = p->parent())
+            expand(p->index());
+        setCurrentIndex(item->index());
+        scrollTo(item->index());
+    }
+    return true;
+}
+
 QStandardItem* NbtTreeView::rootItem() const
 {
     return model_->item(0);
+}
+
+bool NbtTreeView::isModified() const
+{
+    return savePointId_ != currentActionId();
+}
+
+void NbtTreeView::markSaved()
+{
+    savePointId_ = currentActionId();
+    emitHistoryChanged();
 }
 
 QStandardItem* NbtTreeView::selectedItem() const
@@ -700,59 +765,92 @@ void NbtTreeView::loadAllElement(QStandardItem* parentItem)
     parentItem->setData(false, IsPartLoadingRole);
 }
 
-bool NbtTreeView::insertItem(QStandardItem* parentItem, nbt::Tag value, qulonglong index)
+bool NbtTreeView::insertItem(QStandardItem* parentItem, nbt::Tag value, const QString& key, qulonglong index)
 {
+    if (!parentItem)
+        return false;
+
     loadAllElement(parentItem);
 
     auto* parentTag = itemTag(parentItem);
+    if (!parentTag)
+        return false;
+
+    EditStep step(EditActionType::Add);
+    if (!applyingHistory_)
+    {
+        step.key   = key;
+        step.value = value;
+    }
+
+    int row = 0;
     if (parentTag->isArray())
     {
+        if (index > parentTag->size())
+            return false;
+
         switch (parentTag->type())
         {
             case nbt::TT_BYTE_ARRAY:
             {
                 if (!value.isByte()) return false;
                 auto& array = parentTag->getByteArray();
-                array.insert(array.begin() + static_cast<std::size_t>(index), value.getByte());
+                array.insert(array.begin() + static_cast<std::ptrdiff_t>(index), value.getByte());
                 break;
             }
             case nbt::TT_INT_ARRAY:
             {
                 if (!value.isInt()) return false;
                 auto& array = parentTag->getIntArray();
-                array.insert(array.begin() + static_cast<std::size_t>(index), value.getInt());
+                array.insert(array.begin() + static_cast<std::ptrdiff_t>(index), value.getInt());
                 break;
             }
             case nbt::TT_LONG_ARRAY:
             {
                 if (!value.isLong()) return false;
                 auto& array = parentTag->getLongArray();
-                array.insert(array.begin() + static_cast<std::size_t>(index), value.getLong());
+                array.insert(array.begin() + static_cast<std::ptrdiff_t>(index), value.getLong());
                 break;
             }
             default:
                 return false;
         }
 
+        row = static_cast<int>(index);
         auto* child = createArrayItem(parentTag, index);
-        updateElementItemData(parentItem, index, parentItem->rowCount(), 1);
-        parentItem->insertRow(static_cast<int>(index), child);
+        updateElementItemData(parentItem, index, static_cast<qulonglong>(parentItem->rowCount()), 1);
+        parentItem->insertRow(row, child);
     }
     else if (parentTag->isList())
     {
+        if (index > parentTag->size())
+            return false;
         if (parentTag->listItemType() != nbt::TT_END && value.type() != parentTag->listItemType())
             return false;
 
-        auto* child = createItem(false, QString(), index, value);
-        if (value.isList())
+        parentTag->insert(static_cast<std::size_t>(index), std::move(value));
+
+        row = static_cast<int>(index);
+        auto* child = buildItem(nullptr, false, QString(), index, parentTag->at(static_cast<std::size_t>(index)));
+        updateElementItemData(parentItem, index, static_cast<qulonglong>(parentItem->rowCount()), 1);
+        parentItem->insertRow(row, child);
+    }
+    else if (parentTag->isCompound())
+    {
+        const auto stdKey = key.toStdString();
+        if (parentTag->contains(stdKey))
+            return false;
+        parentTag->insert(stdKey, std::move(value));
+
+        // 保证 QStandardItem 顺序与 Tag 顺序一致。
+        for (const auto& [k, v] : parentTag->items())
         {
-            for (std::size_t i = 0; i < value.size(); ++i)
-                (void)buildItem(child, false, QString(), static_cast<qulonglong>(i), value[i]);
+            if (k == stdKey) break;
+            ++row;
         }
 
-        parentTag->insert(static_cast<std::size_t>(index), std::move(value));
-        updateElementItemData(parentItem, index, parentItem->rowCount(), 1);
-        parentItem->insertRow(static_cast<int>(index), child);
+        auto* child = buildItem(nullptr, true, key, 0, parentTag->at(stdKey));
+        parentItem->insertRow(row, child);
     }
     else
     {
@@ -760,8 +858,53 @@ bool NbtTreeView::insertItem(QStandardItem* parentItem, nbt::Tag value, qulonglo
     }
 
     updateSummaryValue(parentItem, *parentTag);
+
+    if (!applyingHistory_)
+    {
+        step.path = itemPath(parentItem);
+        step.path.append(row);
+        recordStep(std::move(step));
+    }
+
     emit tagChanged();
     return true;
+}
+
+nbt::Tag NbtTreeView::itemValue(const QStandardItem* item) const
+{
+    if (const auto* tag = itemTag(item))
+        return *tag;
+
+    const auto* parentTag = itemParentTag(item);
+    const auto  i         = static_cast<std::size_t>(itemTagIndex(item).toULongLong());
+    switch (parentTag ? parentTag->type() : nbt::TT_END)
+    {
+        case nbt::TT_BYTE_ARRAY: return nbt::Tag(parentTag->getByteArray()[i]);
+        case nbt::TT_INT_ARRAY:  return nbt::Tag(parentTag->getIntArray()[i]);
+        case nbt::TT_LONG_ARRAY: return nbt::Tag(parentTag->getLongArray()[i]);
+        default:                 return nbt::Tag();
+    }
+}
+
+QList<int> NbtTreeView::itemPath(const QStandardItem* item) const
+{
+    QList<int> path;
+    for (; item && item->parent(); item = item->parent())
+        path.prepend(item->row());
+    return path;
+}
+
+QStandardItem* NbtTreeView::itemFromPath(const QList<int>& path)
+{
+    auto* item = rootItem();
+    for (int row : path)
+    {
+        if (!item)
+            return nullptr;
+        loadAllElement(item);
+        item = item->child(row);
+    }
+    return item;
 }
 
 void NbtTreeView::updateSummaryValue(QStandardItem* item, const nbt::Tag& tag)
@@ -867,28 +1010,35 @@ void NbtTreeView::endRowEdit(bool confirm)
         }
         else if (editType_ == RowEditType::Modify)
         {
+            // 同时修改键与值时合并为一次撤销。
+            beginEditGroup();
             changeItemKey(editItem_, keyText);
 
             if (editor_->valueEditable())
             {
                 auto*     parentItem = editItem_->parent();
                 const int row        = editItem_->row();
-                changeItemValue(editItem_, std::move(value));
+                const auto* currentTag = itemTag(editItem_);
+                if (!currentTag || !nbt_utils::isEqualScalarTag(*currentTag, value))
+                {
+                    changeItemValue(editItem_, std::move(value));
 
-                if (parentItem)
-                {
-                    if (auto* resultItem = parentItem->child(row))
-                        setCurrentIndex(resultItem->index());
-                }
-                else
-                {
-                    setCurrentIndex(editItem_->index());
+                    if (parentItem)
+                    {
+                        if (auto* resultItem = parentItem->child(row))
+                            setCurrentIndex(resultItem->index());
+                    }
+                    else
+                    {
+                        setCurrentIndex(editItem_->index());
+                    }
                 }
             }
             else
             {
                 setCurrentIndex(editItem_->index());
             }
+            endEditGroup();
         }
     }
     else
@@ -942,4 +1092,146 @@ void NbtTreeView::showContextMenu(const QPoint& position)
 
     if (!menu.isEmpty())
         menu.exec(viewport()->mapToGlobal(position));
+}
+
+void NbtTreeView::recordStep(EditStep step)
+{
+    if (applyingHistory_)
+        return;
+
+    if (editGroupDepth_ > 0)
+    {
+        pendingAction_.steps.append(std::move(step));
+        return;
+    }
+
+    EditAction action;
+    action.steps.append(std::move(step));
+    pushEditAction(std::move(action));
+}
+
+void NbtTreeView::beginEditGroup()
+{
+    ++editGroupDepth_;
+}
+
+void NbtTreeView::endEditGroup()
+{
+    if (editGroupDepth_ == 0 || --editGroupDepth_ > 0)
+        return;
+    if (pendingAction_.steps.isEmpty())
+        return;
+
+    pushEditAction(std::exchange(pendingAction_, EditAction{}));
+}
+
+void NbtTreeView::pushEditAction(EditAction action)
+{
+    action.id = nextActionId_++;
+    undoStack_.push_back(std::move(action));
+    redoStack_.clear();
+    trimEditAction();
+    emitHistoryChanged();
+}
+
+void NbtTreeView::trimEditAction()
+{
+    while (undoStack_.size() > MAX_UNDO_STEP)
+        undoStack_.pop_front();
+}
+
+void NbtTreeView::clearHistory(bool clean)
+{
+    undoStack_.clear();
+    redoStack_.clear();
+    pendingAction_  = EditAction{};
+    editGroupDepth_ = 0;
+    savePointId_    = clean ? 0 : -1;
+    emitHistoryChanged();
+}
+
+void NbtTreeView::emitHistoryChanged()
+{
+    emit canUndoChanged(canUndo());
+    emit canRedoChanged(canRedo());
+
+    const bool modified = isModified();
+    if (modified != lastModified_)
+    {
+        lastModified_ = modified;
+        emit modifiedChanged(modified);
+    }
+}
+
+std::int64_t NbtTreeView::currentActionId() const
+{
+    return undoStack_.empty() ? 0 : undoStack_.back().id;
+}
+
+bool NbtTreeView::applyAction(const EditAction& action, bool reverse, QList<int>& focusPath)
+{
+    applyingHistory_ = true;
+
+    bool ok = true;
+    try
+    {
+        const int count = static_cast<int>(action.steps.size());
+        for (int n = 0; ok && n < count; ++n)
+            ok = applyStep(action.steps[reverse ? count - 1 - n : n], reverse, focusPath);
+    }
+    catch (...)
+    {
+        ok = false;
+    }
+
+    applyingHistory_ = false;
+    return ok;
+}
+
+bool NbtTreeView::applyStep(const EditStep& step, bool reverse, QList<int>& focusPath)
+{
+    const bool insert =
+        (step.type == EditActionType::Add && !reverse) || (step.type == EditActionType::Remove && reverse);
+
+    switch (step.type)
+    {
+        case EditActionType::Add:
+        case EditActionType::Remove:
+        {
+            if (step.path.isEmpty())
+                return false;
+
+            const auto parentPath = step.path.mid(0, step.path.size() - 1);
+            focusPath = parentPath;
+
+            if (insert)
+            {
+                auto* parentItem = itemFromPath(parentPath);
+                if (!insertItem(parentItem, step.value, step.key, static_cast<qulonglong>(step.path.last())))
+                    return false;
+                focusPath = step.path;
+                return true;
+            }
+            return removeItem(itemFromPath(step.path));
+        }
+        case EditActionType::Rename:
+        {
+            const auto& from = reverse ? step.newPath : step.path;
+            const auto& to   = reverse ? step.path    : step.newPath;
+            auto* item = itemFromPath(from);
+            if (!item || !changeItemKey(item, reverse ? step.key : step.newKey))
+                return false;
+            focusPath = to;
+            return true;
+        }
+        case EditActionType::Change:
+        {
+            auto* item = itemFromPath(step.path);
+            if (!item || !changeItemValue(item, reverse ? step.value : step.newValue))
+                return false;
+            focusPath = step.path;
+            return true;
+        }
+    }
+    return false;
 }
